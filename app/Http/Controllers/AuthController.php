@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Roles;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,11 +29,11 @@ class AuthController extends Controller
         $user = Auth::user();
 
         switch($user->role) {
-            case "admin":
+            case (Roles::Admin) :
                 return redirect()->route('admin.dashboard');
-            case "approver":
+            case (Roles::Approver) :
                 return redirect()->route('approver.dashboard');
-            case "employee":
+            case (Roles::Employee) :
                 return redirect()->route('employee.dashboard');
             default:
                 return abort(403);
