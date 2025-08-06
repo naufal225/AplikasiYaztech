@@ -11,7 +11,7 @@ use function PHPUnit\Framework\returnSelf;
 class AuthController extends Controller
 {
     public function index() {
-
+        return view('auth.index');
     }
 
     public function login(Request $request) {
