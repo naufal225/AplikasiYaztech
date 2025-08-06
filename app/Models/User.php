@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role'
     ];
 
     /**
@@ -44,5 +45,41 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    //Leaves
+    public function leavesNeedApproval() {
+        return $this->hasMany(Leave::class, 'approver_id');
+    }
+
+    public function leavesThatApplied() {
+        return $this->hasMany(Leave::class, 'employee_id');
+    }
+
+    //Reimbursements
+    public function reimbursementsNeedApproval() {
+        return $this->hasMany(Reimbursement::class, 'approver_id');
+    }
+
+    public function reimbursementsApplied() {
+        return $this->hasMany(Reimbursement::class, 'employee_id');
+    }
+
+    //Overtimes
+    public function overtimesNeedApproval() {
+        return $this->hasMany(Overtime::class, 'approver_id');
+    }
+
+    public function overtimesApplied() {
+        return $this->hasMany(Overtime::class, 'employee_id');
+    }
+
+    //Official Travel
+    public function officialTravelNeedApproval() {
+        return $this->hasMany(OfficialTravel::class, 'approver_id');
+    }
+
+    public function officialTracelApplied() {
+        return $this->hasMany(OfficialTravel::class, 'employee_id');
     }
 }
