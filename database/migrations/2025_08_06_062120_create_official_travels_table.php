@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('official_travels', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->constrained('users', 'id')->nullOnDelete();
-            $table->foreignId('approver_id')->constrained('users', 'id')->nullOnDelete();
+            $table->foreignId('employee_id')->nullable()->constrained('users', 'id')->nullOnDelete();
+            $table->foreignId('approver_id')->nullable()->constrained('users', 'id')->nullOnDelete();
             $table->date('date_start');
             $table->date('date_end');
             $table->bigInteger('total');
