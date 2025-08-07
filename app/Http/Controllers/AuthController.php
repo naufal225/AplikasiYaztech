@@ -10,24 +10,24 @@ use function PHPUnit\Framework\returnSelf;
 
 class AuthController extends Controller
 {
-    public function index()
-    {
-        $user = Auth::user();
-        if ($user) {
-            switch ($user->role) {
-                case (Roles::Admin):
+    public function index() {
+        if(Auth::check()) {
+            $user = Auth::user();
+
+            switch($user->role) {
+                case (Roles::Admin) :
                     return redirect()->route('admin.dashboard');
-                case (Roles::Approver):
+                case (Roles::Approver) :
                     return redirect()->route('approver.dashboard');
-                case (Roles::Employee):
+                case (Roles::Employee) :
                     return redirect()->route('employee.dashboard');
                 default:
                     return abort(403);
-
             }
-        } else {
-            return view('auth.index');
         }
+
+        // If not authenticated, show the login page
+        return view('Auth.index');
     }
 
     public function login(Request $request)
