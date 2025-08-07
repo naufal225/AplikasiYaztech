@@ -39,7 +39,8 @@ class AuthController extends Controller
         ]);
 
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->with("error", "Email atau password anda tidak valid");
+            return back()->withErrors(['email' => 'Email atau password anda tidak valid']);
+
         }
 
         session()->regenerate();
