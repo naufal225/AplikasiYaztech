@@ -20,29 +20,29 @@ const monthlyRequestsCtx = document
 new Chart(monthlyRequestsCtx, {
     type: "bar",
     data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        labels: chartData.months,
         datasets: [
             {
                 label: "Leave Requests",
-                data: [12, 19, 15, 25, 22, 18],
+                data: chartData.leaves,
                 backgroundColor: colors.primary,
                 borderRadius: 6,
             },
             {
                 label: "Reimbursement",
-                data: [8, 15, 12, 18, 16, 14],
+                data: chartData.reimbursements,
                 backgroundColor: colors.secondary,
                 borderRadius: 6,
             },
             {
                 label: "Overtime",
-                data: [6, 10, 8, 12, 9, 11],
+                data: chartData.overtimes,
                 backgroundColor: colors.accent,
                 borderRadius: 6,
             },
             {
                 label: "Official Travel",
-                data: [3, 5, 4, 7, 6, 5],
+                data: chartData.officialTravels,
                 backgroundColor: colors.warning,
                 borderRadius: 6,
             },
@@ -86,7 +86,7 @@ new Chart(statusDistributionCtx, {
         labels: ["Approved", "Pending", "Rejected"],
         datasets: [
             {
-                data: [65, 25, 10],
+                data: [chartData.approveds, chartData.pendings, chartData.rejecteds],
                 backgroundColor: [colors.accent, colors.warning, colors.error],
                 borderWidth: 0,
                 cutout: "60%",
@@ -115,11 +115,11 @@ const reimbursementTrendCtx = document
 new Chart(reimbursementTrendCtx, {
     type: "line",
     data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        labels: chartData.months,
         datasets: [
             {
-                label: "Amount (Million IDR)",
-                data: [45, 52, 48, 61, 58, 67],
+                label: "Amount (IDR)",
+                data: chartData.reimbursementsTotal,
                 borderColor: colors.secondary,
                 backgroundColor: colors.secondary + "20",
                 fill: true,
@@ -155,83 +155,83 @@ new Chart(reimbursementTrendCtx, {
     },
 });
 
-// 4. Leave Types Breakdown (Pie Chart)
-const leaveTypesCtx = document
-    .getElementById("leaveTypesChart")
-    .getContext("2d");
-new Chart(leaveTypesCtx, {
-    type: "pie",
-    data: {
-        labels: [
-            "Annual Leave",
-            "Sick Leave",
-            "Personal Leave",
-            "Maternity Leave",
-        ],
-        datasets: [
-            {
-                data: [40, 25, 20, 15],
-                backgroundColor: [
-                    colors.primary,
-                    colors.accent,
-                    colors.warning,
-                    colors.secondary,
-                ],
-                borderWidth: 0,
-            },
-        ],
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: "bottom",
-                labels: {
-                    usePointStyle: true,
-                    padding: 20,
-                },
-            },
-        },
-    },
-});
+// // 4. Leave Types Breakdown (Pie Chart)
+// const leaveTypesCtx = document
+//     .getElementById("leaveTypesChart")
+//     .getContext("2d");
+// new Chart(leaveTypesCtx, {
+//     type: "pie",
+//     data: {
+//         labels: [
+//             "Annual Leave",
+//             "Sick Leave",
+//             "Personal Leave",
+//             "Maternity Leave",
+//         ],
+//         datasets: [
+//             {
+//                 data: [40, 25, 20, 15],
+//                 backgroundColor: [
+//                     colors.primary,
+//                     colors.accent,
+//                     colors.warning,
+//                     colors.secondary,
+//                 ],
+//                 borderWidth: 0,
+//             },
+//         ],
+//     },
+//     options: {
+//         responsive: true,
+//         maintainAspectRatio: false,
+//         plugins: {
+//             legend: {
+//                 position: "bottom",
+//                 labels: {
+//                     usePointStyle: true,
+//                     padding: 20,
+//                 },
+//             },
+//         },
+//     },
+// });
 
-// 5. Overtime Hours by Department (Horizontal Bar Chart)
-const overtimeCtx = document.getElementById("overtimeChart").getContext("2d");
-new Chart(overtimeCtx, {
-    type: "bar",
-    data: {
-        labels: ["IT", "Finance", "HR", "Marketing", "Operations"],
-        datasets: [
-            {
-                label: "Hours",
-                data: [120, 85, 45, 95, 110],
-                backgroundColor: colors.accent,
-                borderRadius: 6,
-            },
-        ],
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: "y",
-        plugins: {
-            legend: {
-                display: false,
-            },
-        },
-        scales: {
-            x: {
-                beginAtZero: true,
-                grid: {
-                    color: "#F3F4F6",
-                },
-            },
-            y: {
-                grid: {
-                    display: false,
-                },
-            },
-        },
-    },
-});
+// // 5. Overtime Hours by Department (Horizontal Bar Chart)
+// const overtimeCtx = document.getElementById("overtimeChart").getContext("2d");
+// new Chart(overtimeCtx, {
+//     type: "bar",
+//     data: {
+//         labels: ["IT", "Finance", "HR", "Marketing", "Operations"],
+//         datasets: [
+//             {
+//                 label: "Hours",
+//                 data: [120, 85, 45, 95, 110],
+//                 backgroundColor: colors.accent,
+//                 borderRadius: 6,
+//             },
+//         ],
+//     },
+//     options: {
+//         responsive: true,
+//         maintainAspectRatio: false,
+//         indexAxis: "y",
+//         plugins: {
+//             legend: {
+//                 display: false,
+//             },
+//         },
+//         scales: {
+//             x: {
+//                 beginAtZero: true,
+//                 grid: {
+//                     color: "#F3F4F6",
+//                 },
+//             },
+//             y: {
+//                 grid: {
+//                     display: false,
+//                 },
+//             },
+//         },
+//     },
+// });

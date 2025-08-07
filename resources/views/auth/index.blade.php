@@ -85,9 +85,6 @@
                                 </svg>
                             </div>
                         </div>
-                        @error('email')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
                     </div>
 
                     <!-- Password Field with Toggle -->
@@ -128,9 +125,6 @@
                                 </svg>
                             </button>
                         </div>
-                        @error('password')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
                     </div>
 
                     <!-- Remember Me -->
@@ -170,13 +164,6 @@
                     </button>
                 </form>
             </div>
-        </div>
-
-        <!-- Footer Info -->
-        <div class="mt-6 text-center">
-            <p class="text-sm text-gray-500">
-                Secure login with end-to-end encryption
-            </p>
         </div>
     </div>
 
