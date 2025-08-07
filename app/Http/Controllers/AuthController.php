@@ -28,7 +28,7 @@ class AuthController extends Controller
         }
 
         // If not authenticated, show the login page
-        return view('Auth.index');
+        return view('auth.index');
     }
 
     public function login(Request $request)

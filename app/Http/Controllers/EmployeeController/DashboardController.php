@@ -4,6 +4,7 @@ namespace App\Http\Controllers\EmployeeController;
 
 use App\Http\Controllers\Controller;
 use App\Models\Leave;
+use App\Roles;
 use App\Models\Reimbursement;
 use App\Models\Overtime;
 use App\Models\OfficialTravel;
@@ -40,7 +41,7 @@ class DashboardController extends Controller
         
         // Get pending approvals for approvers and admins
         $pendingApprovals = [];
-        if ($user->role === Roles::Approver || $user->role === Roles::Admin) {
+        if ($user->role === Roles::Approver->value || $user->role === Roles::Admin->value) {
             $pendingApprovals = $this->getPendingApprovals();
         }
         
@@ -68,7 +69,7 @@ class DashboardController extends Controller
                     'title' => 'Leave Request: ' . Carbon::parse($leave->date_start)->format('M d') . ' - ' . Carbon::parse($leave->date_end)->format('M d'),
                     'date' => Carbon::parse($leave->created_at)->format('M d, Y'),
                     'status' => $leave->status,
-                    'url' => route('leaves.show', $leave->id)
+                    'url' => route('employee.leaves.show', $leave->id)
                 ];
             });
             
@@ -84,7 +85,7 @@ class DashboardController extends Controller
                     'title' => 'Reimbursement: Rp ' . number_format($reimbursement->total),
                     'date' => Carbon::parse($reimbursement->created_at)->format('M d, Y'),
                     'status' => $reimbursement->status,
-                    'url' => route('reimbursements.show', $reimbursement->id)
+                    'url' => route('employee.reimbursements.show', $reimbursement->id)
                 ];
             });
             
@@ -100,7 +101,7 @@ class DashboardController extends Controller
                     'title' => 'Overtime: ' . Carbon::parse($overtime->date_start)->format('M d'),
                     'date' => Carbon::parse($overtime->created_at)->format('M d, Y'),
                     'status' => $overtime->status,
-                    'url' => route('overtimes.show', $overtime->id)
+                    'url' => route('employee.overtimes.show', $overtime->id)
                 ];
             });
             
@@ -116,7 +117,7 @@ class DashboardController extends Controller
                     'title' => 'Official Travel: ' . Carbon::parse($travel->date_start)->format('M d') . ' - ' . Carbon::parse($travel->date_end)->format('M d'),
                     'date' => Carbon::parse($travel->created_at)->format('M d, Y'),
                     'status' => $travel->status,
-                    'url' => route('official-travels.show', $travel->id)
+                    'url' => route('employee.official-travels.show', $travel->id)
                 ];
             });
             
@@ -132,86 +133,86 @@ class DashboardController extends Controller
         return $allRequests;
     }
     
-    private function getPendingApprovals()
-    {
-        $user = Auth::user();
+    // private function getPendingApprovals()
+    // {
+    //     $user = Auth::user();
         
-        // Get pending leaves
-        $leaves = Leave::where('approver_id', $user->id)
-            ->where('status', 'pending')
-            ->with('employee')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($leave) {
-                return [
-                    'id' => $leave->id,
-                    'type' => 'leave',
-                    'title' => 'Leave Request',
-                    'employee' => $leave->employee->name,
-                    'date' => Carbon::parse($leave->date_start)->format('M d') . ' - ' . Carbon::parse($leave->date_end)->format('M d'),
-                    'url' => route('leaves.review', $leave->id)
-                ];
-            });
+    //     // Get pending leaves
+    //     $leaves = Leave::where('approver_id', $user->id)
+    //         ->where('status', 'pending')
+    //         ->with('employee')
+    //         ->orderBy('created_at', 'desc')
+    //         ->get()
+    //         ->map(function ($leave) {
+    //             return [
+    //                 'id' => $leave->id,
+    //                 'type' => 'leave',
+    //                 'title' => 'Leave Request',
+    //                 'employee' => $leave->employee->name,
+    //                 'date' => Carbon::parse($leave->date_start)->format('M d') . ' - ' . Carbon::parse($leave->date_end)->format('M d'),
+    //                 'url' => route('employee.leaves.review', $leave->id)
+    //             ];
+    //         });
             
-        // Get pending reimbursements
-        $reimbursements = Reimbursement::where('approver_id', $user->id)
-            ->where('status', 'pending')
-            ->with('employee')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($reimbursement) {
-                return [
-                    'id' => $reimbursement->id,
-                    'type' => 'reimbursement',
-                    'title' => 'Reimbursement: Rp ' . number_format($reimbursement->total),
-                    'employee' => $reimbursement->employee->name,
-                    'date' => Carbon::parse($reimbursement->date)->format('M d, Y'),
-                    'url' => route('reimbursements.review', $reimbursement->id)
-                ];
-            });
+    //     // Get pending reimbursements
+    //     $reimbursements = Reimbursement::where('approver_id', $user->id)
+    //         ->where('status', 'pending')
+    //         ->with('employee')
+    //         ->orderBy('created_at', 'desc')
+    //         ->get()
+    //         ->map(function ($reimbursement) {
+    //             return [
+    //                 'id' => $reimbursement->id,
+    //                 'type' => 'reimbursement',
+    //                 'title' => 'Reimbursement: Rp ' . number_format($reimbursement->total),
+    //                 'employee' => $reimbursement->employee->name,
+    //                 'date' => Carbon::parse($reimbursement->date)->format('M d, Y'),
+    //                 'url' => route('employee.reimbursements.review', $reimbursement->id)
+    //             ];
+    //         });
             
-        // Get pending overtimes
-        $overtimes = Overtime::where('approver_id', $user->id)
-            ->where('status', 'pending')
-            ->with('employee')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($overtime) {
-                return [
-                    'id' => $overtime->id,
-                    'type' => 'overtime',
-                    'title' => 'Overtime Request',
-                    'employee' => $overtime->employee->name,
-                    'date' => Carbon::parse($overtime->date_start)->format('M d'),
-                    'url' => route('overtimes.review', $overtime->id)
-                ];
-            });
+    //     // Get pending overtimes
+    //     $overtimes = Overtime::where('approver_id', $user->id)
+    //         ->where('status', 'pending')
+    //         ->with('employee')
+    //         ->orderBy('created_at', 'desc')
+    //         ->get()
+    //         ->map(function ($overtime) {
+    //             return [
+    //                 'id' => $overtime->id,
+    //                 'type' => 'overtime',
+    //                 'title' => 'Overtime Request',
+    //                 'employee' => $overtime->employee->name,
+    //                 'date' => Carbon::parse($overtime->date_start)->format('M d'),
+    //                 'url' => route('employee.overtimes.review', $overtime->id)
+    //             ];
+    //         });
             
-        // Get pending official travels
-        $travels = OfficialTravel::where('approver_id', $user->id)
-            ->where('status', 'pending')
-            ->with('employee')
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($travel) {
-                return [
-                    'id' => $travel->id,
-                    'type' => 'travel',
-                    'title' => 'Official Travel Request',
-                    'employee' => $travel->employee->name,
-                    'date' => Carbon::parse($travel->date_start)->format('M d') . ' - ' . Carbon::parse($travel->date_end)->format('M d'),
-                    'url' => route('official-travels.review', $travel->id)
-                ];
-            });
+    //     // Get pending official travels
+    //     $travels = OfficialTravel::where('approver_id', $user->id)
+    //         ->where('status', 'pending')
+    //         ->with('employee')
+    //         ->orderBy('created_at', 'desc')
+    //         ->get()
+    //         ->map(function ($travel) {
+    //             return [
+    //                 'id' => $travel->id,
+    //                 'type' => 'travel',
+    //                 'title' => 'Official Travel Request',
+    //                 'employee' => $travel->employee->name,
+    //                 'date' => Carbon::parse($travel->date_start)->format('M d') . ' - ' . Carbon::parse($travel->date_end)->format('M d'),
+    //                 'url' => route('employee.official-travels.review', $travel->id)
+    //             ];
+    //         });
             
-        // Combine all approvals
-        $allApprovals = $leaves->concat($reimbursements)
-            ->concat($overtimes)
-            ->concat($travels)
-            ->sortByDesc('date')
-            ->values()
-            ->all();
+    //     // Combine all approvals
+    //     $allApprovals = $leaves->concat($reimbursements)
+    //         ->concat($overtimes)
+    //         ->concat($travels)
+    //         ->sortByDesc('date')
+    //         ->values()
+    //         ->all();
             
-        return $allApprovals;
-    }
+    //     return $allApprovals;
+    // }
 }
