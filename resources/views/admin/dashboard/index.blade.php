@@ -131,6 +131,6 @@
 </div>
 
 @push('scripts')
-<script src="{{ asset('res/admin/dashboard/script.js') }}"></script>
+@vite("resources/js/admin/dashboard/script.js")
 @endpush
 @endsection
