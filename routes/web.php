@@ -4,17 +4,16 @@ use App\Http\Controllers\AuthController;
 use App\Roles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
     $user = Auth::user();
     if($user) {
         switch($user->role) {
-            case (Roles::Admin) :
+            case (Roles::Admin->value) :
                 return redirect()->route('admin.dashboard');
-            case (Roles::Approver) :
+            case (Roles::Approver->value) :
                 return redirect()->route('approver.dashboard');
-            case (Roles::Employee) :
+            case (Roles::Employee->value) :
                 return redirect()->route('employee.dashboard');
             default:
                 return abort(403);
