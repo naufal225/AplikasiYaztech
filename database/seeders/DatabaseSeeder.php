@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         User::factory()->create([
             'name' => 'Admin User',
-            'email' => 'admin@example.com',
+            'email' => 'admin@gmail.com',
             'password' => bcrypt('password'),
             'remember_token' => null,
             'role' => Roles::Admin->value,
@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'Employee User',
-            'email' => 'employee@example.com',
+            'email' => 'employee@gmail.com',
             'password' => bcrypt('password'),
             'remember_token' => null,
             'role' => Roles::Employee->value,
@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'Approver User',
-            'email' => 'approver@example.com',
+            'email' => 'approver@gmail.com',
             'password' => bcrypt('password'),
             'remember_token' => null,
             'role' => Roles::Approver->value,
