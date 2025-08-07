@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OfficialTravel extends Model
 {
+    protected $table = "official_travels";
     protected $fillable = [
         'employee_id',
         'approver_id',

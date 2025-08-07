@@ -15,14 +15,15 @@ class AuthController extends Controller
             $user = Auth::user();
 
             switch($user->role) {
-                case (Roles::Admin) :
+                case (Roles::Admin->value) :
                     return redirect()->route('admin.dashboard');
-                case (Roles::Approver) :
+                case (Roles::Approver->value) :
                     return redirect()->route('approver.dashboard');
-                case (Roles::Employee) :
+                case (Roles::Employee->value) :
                     return redirect()->route('employee.dashboard');
                 default:
                     return abort(403);
+
             }
         }
 
@@ -45,12 +46,12 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        switch ($user->role) {
-            case (Roles::Admin):
+        switch($user->role) {
+            case (Roles::Admin->value) :
                 return redirect()->route('admin.dashboard');
-            case (Roles::Approver):
+            case (Roles::Approver->value) :
                 return redirect()->route('approver.dashboard');
-            case (Roles::Employee):
+            case (Roles::Employee->value) :
                 return redirect()->route('employee.dashboard');
             default:
                 return abort(403);
