@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     @vite('resources/css/app.css')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-50">
     <div class="flex h-screen overflow-hidden">
@@ -96,7 +97,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                             </svg>
                         </button>
-                        <h2 class="ml-4 text-xl font-semibold text-white">Dashboard Overview</h2>
+                        <h2 class="ml-4 text-xl font-semibold text-white">Dashboard Analytics</h2>
                     </div>
 
                     <div class="flex items-center space-x-4">
@@ -135,10 +136,6 @@
                                 </svg>
                             </div>
                         </div>
-                        <div class="mt-4 flex items-center">
-                            <span class="text-green-600 text-sm font-medium">+12%</span>
-                            <span class="text-gray-600 text-sm ml-2">from last month</span>
-                        </div>
                     </div>
 
                     <!-- Pending Approvals - Warning Amber (5%) -->
@@ -153,9 +150,6 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
                             </div>
-                        </div>
-                        <div class="mt-4 flex items-center">
-                            <span class="text-amber-600 text-sm font-medium">Needs attention</span>
                         </div>
                     </div>
 
@@ -172,10 +166,6 @@
                                 </svg>
                             </div>
                         </div>
-                        <div class="mt-4 flex items-center">
-                            <span class="text-green-600 text-sm font-medium">+8%</span>
-                            <span class="text-gray-600 text-sm ml-2">from last month</span>
-                        </div>
                     </div>
 
                     <!-- Rejected Requests - Error Red (5%) -->
@@ -191,180 +181,69 @@
                                 </svg>
                             </div>
                         </div>
-                        <div class="mt-4 flex items-center">
-                            <span class="text-red-600 text-sm font-medium">-3%</span>
-                            <span class="text-gray-600 text-sm ml-2">from last month</span>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Recent Activities & Quick Actions -->
+                <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 mb-8">
+                    <!-- Monthly Requests Comparison Chart -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                        <div class="p-6 border-b border-gray-100">
+                            <h3 class="text-lg font-semibold text-gray-900">Monthly Requests Comparison</h3>
+                            <p class="text-sm text-gray-600">Comparison of different request types</p>
+                        </div>
+                        <div class="p-6">
+                            <canvas id="monthlyRequestsChart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Charts Section -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    <!-- Recent Activities -->
+                    <!-- Reimbursement Trend -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
                         <div class="p-6 border-b border-gray-100">
-                            <h3 class="text-lg font-semibold text-gray-900">Recent Activities</h3>
+                            <h3 class="text-lg font-semibold text-gray-900">Reimbursement Trend</h3>
+                            <p class="text-sm text-gray-600">Monthly reimbursement amounts</p>
                         </div>
                         <div class="p-6">
-                            <div class="space-y-4">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                    <div class="flex-1">
-                                        <p class="text-sm text-gray-900">Leave request approved for John Doe</p>
-                                        <p class="text-xs text-gray-500">2 hours ago</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-amber-500 rounded-full"></div>
-                                    <div class="flex-1">
-                                        <p class="text-sm text-gray-900">New reimbursement request from Jane Smith</p>
-                                        <p class="text-xs text-gray-500">4 hours ago</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <div class="flex-1">
-                                        <p class="text-sm text-gray-900">New employee registered: Mike Johnson</p>
-                                        <p class="text-xs text-gray-500">1 day ago</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-2 h-2 bg-red-500 rounded-full"></div>
-                                    <div class="flex-1">
-                                        <p class="text-sm text-gray-900">Overtime request rejected for Sarah Wilson</p>
-                                        <p class="text-xs text-gray-500">2 days ago</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <canvas id="reimbursementTrendChart" width="400" height="300"></canvas>
                         </div>
                     </div>
 
-                    <!-- Quick Actions -->
+                    <!-- Request Status Distribution -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
                         <div class="p-6 border-b border-gray-100">
-                            <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
+                            <h3 class="text-lg font-semibold text-gray-900">Request Status Distribution</h3>
+                            <p class="text-sm text-gray-600">Overall status breakdown</p>
                         </div>
                         <div class="p-6">
-                            <div class="grid grid-cols-2 gap-4">
-                                <button class="flex flex-col items-center p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
-                                    <svg class="w-8 h-8 text-blue-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                    </svg>
-                                    <span class="text-sm font-medium text-gray-900">Add Employee</span>
-                                </button>
-
-                                <button class="flex flex-col items-center p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
-                                    <svg class="w-8 h-8 text-green-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    <span class="text-sm font-medium text-gray-900">Approve Requests</span>
-                                </button>
-
-                                <button class="flex flex-col items-center p-4 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors">
-                                    <svg class="w-8 h-8 text-amber-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                    </svg>
-                                    <span class="text-sm font-medium text-gray-900">View Reports</span>
-                                </button>
-
-                                <button class="flex flex-col items-center p-4 bg-sky-50 hover:bg-sky-100 rounded-lg transition-colors">
-                                    <svg class="w-8 h-8 text-sky-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    </svg>
-                                    <span class="text-sm font-medium text-gray-900">Settings</span>
-                                </button>
-                            </div>
+                            <canvas id="statusDistributionChart" width="400" height="300"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- Data Tables -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-                    <div class="p-6 border-b border-gray-100">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-lg font-semibold text-gray-900">Recent Requests</h3>
-                            <button class="text-blue-600 hover:text-blue-700 text-sm font-medium">View All</button>
+                <!-- More Charts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <!-- Leave Types Breakdown -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                        <div class="p-6 border-b border-gray-100">
+                            <h3 class="text-lg font-semibold text-gray-900">Leave Types Breakdown</h3>
+                            <p class="text-sm text-gray-600">Distribution of leave types</p>
+                        </div>
+                        <div class="p-6">
+                            <canvas id="leaveTypesChart" width="400" height="300"></canvas>
                         </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                                <span class="text-blue-600 font-medium text-sm">JD</span>
-                                            </div>
-                                            <div class="ml-3">
-                                                <div class="text-sm font-medium text-gray-900">John Doe</div>
-                                                <div class="text-sm text-gray-500">john@company.com</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Leave Request</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-15</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">Pending</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-green-600 hover:text-green-900 mr-3">Approve</button>
-                                        <button class="text-red-600 hover:text-red-900">Reject</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                                <span class="text-green-600 font-medium text-sm">JS</span>
-                                            </div>
-                                            <div class="ml-3">
-                                                <div class="text-sm font-medium text-gray-900">Jane Smith</div>
-                                                <div class="text-sm text-gray-500">jane@company.com</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Reimbursement</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-14</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Approved</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-blue-600 hover:text-blue-900">View</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                                                <span class="text-red-600 font-medium text-sm">MJ</span>
-                                            </div>
-                                            <div class="ml-3">
-                                                <div class="text-sm font-medium text-gray-900">Mike Johnson</div>
-                                                <div class="text-sm text-gray-500">mike@company.com</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Overtime</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024-01-13</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Rejected</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-blue-600 hover:text-blue-900">View</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- Overtime Hours by Department -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                        <div class="p-6 border-b border-gray-100">
+                            <h3 class="text-lg font-semibold text-gray-900">Overtime Hours by Department</h3>
+                            <p class="text-sm text-gray-600">Total overtime hours per department</p>
+                        </div>
+                        <div class="p-6">
+                            <canvas id="overtimeChart" width="400" height="300"></canvas>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -398,6 +277,220 @@
                 sidebarOverlay.classList.add('hidden');
             }
         });
+
+        // Chart.js Configuration
+        Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+        Chart.defaults.color = '#6B7280';
+
+        // Color scheme based on the design system
+        const colors = {
+            primary: '#2563EB',      // Blue
+            secondary: '#0EA5E9',    // Sky Blue
+            accent: '#10B981',       // Green
+            warning: '#F59E0B',      // Amber
+            error: '#EF4444',        // Red
+            neutral: '#6B7280',      // Gray
+            light: '#F3F4F6'         // Light Gray
+        };
+
+        // 1. Monthly Requests Comparison Chart (Bar Chart)
+        const monthlyRequestsCtx = document.getElementById('monthlyRequestsChart').getContext('2d');
+        new Chart(monthlyRequestsCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [
+                    {
+                        label: 'Leave Requests',
+                        data: [12, 19, 15, 25, 22, 18],
+                        backgroundColor: colors.primary,
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Reimbursement',
+                        data: [8, 15, 12, 18, 16, 14],
+                        backgroundColor: colors.secondary,
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Overtime',
+                        data: [6, 10, 8, 12, 9, 11],
+                        backgroundColor: colors.accent,
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Official Travel',
+                        data: [3, 5, 4, 7, 6, 5],
+                        backgroundColor: colors.warning,
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#F3F4F6'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Request Status Distribution (Doughnut Chart)
+        const statusDistributionCtx = document.getElementById('statusDistributionChart').getContext('2d');
+        new Chart(statusDistributionCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Approved', 'Pending', 'Rejected'],
+                datasets: [{
+                    data: [65, 25, 10],
+                    backgroundColor: [colors.accent, colors.warning, colors.error],
+                    borderWidth: 0,
+                    cutout: '60%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    }
+                }
+            }
+        });
+
+        // 3. Reimbursement Trend (Line Chart)
+        const reimbursementTrendCtx = document.getElementById('reimbursementTrendChart').getContext('2d');
+        new Chart(reimbursementTrendCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Amount (Million IDR)',
+                    data: [45, 52, 48, 61, 58, 67],
+                    borderColor: colors.secondary,
+                    backgroundColor: colors.secondary + '20',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: colors.secondary,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#F3F4F6'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // 4. Leave Types Breakdown (Pie Chart)
+        const leaveTypesCtx = document.getElementById('leaveTypesChart').getContext('2d');
+        new Chart(leaveTypesCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Annual Leave', 'Sick Leave', 'Personal Leave', 'Maternity Leave'],
+                datasets: [{
+                    data: [40, 25, 20, 15],
+                    backgroundColor: [colors.primary, colors.accent, colors.warning, colors.secondary],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20
+                        }
+                    }
+                }
+            }
+        });
+
+        // 5. Overtime Hours by Department (Horizontal Bar Chart)
+        const overtimeCtx = document.getElementById('overtimeChart').getContext('2d');
+        new Chart(overtimeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['IT', 'Finance', 'HR', 'Marketing', 'Operations'],
+                datasets: [{
+                    label: 'Hours',
+                    data: [120, 85, 45, 95, 110],
+                    backgroundColor: colors.accent,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: '#F3F4F6'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+
     </script>
 </body>
 </html>
