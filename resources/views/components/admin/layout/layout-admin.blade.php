@@ -27,6 +27,8 @@
     <!-- Sidebar Overlay for Mobile - Fixed positioning -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/20 z-40 hidden lg:hidden"></div>
 
+    @yield('partial-modal')
+
     @stack('scripts')
 
     <script>
