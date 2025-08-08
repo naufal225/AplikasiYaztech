@@ -1,8 +1,8 @@
 @extends('Employee.layouts.app')
 
-@section('title', 'Request Reimbursement')
-@section('header', 'Request Reimbursement')
-@section('subtitle', 'Submit a new reimbursement claim')
+@section('title', 'Edit Reimbursement')
+@section('header', 'Edit Reimbursement')
+@section('subtitle', 'Modify your reimbursement claim details')
 
 @section('content')
     <div class="max-w-3xl mx-auto">
@@ -21,10 +21,16 @@
                         <a href="{{ route('employee.reimbursements.index') }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Reimbursement Requests</a>
                     </div>
                 </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
+                        <a href="{{ route('employee.reimbursements.show', $reimbursement->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Claim #{{ $reimbursement->id }}</a>
+                    </div>
+                </li>
                 <li aria-current="page">
                     <div class="flex items-center">
                         <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <span class="text-sm font-medium text-neutral-500">New Claim</span>
+                        <span class="text-sm font-medium text-neutral-500">Edit</span>
                     </div>
                 </li>
             </ol>
@@ -32,8 +38,8 @@
 
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200">
             <div class="px-6 py-4 border-b border-neutral-200">
-                <h2 class="text-lg font-bold text-neutral-900">Submit Reimbursement Claim</h2>
-                <p class="text-neutral-600 text-sm">Fill in the details for your reimbursement request</p>
+                <h2 class="text-lg font-bold text-neutral-900">Edit Reimbursement Claim #{{ $reimbursement->id }}</h2>
+                <p class="text-neutral-600 text-sm">Update your reimbursement claim information</p>
             </div>
             
             @if ($errors->any())
@@ -46,8 +52,9 @@
                 </div>
             @endif
             
-            <form action="{{ route('employee.reimbursements.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+            <form action="{{ route('employee.reimbursements.update', $reimbursement->id) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
                 @csrf
+                @method('PUT')
                 
                 <div>
                     <label for="approver_id" class="block text-sm font-semibold text-neutral-700 mb-2">
@@ -57,12 +64,11 @@
                     <select id="approver_id" name="approver_id" class="form-select" required>
                         <option value="">Select Approver</option>
                         @foreach($approvers as $approver)
-                            <option value="{{ $approver->id }}" {{ old('approver_id') == $approver->id ? 'selected' : '' }}>
+                            <option value="{{ $approver->id }}" {{ old('approver_id', $reimbursement->approver_id) == $approver->id ? 'selected' : '' }}>
                                 {{ $approver->name }} ({{ ucfirst($approver->role) }})
                             </option>
                         @endforeach
                     </select>
-                    <p class="text-xs text-neutral-500 mt-1">Choose who will review and approve your reimbursement</p>
                 </div>
 
                 <div>
@@ -73,12 +79,11 @@
                     <select id="customer_id" name="customer_id" class="form-select" required>
                         <option value="">Select Customer</option>
                         @foreach($customers as $customer)
-                            <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
+                            <option value="{{ $customer->id }}" {{ old('customer_id', $reimbursement->customer_id) == $customer->id ? 'selected' : '' }}>
                                 {{ $customer->name }}
                             </option>
                         @endforeach
                     </select>
-                    <p class="text-xs text-neutral-500 mt-1">Select the customer related to this reimbursement (if any)</p>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -88,7 +93,7 @@
                             Total Amount (Rp) {{-- Changed from Amount --}}
                         </label>
                         <input type="number" id="total" name="total" class="form-input" {{-- Changed from amount --}}
-                               value="{{ old('total') }}" min="0" step="0.01" placeholder="e.g., 150000.00" required>
+                               value="{{ old('total', $reimbursement->total) }}" min="0" step="0.01" placeholder="e.g., 150000.00" required>
                     </div>
                     
                     <div>
@@ -97,43 +102,50 @@
                             Date of Expense
                         </label>
                         <input type="date" id="date" name="date" class="form-input" 
-                               value="{{ old('date') }}" required max="{{ date('Y-m-d') }}">
+                               value="{{ old('date', $reimbursement->date->format('Y-m-d')) }}" required max="{{ date('Y-m-d') }}">
                     </div>
                 </div>
 
                 <div>
                     <label for="invoice_path" class="block text-sm font-semibold text-neutral-700 mb-2"> {{-- Changed from attachment --}}
                         <i class="fas fa-paperclip mr-2 text-primary-600"></i>
-                        Invoice
+                        Invoice (Optional) {{-- Changed from Attachment --}}
                     </label>
                     <input type="file" id="invoice_path" name="invoice_path" class="form-input-file"> {{-- Changed from attachment --}}
-                    <p class="text-xs text-neutral-500 mt-1">Accepted formats: JPG, PNG, PDF (Max 2MB). Please attach receipts or invoices.</p>
+                    <p class="text-xs text-neutral-500 mt-1">Accepted formats: JPG, PNG, PDF (Max 2MB). Leave blank to keep current.</p>
+                    @if($reimbursement->invoice_path)
+                        <div class="mt-2 flex items-center text-sm text-neutral-600">
+                            <i class="fas fa-file-alt mr-2"></i>
+                            Current: <a href="{{ Storage::url($reimbursement->invoice_path) }}" target="_blank" class="text-primary-600 hover:underline ml-1">View Invoice</a> {{-- Changed from attachment --}}
+                            <label class="ml-4 flex items-center">
+                                <input type="checkbox" name="remove_invoice_path" value="1" class="rounded border-neutral-300 text-error-600 shadow-sm focus:ring-error-500"> {{-- Changed from remove_attachment --}}
+                                <span class="ml-2 text-error-600">Remove current invoice</span> {{-- Changed from attachment --}}
+                            </label>
+                        </div>
+                    @endif
                 </div>
 
-                <!-- Reimbursement Policy Reminder -->
-                <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
+                <!-- Warning Notice -->
+                <div class="bg-warning-50 border border-warning-200 rounded-lg p-4">
                     <div class="flex items-start">
-                        <i class="fas fa-info-circle text-primary-600 mr-3 mt-0.5"></i>
+                        <i class="fas fa-exclamation-triangle text-warning-600 mr-3 mt-0.5"></i>
                         <div>
-                            <h4 class="text-sm font-semibold text-primary-800 mb-2">Reimbursement Policy Reminder</h4>
-                            <ul class="text-xs text-primary-700 space-y-1">
-                                <li>• All claims must be submitted within 30 days of the expense date.</li>
-                                <li>• Original receipts or digital copies are required for all claims.</li>
-                                <li>• Claims over Rp 1.000.000 require additional manager approval.</li>
-                                <li>• Personal expenses are not eligible for reimbursement.</li>
-                            </ul>
+                            <h4 class="text-sm font-semibold text-warning-800 mb-1">Important Notice</h4>
+                            <p class="text-xs text-warning-700">
+                                Editing this request will reset its status to pending and require re-approval from your manager.
+                            </p>
                         </div>
                     </div>
                 </div>
                 
                 <div class="flex justify-end space-x-4 pt-6 border-t border-neutral-200">
-                    <a href="{{ route('employee.reimbursements.index') }}" class="px-6 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors duration-200">
+                    <a href="{{ route('employee.reimbursements.show', $reimbursement->id) }}" class="px-6 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors duration-200">
                         <i class="fas fa-times mr-2"></i>
                         Cancel
                     </a>
                     <button type="submit" class="btn-primary">
-                        <i class="fas fa-paper-plane mr-2"></i>
-                        Submit Claim
+                        <i class="fas fa-save mr-2"></i>
+                        Update Claim
                     </button>
                 </div>
             </form>

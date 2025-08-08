@@ -26,7 +26,7 @@
                     <li aria-current="page">
                         <div class="flex items-center">
                             <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                            <span class="text-sm font-medium text-neutral-500">Request #{{ $leave->id }}</span>
+                            <span class="text-sm font-medium text-neutral-500">Cuti #{{ $leave->id }}</span>
                         </div>
                     </li>
                 </ol>
@@ -73,6 +73,24 @@
                         </div>
                         <div class="p-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Email -->
+                                <div class="space-y-2">
+                                    <label class="text-sm font-semibold text-neutral-700">Email</label>
+                                    <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                                        <i class="fas fa-envelope text-primary-600 mr-3"></i>
+                                        <span class="text-neutral-900 font-medium">{{ Auth::user()->email }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Approver -->
+                                <div class="space-y-2">
+                                    <label class="text-sm font-semibold text-neutral-700">Approver</label>
+                                    <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                                        <i class="fas fa-user-check text-info-600 mr-3"></i>
+                                        <span class="text-neutral-900 font-medium">{{ $leave->approver->name ?? 'N/A' }}</span>
+                                    </div>
+                                </div>
+
                                 <!-- Start Date -->
                                 <div class="space-y-2">
                                     <label class="text-sm font-semibold text-neutral-700">Start Date</label>

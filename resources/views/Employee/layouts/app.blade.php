@@ -13,14 +13,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @stack('styles')
 </head>
-<body class="bg-neutral-50 font-sans antialiased">
-    <div class="min-h-screen flex">
+<body class="bg-neutral-50 font-sans antialiased h-screen overflow-hidden">
+    <div class="h-full flex">
         <!-- Sidebar -->
-        <div class="bg-primary-800 text-white w-64 flex flex-col shadow-medium lg:relative lg:translate-x-0 transform -translate-x-full transition-transform duration-300 ease-in-out z-30" id="sidebar">
+        <div class="bg-primary-800 fixed inset-y-0 left-0 z-50 text-white w-64 flex flex-col shadow-medium lg:relative lg:translate-x-0 transform -translate-x-full transition-transform duration-300 ease-in-out" id="sidebar">
             <div class="bg-primary-900 px-6 py-4 flex items-center justify-between">
-                <div>
-                    <h1 class="text-lg font-bold text-white">YAZTECH ENGINEERING</h1>
-                    <p class="text-primary-200 text-xs">{{ Auth::user()->email }}</p>
+                <div class="w-full">
+                    <img src="{{ asset('yaztech-logo-web.png') }}" alt="Yaztech Logo" class="h-12 w-auto mx-auto">
                 </div>
                 <button class="lg:hidden text-white hover:text-primary-200" onclick="toggleSidebar()">
                     <i class="fas fa-times text-lg"></i>
@@ -77,7 +76,7 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-white font-medium text-sm truncate">{{ Auth::user()->name }}</p>
-                        <p class="text-primary-200 text-xs">{{ ucfirst(Auth::user()->role) }}</p>
+                        <p class="text-primary-200 text-xs">{{ Auth::user()->email }}</p>
                     </div>
                 </div>
                 <form action="{{ route('logout') }}" method="POST">
@@ -108,10 +107,10 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="flex items-center bg-secondary-600 rounded-full px-3 py-2">
-                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center mr-2">
+                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center lg:mr-2">
                                 <span class="text-secondary-600 font-semibold text-sm">{{ strtoupper(substr(trim(explode(' ', Auth::user()->name)[0]), 0, 1)) }}</span>
                             </div>
-                            <span class="text-white font-medium text-sm">{{ Auth::user()->name }}</span>
+                            <span class="text-white font-medium text-sm hidden lg:block">{{ Auth::user()->name }}</span>
                         </div>
                     </div>
                 </div>
