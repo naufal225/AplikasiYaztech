@@ -6,12 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OfficialTravel extends Model
 {
-<<<<<<< HEAD
     protected $table = "official_travels";
-=======
-    protected $table = 'official_travels';
-
->>>>>>> 3c83858 (Perubahan ke2)
     protected $fillable = [
         'employee_id',
         'approver_id',

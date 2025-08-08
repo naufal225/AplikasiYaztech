@@ -14,12 +14,9 @@ Route::get('/', function () {
     if($user) {
         switch($user->role) {
             case (Roles::Admin->value) :
-            case (Roles::Admin->value) :
                 return redirect()->route('admin.dashboard');
             case (Roles::Approver->value) :
-            case (Roles::Approver->value) :
                 return redirect()->route('approver.dashboard');
-            case (Roles::Employee->value) :
             case (Roles::Employee->value) :
                 return redirect()->route('employee.dashboard');
             default:

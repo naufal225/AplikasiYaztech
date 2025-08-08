@@ -36,10 +36,14 @@ class AuthController extends Controller
         $credentials = $request->validate([
             "email" => "required|email:dns",
             "password" => "required|string"
+        ],[
+            "email.required" => "Email tidak boleh kosong",
+            "email.email" => "Format email tidak valid",
+            "password.required" => "Password tidak boleh kosong"
         ]);
 
         if (!Auth::attempt($credentials, $request->boolean('remember'))) {
-            return back()->with("error", "Email atau password anda tidak valid");
+            return back()->withErrors(['email' => 'Email atau password anda tidak valid']);
         }
 
         session()->regenerate();
