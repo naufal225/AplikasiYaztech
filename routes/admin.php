@@ -10,7 +10,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::prefix('employee')->name('employee.')->group(function () {
         Route::get('/', [EmployeeController::class, 'index'])->name('index');
         Route::get('/create', [EmployeeController::class, 'create'])->name('create');
-        Route::post('/employee', [EmployeeController::class, 'store'])->name('store');
-        Route::get('/edit/{employee:id}', [EmployeeController::class, 'edit'])->name('edit');
+        Route::post('/', [EmployeeController::class, 'store'])->name('store');
+        Route::get('/{employee:id}', [EmployeeController::class, 'edit'])->name('edit');
+        Route::put('/{employee:id}', [EmployeeController::class, 'update'])->name('update');
+        Route::delete('/{employee:id}', [EmployeeController::class, 'destroy'])->name('delete');
     });
 });
