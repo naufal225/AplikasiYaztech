@@ -259,9 +259,6 @@ function initializeDeleteFunctionality() {
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
     if (confirmDeleteBtn) {
         confirmDeleteBtn.addEventListener('click', executeDelete);
-        cancelButtons.forEach(button => {
-            button.disabled = true;
-        });
     }
 
     // Add event listener for cancel buttons
@@ -290,6 +287,11 @@ function executeDelete() {
     const deleteBtn = document.getElementById('confirmDeleteBtn');
     const deleteText = document.getElementById('deleteButtonText');
     const deleteSpinner = document.getElementById('deleteSpinner');
+
+    const cancelButtons = document.querySelectorAll('#cancelDeleteButton');
+    cancelButtons.forEach(btn => {
+        btn.disabled = true;
+    });
 
     deleteBtn.disabled = true;
     deleteText.textContent = 'Deleting...';

@@ -33,7 +33,7 @@ class EmployeeController extends Controller
             "password" => bcrypt("password")
         ]);
 
-        Password::sendResetLink(["email" => $user->email]);
+        // Password::sendResetLink(["email" => $user->email]);
 
         return redirect()->route('admin.employee.index')->with('success', 'Successfully create employee.');
     }
