@@ -22,13 +22,17 @@ Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee
         Route::put('/{leave}', [LeaveController::class, 'update'])->name('update');
         Route::delete('/{leave}', [LeaveController::class, 'destroy'])->name('destroy');
     });
-
-    // Route::get('/approvals', [ApprovalController::class, 'index'])->name('approvals.index');
     
     // Reimbursements
-    Route::resource('reimbursements', ReimbursementController::class);
-    Route::get('/reimbursements/{reimbursement}/review', [ReimbursementController::class, 'review'])->name('reimbursements.review');
-    Route::post('/reimbursements/{reimbursement}/review', [ReimbursementController::class, 'processReview'])->name('reimbursements.process-review');
+    Route::prefix('reimbursements')->name('reimbursements.')->group(function () {
+        Route::get('/', [ReimbursementController::class, 'index'])->name('index');
+        Route::get('/request', [ReimbursementController::class, 'create'])->name('create');
+        Route::post('/store', [ReimbursementController::class, 'store'])->name('store');
+        Route::get('/{reimbursement}', [ReimbursementController::class, 'show'])->name('show');
+        Route::get('/{reimbursement}/edit', [ReimbursementController::class, 'edit'])->name('edit');
+        Route::put('/{reimbursement}', [ReimbursementController::class, 'update'])->name('update');
+        Route::delete('/{reimbursement}', [ReimbursementController::class, 'destroy'])->name('destroy');
+    });
     
     // Overtimes
     Route::resource('overtimes', OvertimeController::class);

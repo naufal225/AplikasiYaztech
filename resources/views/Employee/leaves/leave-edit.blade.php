@@ -78,7 +78,7 @@
                             Start Date
                         </label>
                         <input type="date" id="date_start" name="date_start" class="form-input" 
-                               value="{{ $leave->date_start->format('Y-m-d') }}" required>
+                               value="value="{{ \Carbon\Carbon::parse($leave->date_start)->format('Y-m-d') }}" required>
                     </div>
                     
                     <div>
@@ -87,7 +87,7 @@
                             End Date
                         </label>
                         <input type="date" id="date_end" name="date_end" class="form-input" 
-                               value="{{ $leave->date_end->format('Y-m-d') }}" required>
+                               value="{{ \Carbon\Carbon::parse($leave->date_end)->format('Y-m-d') }}" required>
                     </div>
                 </div>
 
@@ -99,12 +99,12 @@
                             <span class="text-sm font-medium text-neutral-700">Duration:</span>
                         </div>
                         <span id="duration-display" class="text-sm font-bold text-primary-600">
-                            {{ $leave->date_start->diffInDays($leave->date_end) + 1 }} days
+                            {{ \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end)) + 1 }} days
                         </span>
                     </div>
                     <div class="mt-2 text-xs text-neutral-500">
                         <span id="working-days-display">
-                            {{ $leave->date_start->diffInWeekdays($leave->date_end) + 1 }} working days
+                            {{ \Carbon\Carbon::parse($leave->date_start)->diffInWeekdays(\Carbon\Carbon::parse($leave->date_end)) + 1 }} working days
                         </span>
                     </div>
                 </div>
