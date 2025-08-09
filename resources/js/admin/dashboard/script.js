@@ -235,3 +235,11 @@ new Chart(reimbursementTrendCtx, {
 //         },
 //     },
 // });
+
+// Handle window resize
+window.addEventListener("resize", function () {
+    if (window.innerWidth >= 1024) {
+        sidebarOverlay.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+    }
+});
