@@ -1,5 +1,8 @@
 @extends('components.admin.layout.layout-admin')
 
+@section('header', 'Dashboard')
+@section('subtitle', 'Welcome Back!')
+
 @section('content')
 <!-- Stats Cards - Light Neutral Background (15%) -->
 <div class="mb-6">
