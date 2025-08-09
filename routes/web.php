@@ -28,10 +28,13 @@ Route::get('/', function () {
     }
 });
 
+
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login');
 });
+
+Route::middleware('auth')->post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/login', [AuthController::class, 'index'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);

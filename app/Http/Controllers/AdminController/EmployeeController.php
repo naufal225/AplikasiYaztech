@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Roles;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Password;
 
 class EmployeeController extends Controller
 {
     public function index() {
-        $employees = User::where('role', Roles::Employee->value)->latest()->paginate(15);
+        $search = request('search');
+        $employees = User::where('role', Roles::Employee->value)->where('name', 'like', '%' . $search . '%')->latest()->paginate(10);
         return view('admin.employee.index', compact('employees'));
     }
 
@@ -19,10 +21,45 @@ class EmployeeController extends Controller
     }
 
     public function store(Request $request) {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email:dns|unique:users,email'
+        ]);
 
+        $user = User::create([
+            "email" => $validated["email"],
+            "name" => $validated["name"],
+            "role" => Roles::Employee->value,
+            "password" => bcrypt("password")
+        ]);
+
+        // Password::sendResetLink(["email" => $user->email]);
+
+        return redirect()->route('admin.employee.index')->with('success', 'Successfully create employee.');
     }
 
     public function edit(User $employee) {
+        return view('admin.employee.update', compact('employee'));
+    }
 
+    public function update(User $employee, Request $request) {
+         $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email:dns|unique:users,email,'.$employee->id.',id'
+        ]);
+
+        $employee->update([
+            "email" => $validated["email"],
+            "name" => $validated["name"],
+            "role" => Roles::Employee->value,
+        ]);
+
+        return redirect()->route('admin.employee.index')->with('success', 'Successfully update employee.');
+    }
+
+    public function destroy(User $employee) {
+        $employee->delete();
+
+        return redirect()->route('admin.employee.index')->with('success', 'Successfully delete employee.');
     }
 }
