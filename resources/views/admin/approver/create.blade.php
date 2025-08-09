@@ -1,5 +1,8 @@
 @extends('components.admin.layout.layout-admin')
 
+@section('header', 'Add Approver')
+@section('subtitle', 'Add Approver data')
+
 @section('content')
 <!-- Add Approver Content -->
 <main class="relative z-10 flex-1 p-6 overflow-x-hidden overflow-y-auto bg-gray-50">
