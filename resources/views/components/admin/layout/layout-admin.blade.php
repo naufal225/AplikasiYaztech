@@ -6,6 +6,8 @@
     <title>Admin Dashboard</title>
     @vite('resources/css/app.css')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-gray-50">
     <div class="flex h-screen overflow-hidden">
@@ -13,19 +15,19 @@
         @include('components.admin.sidebar')
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden lg:ml-0 relative z-10">
+        <div class="relative z-10 flex flex-col flex-1 overflow-hidden lg:ml-0">
             <!-- Header - Secondary Sky Blue (20%) -->
             @include('components.admin.header')
 
             <!-- Dashboard Content -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6 relative z-10">
+            <main class="relative z-10 flex-1 p-6 overflow-x-hidden overflow-y-auto bg-gray-50">
                 @yield('content')
             </main>
         </div>
     </div>
 
     <!-- Sidebar Overlay for Mobile - Fixed positioning -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black/20 z-40 hidden lg:hidden"></div>
+    <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden bg-black/20 lg:hidden"></div>
 
     @yield('partial-modal')
 

@@ -16,6 +16,13 @@ class SendMessage extends Mailable
     /**
      * Create a new message instance.
      */
+
+    public $namaPengaju;
+    public $pesan;
+    public $namaApprover;
+    public $linkTanggapan;
+    public $emailPengaju;
+
     public function __construct($namaPengaju, $pesan, $namaApprover, $linkTanggapan, $emailPengaju = null)
     {
         $this->namaPengaju = $namaPengaju;

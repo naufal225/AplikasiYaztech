@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Leave;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class LeaveController extends Controller
 {
@@ -85,15 +86,15 @@ class LeaveController extends Controller
             $linkTanggapan = route('employee.leaves.show', $leave->id);
             $pesan = "Pengajuan cuti baru dari " . Auth::user()->name . ". <br> Tanggal mulai: {$request->date_start} <br> Tanggal selesai: {$request->date_end} <br> Alasan: {$request->reason}";
 
-            Illuminate\Support\Facades\Mail::to($approver->email)->send(new \App\Mail\SendMessage(
-                Auth::user()->name,
-                $pesan,
-                $approver->name,
-                $linkTanggapan,
-                Auth::user()->email
+            Mail::to($approver->email)->send(new \App\Mail\SendMessage(
+                namaPengaju: Auth::user()->name,
+                pesan: $pesan,
+                namaApprover: $approver->name,
+                linkTanggapan: $linkTanggapan,
+                emailPengaju: Auth::user()->email
             ));
         }
-        
+
         return redirect()->route('employee.leaves.index')
             ->with('success', 'Leave request submitted successfully.');
     }

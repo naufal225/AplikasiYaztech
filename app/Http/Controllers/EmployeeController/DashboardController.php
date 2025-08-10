@@ -20,8 +20,8 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $userId = $user->id;
-        
-        $employeeCount = User::all()->count();
+
+        $employeeCount = User::where('role', Roles::Employee->value)->count();
 
         // Get counts for pending requests
         $pendingLeaves = $this->getUserRequestCounts($userId, "pending", TypeRequest::Leaves->value);
@@ -43,11 +43,11 @@ class DashboardController extends Controller
 
         // Get recent requests (combined from all types)
         $recentRequests = $this->getRecentRequests($userId);
-        
+
         return view('Employee.index', compact(
-            'employeeCount', 'pendingLeaves', 'pendingReimbursements', 'pendingOvertimes', 
-            'pendingTravels', 'recentRequests', 'approvedLeaves', 'approvedReimbursements', 
-            'approvedOvertimes', 'approvedTravels', 'rejectedLeaves', 'rejectedReimbursements', 
+            'employeeCount', 'pendingLeaves', 'pendingReimbursements', 'pendingOvertimes',
+            'pendingTravels', 'recentRequests', 'approvedLeaves', 'approvedReimbursements',
+            'approvedOvertimes', 'approvedTravels', 'rejectedLeaves', 'rejectedReimbursements',
             'rejectedOvertimes', 'rejectedTravels'
         ));
     }
@@ -70,7 +70,7 @@ class DashboardController extends Controller
                 return 0;
         }
     }
-    
+
     private function getRecentRequests($userId)
     {
         // Get recent leaves
@@ -89,7 +89,7 @@ class DashboardController extends Controller
                     'created_at' => $leave->created_at
                 ];
             });
-            
+
         // Get recent reimbursements
         $reimbursements = Reimbursement::where('employee_id', $userId)
             ->orderBy('created_at', 'desc')
@@ -106,7 +106,7 @@ class DashboardController extends Controller
                     'created_at' => $reimbursement->created_at
                 ];
             });
-            
+
         // Get recent overtimes
         $overtimes = Overtime::where('employee_id', $userId)
             ->orderBy('created_at', 'desc')
@@ -123,7 +123,7 @@ class DashboardController extends Controller
                     'created_at' => $overtime->created_at
                 ];
             });
-            
+
         // Get recent official travels
         $travels = OfficialTravel::where('employee_id', $userId)
             ->orderBy('created_at', 'desc')
@@ -140,7 +140,7 @@ class DashboardController extends Controller
                     'created_at' => $travel->created_at
                 ];
             });
-            
+
         // Combine all requests and sort by date
         $allRequests = $leaves->concat($reimbursements)
             ->concat($overtimes)
@@ -149,7 +149,7 @@ class DashboardController extends Controller
             ->take(10)
             ->values()
             ->all();
-            
+
         return $allRequests;
     }
 }
