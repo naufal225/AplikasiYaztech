@@ -28,19 +28,23 @@ class OvertimeController extends Controller
 
         if ($request->filled('from_date')) {
             $query->where('date_start', '>=', 
-                Carbon::parse($request->from_date)->startOfDay()->timezone('UTC')
+                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $query->where('date_start', '<=', 
-                Carbon::parse($request->to_date)->endOfDay()->timezone('UTC')
+            $query->where('date_end', '<=', 
+                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         $overtimes = $query->paginate(10);
+        $totalRequests = Overtime::where('employee_id', $user->id)->count();
+        $pendingRequests = Overtime::where('employee_id', $user->id)->where('status', 'pending')->count();
+        $approvedRequests = Overtime::where('employee_id', $user->id)->where('status', 'approved')->count();
+        $rejectedRequests = Overtime::where('employee_id', $user->id)->where('status', 'rejected')->count();
 
-        return view('Employee.overtimes.overtime-show', compact('overtimes'));
+        return view('Employee.overtimes.overtime-show', compact('overtimes', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
 
     /**
@@ -89,7 +93,7 @@ class OvertimeController extends Controller
         ]);
 
         return redirect()->route('employee.overtimes.index')
-            ->with('success', 'Overtime submitted. Total: '.number_format($overtimeHours, 2).' hours');
+            ->with('success', 'Overtime submitted. Total: '. number_format($overtimeHours, 2) .' hours');
     }
 
     /**
@@ -168,7 +172,7 @@ class OvertimeController extends Controller
         $overtime->save();
 
         return redirect()->route('employee.overtimes.show', $overtime->id)
-            ->with('success', 'Overtime request updated successfully. Total overtime: ' . $overtimeHours . ' hours');
+            ->with('success', 'Overtime request updated successfully. Total overtime: ' . number_format($overtimeHours, 2) . ' hours');
     }
 
     /**

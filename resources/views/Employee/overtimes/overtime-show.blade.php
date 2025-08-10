@@ -6,7 +6,6 @@
 
 @section('content')
     <div class="space-y-6">
-         Header Actions 
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-neutral-900">Overtime Requests</h1>
@@ -20,7 +19,53 @@
             </div>
         </div>
 
-         Filters 
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-primary-100 text-primary-500">
+                        <i class="fas fa-clock text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-neutral-500">Total Requests</p>
+                        <p class="text-lg font-semibold">{{ $totalRequests }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-warning-100 text-warning-500">
+                        <i class="fas fa-clock text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-neutral-500">Pending</p>
+                        <p class="text-lg font-semibold">{{ $pendingRequests }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-success-100 text-success-500">
+                        <i class="fas fa-check-circle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-neutral-500">Approved</p>
+                        <p class="text-lg font-semibold">{{ $approvedRequests }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-error-100 text-error-500">
+                        <i class="fas fa-times-circle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-neutral-500">Rejected</p>
+                        <p class="text-lg font-semibold">{{ $rejectedRequests }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 p-6">
             <form method="GET" action="{{ route('employee.overtimes.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
@@ -53,13 +98,12 @@
             </form>
         </div>
 
-         Overtimes Table 
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-neutral-200">
                     <thead class="bg-neutral-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Employee</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Duration</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Hours</th>
