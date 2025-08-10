@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Customer;
 use App\Roles;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class ReimbursementController extends Controller
 {
@@ -29,13 +30,13 @@ class ReimbursementController extends Controller
         }
 
         if ($request->filled('from_date')) {
-            $query->where('date', '>=', 
+            $query->where('date', '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $query->where('date', '<=', 
+            $query->where('date', '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -91,11 +92,12 @@ class ReimbursementController extends Controller
 
         // Send notification email to the approver
         $approver = User::find($request->approver_id);
+        $namaPengaju = Auth::user()->name;
         if ($approver) {
             $linkTanggapan = route('employee.reimbursements.show', $reimbursement->id);
             $pesan = "Pengajuan reimbursement baru dari $namaPengaju. <br> Total: Rp " . number_format($reimbursement->total) . "<br> Tanggal: {$request->date}";
 
-            Illuminate\Support\Facades\Mail::to($approver->email)->send(new \App\Mail\SendMessage(
+            Mail::to($approver->email)->send(new \App\Mail\SendMessage(
                 Auth::user()->name,
                 $pesan,
                 $approver->name,
@@ -118,7 +120,7 @@ class ReimbursementController extends Controller
         if ($user->id !== $reimbursement->employee_id) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         $reimbursement->load(['approver', 'customer']);
 
         return view('Employee.reimbursements.reimbursement-detail', compact('reimbursement'));
