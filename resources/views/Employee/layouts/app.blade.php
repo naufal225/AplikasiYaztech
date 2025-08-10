@@ -164,6 +164,8 @@
                 toggleSidebar();
             }
         });
+
+        @stack('scripts')
     </script>
 </body>
 </html>
