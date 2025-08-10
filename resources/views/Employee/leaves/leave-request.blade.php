@@ -11,47 +11,47 @@
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
                     <a href="{{ route('employee.dashboard') }}" class="inline-flex items-center text-sm font-medium text-neutral-700 hover:text-primary-600">
-                        <i class="fas fa-home mr-2"></i>
+                        <i class="mr-2 fas fa-home"></i>
                         Dashboard
                     </a>
                 </li>
                 <li>
                     <div class="flex items-center">
-                        <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
+                        <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
                         <a href="{{ route('employee.leaves.index') }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Leave Requests</a>
                     </div>
                 </li>
                 <li aria-current="page">
                     <div class="flex items-center">
-                        <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
+                        <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
                         <span class="text-sm font-medium text-neutral-500">New Request</span>
                     </div>
                 </li>
             </ol>
         </nav>
 
-        <div class="bg-white rounded-xl shadow-soft border border-neutral-200">
+        <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
             <div class="px-6 py-4 border-b border-neutral-200">
                 <h2 class="text-lg font-bold text-neutral-900">Submit Leave Request</h2>
-                <p class="text-neutral-600 text-sm">Fill in the details for your leave request</p>
+                <p class="text-sm text-neutral-600">Fill in the details for your leave request</p>
             </div>
-            
+
             @if ($errors->any())
-                <div class="mx-6 mt-6 bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
-                    <ul class="list-disc pl-5 space-y-1">
+                <div class="px-4 py-3 mx-6 mt-6 border rounded-lg bg-error-50 border-error-200 text-error-700">
+                    <ul class="pl-5 space-y-1 list-disc">
                         @foreach ($errors->all() as $error)
                             <li class="text-sm">{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
             @endif
-            
+
             <form action="{{ route('employee.leaves.store') }}" method="POST" class="p-6 space-y-6">
                 @csrf
-                
+
                 <div>
-                    <label for="approver_id" class="block text-sm font-semibold text-neutral-700 mb-2">
-                        <i class="fas fa-user-check mr-2 text-primary-600"></i>
+                    <label for="approver_id" class="block mb-2 text-sm font-semibold text-neutral-700">
+                        <i class="mr-2 fas fa-user-check text-primary-600"></i>
                         Approver
                     </label>
                     <select id="approver_id" name="approver_id" class="form-select" required>
@@ -62,34 +62,34 @@
                             </option>
                         @endforeach
                     </select>
-                    <p class="text-xs text-neutral-500 mt-1">Choose who will review and approve your leave request</p>
+                    <p class="mt-1 text-xs text-neutral-500">Choose who will review and approve your leave request</p>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <label for="date_start" class="block text-sm font-semibold text-neutral-700 mb-2">
-                            <i class="fas fa-calendar-alt mr-2 text-primary-600"></i>
+                        <label for="date_start" class="block mb-2 text-sm font-semibold text-neutral-700">
+                            <i class="mr-2 fas fa-calendar-alt text-primary-600"></i>
                             Start Date
                         </label>
-                        <input type="date" id="date_start" name="date_start" class="form-input" 
+                        <input type="date" id="date_start" name="date_start" class="form-input"
                                value="{{ old('date_start') }}" required min="{{ date('Y-m-d') }}">
                     </div>
-                    
+
                     <div>
-                        <label for="date_end" class="block text-sm font-semibold text-neutral-700 mb-2">
-                            <i class="fas fa-calendar-alt mr-2 text-primary-600"></i>
+                        <label for="date_end" class="block mb-2 text-sm font-semibold text-neutral-700">
+                            <i class="mr-2 fas fa-calendar-alt text-primary-600"></i>
                             End Date
                         </label>
-                        <input type="date" id="date_end" name="date_end" class="form-input" 
+                        <input type="date" id="date_end" name="date_end" class="form-input"
                                value="{{ old('date_end') }}" required min="{{ date('Y-m-d') }}">
                     </div>
                 </div>
 
                 <!-- Duration Display -->
-                <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
+                <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
-                            <i class="fas fa-clock text-secondary-600 mr-2"></i>
+                            <i class="mr-2 fas fa-clock text-secondary-600"></i>
                             <span class="text-sm font-medium text-neutral-700">Duration:</span>
                         </div>
                         <span id="duration-display" class="text-sm font-bold text-primary-600">0 days</span>
@@ -98,24 +98,24 @@
                         <span id="working-days-display">0 working days</span>
                     </div>
                 </div>
-                
+
                 <div>
-                    <label for="reason" class="block text-sm font-semibold text-neutral-700 mb-2">
-                        <i class="fas fa-comment-alt mr-2 text-primary-600"></i>
+                    <label for="reason" class="block mb-2 text-sm font-semibold text-neutral-700">
+                        <i class="mr-2 fas fa-comment-alt text-primary-600"></i>
                         Reason for Leave
                     </label>
-                    <textarea id="reason" name="reason" rows="4" class="form-textarea" 
+                    <textarea id="reason" name="reason" rows="4" class="form-textarea"
                               placeholder="Please provide a detailed reason for your leave request..." required>{{ old('reason') }}</textarea>
-                    <p class="text-xs text-neutral-500 mt-1">Be specific about the purpose of your leave</p>
+                    <p class="mt-1 text-xs text-neutral-500">Be specific about the purpose of your leave</p>
                 </div>
 
                 <!-- Leave Policy Reminder -->
-                <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
+                <div class="p-4 border rounded-lg bg-primary-50 border-primary-200">
                     <div class="flex items-start">
                         <i class="fas fa-info-circle text-primary-600 mr-3 mt-0.5"></i>
                         <div>
-                            <h4 class="text-sm font-semibold text-primary-800 mb-2">Leave Policy Reminder</h4>
-                            <ul class="text-xs text-primary-700 space-y-1">
+                            <h4 class="mb-2 text-sm font-semibold text-primary-800">Leave Policy Reminder</h4>
+                            <ul class="space-y-1 text-xs text-primary-700">
                                 <li>• Submit leave requests at least 3 days in advance</li>
                                 <li>• Annual leave entitlement is 12 days per year</li>
                                 <li>• Emergency leave may be submitted with shorter notice</li>
@@ -124,14 +124,14 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="flex justify-end space-x-4 pt-6 border-t border-neutral-200">
-                    <a href="{{ route('employee.leaves.index') }}" class="px-6 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors duration-200">
-                        <i class="fas fa-times mr-2"></i>
+
+                <div class="flex justify-end pt-6 space-x-4 border-t border-neutral-200">
+                    <a href="{{ route('employee.leaves.index') }}" class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
+                        <i class="mr-2 fas fa-times"></i>
                         Cancel
                     </a>
                     <button type="submit" class="btn-primary">
-                        <i class="fas fa-paper-plane mr-2"></i>
+                        <i class="mr-2 fas fa-paper-plane"></i>
                         Submit Request
                     </button>
                 </div>
@@ -144,19 +144,19 @@
         function calculateDuration() {
             const startDate = document.getElementById('date_start').value;
             const endDate = document.getElementById('date_end').value;
-            
+
             if (startDate && endDate) {
                 const start = new Date(startDate);
                 const end = new Date(endDate);
-                
+
                 if (end >= start) {
                     const timeDiff = end.getTime() - start.getTime();
                     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
-                    
+
                     // Calculate working days (excluding weekends)
                     let workingDays = 0;
                     let currentDate = new Date(start);
-                    
+
                     while (currentDate <= end) {
                         const dayOfWeek = currentDate.getDay();
                         if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday (0) or Saturday (6)
@@ -164,7 +164,7 @@
                         }
                         currentDate.setDate(currentDate.getDate() + 1);
                     }
-                    
+
                     document.getElementById('duration-display').textContent = daysDiff + ' days';
                     document.getElementById('working-days-display').textContent = workingDays + ' working days';
                 } else {
