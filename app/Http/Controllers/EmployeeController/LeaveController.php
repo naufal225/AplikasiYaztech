@@ -125,6 +125,7 @@ class LeaveController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+
         // Only allow editing if the leave is still pending
         if ($leave->status !== 'pending') {
             return redirect()->route('employee.leaves.show', $leave->id)
