@@ -35,9 +35,15 @@ Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee
     });
     
     // Overtimes
-    Route::resource('overtimes', OvertimeController::class);
-    Route::get('/overtimes/{overtime}/review', [OvertimeController::class, 'review'])->name('overtimes.review');
-    Route::post('/overtimes/{overtime}/review', [OvertimeController::class, 'processReview'])->name('overtimes.process-review');
+    Route::prefix('overtimes')->name('overtimes.')->group(function () {
+        Route::get('/', [OvertimeController::class, 'index'])->name('index');
+        Route::get('/request', [OvertimeController::class, 'create'])->name('create');
+        Route::post('/store', [OvertimeController::class, 'store'])->name('store');
+        Route::get('/{overtime}', [OvertimeController::class, 'show'])->name('show');
+        Route::get('/{overtime}/edit', [OvertimeController::class, 'edit'])->name('edit');
+        Route::put('/{overtime}', [OvertimeController::class, 'update'])->name('update');
+        Route::delete('/{overtime}', [OvertimeController::class, 'destroy'])->name('destroy');
+    });
     
     // Official Travels
     Route::resource('official-travels', OfficialTravelController::class);

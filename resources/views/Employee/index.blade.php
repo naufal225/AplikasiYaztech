@@ -119,7 +119,7 @@
                                 <h4 class="font-medium text-gray-800">{{ $request['title'] }}</h4>
                                 <p class="text-gray-500 text-sm">{{ $request['date'] }}</p>
                             </div>
-                        @elseif($request['type'] === App\TypeRequest::Overtime->value)
+                        @elseif($request['type'] === App\TypeRequest::Overtimes->value)
                             <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
                                 <i class="fas fa-clock text-green-600"></i>
                             </div>

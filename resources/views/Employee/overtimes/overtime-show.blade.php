@@ -6,7 +6,7 @@
 
 @section('content')
     <div class="space-y-6">
-        <!-- Header Actions -->
+         Header Actions 
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-neutral-900">Overtime Requests</h1>
@@ -20,7 +20,7 @@
             </div>
         </div>
 
-        <!-- Filters -->
+         Filters 
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 p-6">
             <form method="GET" action="{{ route('employee.overtimes.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
@@ -53,7 +53,7 @@
             </form>
         </div>
 
-        <!-- Overtimes Table -->
+         Overtimes Table 
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-neutral-200">
@@ -69,6 +69,12 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-neutral-200">
                         @forelse($overtimes as $overtime)
+                            @php
+                                $totalMinutes = $overtime->total;
+                                $hours = floor($totalMinutes / 60);
+                                $minutes = $totalMinutes % 60;
+                            @endphp
+
                             <tr class="hover:bg-neutral-50 transition-colors duration-200">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div>
@@ -96,7 +102,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-bold text-neutral-900">{{ $overtime->total }} hours</div>
+                                    <div class="text-sm font-bold text-neutral-900">{{ $hours }}h {{ $minutes }}m</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($overtime->status === 'pending')
@@ -133,11 +139,6 @@
                                                 </button>
                                             </form>
                                         @endif
-                                        @if((Auth::id() === $overtime->approver_id || Auth::user()->role === 'admin') && $overtime->status === 'pending')
-                                            <a href="{{ route('employee.overtimes.review', $overtime->id) }}" class="text-success-600 hover:text-success-900">
-                                                <i class="fas fa-gavel"></i>
-                                            </a>
-                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -155,7 +156,7 @@
                     </tbody>
                 </table>
             </div>
-            
+
             @if($overtimes->hasPages())
                 <div class="px-6 py-4 border-t border-neutral-200">
                     {{ $overtimes->links() }}
