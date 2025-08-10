@@ -22,4 +22,9 @@ class Overtime extends Model
     public function approver() {
         return $this->belongsTo(User::class, 'approver_id');
     }
+
+    protected $casts = [
+        'date_start' => 'datetime',
+        'date_end' => 'datetime',
+    ];
 }

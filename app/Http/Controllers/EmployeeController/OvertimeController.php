@@ -5,22 +5,46 @@ namespace App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Roles;
 use App\Models\Overtime;
 use App\Models\User;
+use Carbon\Carbon;
 
 class OvertimeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $overtimes = Overtime::where('employee_id', $user->id)
+        $query = Overtime::where('employee_id', $user->id)
             ->with(['employee', 'approver'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-        return view('Employee.overtimes.overtime-show', compact('overtimes'));
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->where('date_start', '>=', 
+                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        if ($request->filled('to_date')) {
+            $query->where('date_end', '<=', 
+                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        $overtimes = $query->paginate(10);
+        $totalRequests = Overtime::where('employee_id', $user->id)->count();
+        $pendingRequests = Overtime::where('employee_id', $user->id)->where('status', 'pending')->count();
+        $approvedRequests = Overtime::where('employee_id', $user->id)->where('status', 'approved')->count();
+        $rejectedRequests = Overtime::where('employee_id', $user->id)->where('status', 'rejected')->count();
+
+        return view('Employee.overtimes.overtime-show', compact('overtimes', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
 
     /**
@@ -29,7 +53,6 @@ class OvertimeController extends Controller
     public function create()
     {
         $approvers = User::where('role', Roles::Approver->value)
-            ->orWhere('role', Roles::Admin->value)
             ->get();
         return view('Employee.overtimes.overtime-request', compact('approvers'));
     }
@@ -39,24 +62,38 @@ class OvertimeController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'approver_id' => 'required|exists:users,id',
-            'date' => 'required|date',
-            'hours' => 'required|numeric|min:0.5|max:24',
-            'reason' => 'required|string|max:1000',
+            'date_start' => 'required|date_format:Y-m-d\TH:i',
+            'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
         ]);
 
-        $overtime = new Overtime();
-        $overtime->employee_id = Auth::id();
-        $overtime->approver_id = $request->approver_id;
-        $overtime->date = $request->date;
-        $overtime->hours = $request->hours;
-        $overtime->reason = $request->reason;
-        $overtime->status = 'pending';
-        $overtime->save();
+        // 1 Parse dengan timezone eksplisit
+        $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
+        $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
 
-        return redirect()->route('employee.overtimes.show')
-            ->with('success', 'Overtime request submitted successfully.');
+        // 2: Set jam kerja normal
+        $workEnd = (clone $start)->setTime(17, 0, 0);
+
+        // 3: Hitung overtime dengan benar
+        $overtimeMinutes = max(0, $workEnd->diffInMinutes($end, false));
+        $overtimeHours = $overtimeMinutes / 60;
+
+        if ($overtimeHours < 0.5) {
+            return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
+        }
+
+        Overtime::create([
+            'employee_id' => Auth::id(),
+            'approver_id' => $request->approver_id,
+            'date_start' => $start,
+            'date_end' => $end,
+            'total' => $overtimeMinutes,
+            'status' => 'pending',
+        ]);
+
+        return redirect()->route('employee.overtimes.index')
+            ->with('success', 'Overtime submitted. Total: '. number_format($overtimeHours, 2) .' hours');
     }
 
     /**
@@ -70,7 +107,7 @@ class OvertimeController extends Controller
         }
 
         $overtime->load(['employee', 'approver']);
-        return view('Employee.overtimes.overtime-show', compact('overtime'));
+        return view('Employee.overtimes.overtime-detail', compact('overtime'));
     }
 
     /**
@@ -89,7 +126,6 @@ class OvertimeController extends Controller
         }
 
         $approvers = User::where('role', Roles::Approver->value)
-            ->orWhere('role', Roles::Admin->value)
             ->get();
         return view('Employee.overtimes.overtime-edit', compact('overtime', 'approvers'));
     }
@@ -111,19 +147,32 @@ class OvertimeController extends Controller
 
         $request->validate([
             'approver_id' => 'required|exists:users,id',
-            'date' => 'required|date',
-            'hours' => 'required|numeric|min:0.5|max:24',
-            'reason' => 'required|string|max:1000',
+            'date_start' => 'required|date_format:Y-m-d\TH:i',
+            'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
         ]);
 
+        $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
+        $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
+
+        // 2: Set jam kerja normal
+        $workEnd = (clone $start)->setTime(17, 0, 0);
+
+        // 3: Hitung overtime dengan benar
+        $overtimeMinutes = max(0, $workEnd->diffInMinutes($end, false));
+        $overtimeHours = $overtimeMinutes / 60;
+
+        if ($overtimeHours < 0.5) {
+            return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
+        }
+
         $overtime->approver_id = $request->approver_id;
-        $overtime->date = $request->date;
-        $overtime->hours = $request->hours;
-        $overtime->reason = $request->reason;
+        $overtime->date_start = $request->date_start;
+        $overtime->date_end = $request->date_end;
+        $overtime->total = $overtimeMinutes;
         $overtime->save();
 
         return redirect()->route('employee.overtimes.show', $overtime->id)
-            ->with('success', 'Overtime request updated successfully.');
+            ->with('success', 'Overtime request updated successfully. Total overtime: ' . number_format($overtimeHours, 2) . ' hours');
     }
 
     /**
@@ -142,45 +191,8 @@ class OvertimeController extends Controller
         }
 
         $overtime->delete();
-        return redirect()->route('employee.overtimes.show')
+
+        return redirect()->route('employee.overtimes.index')
             ->with('success', 'Overtime request deleted successfully.');
-    }
-
-    /**
-     * Show the form for reviewing an overtime request.
-     */
-    public function review(Overtime $overtime)
-    {
-        $user = Auth::user();
-        if ($user->id !== $overtime->approver_id && $user->role !== Roles::Admin->value) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $overtime->load(['employee', 'approver']);
-        return view('Employee.overtimes.overtime-review', compact('overtime'));
-    }
-
-    /**
-     * Process the overtime request approval or rejection.
-     */
-    public function processReview(Request $request, Overtime $overtime)
-    {
-        $user = Auth::user();
-        if ($user->id !== $overtime->approver_id && $user->role !== Roles::Admin->value) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $request->validate([
-            'status' => 'required|in:approved,rejected',
-            'comment' => 'nullable|string|max:1000',
-        ]);
-
-        $overtime->status = $request->status;
-        // Anda mungkin ingin menambahkan kolom komentar ke tabel overtimes Anda
-        // $overtime->comment = $request->comment;
-        $overtime->save();
-
-        return redirect()->route('employee.overtimes.review', $overtime->id)
-            ->with('success', 'Overtime request has been ' . $request->status . '.');
     }
 }
