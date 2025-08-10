@@ -17,7 +17,7 @@
             </div>
 
             <!-- Back Button -->
-            <a href="{{ route('admin.employee.index') }}"
+            <a href="{{ route('admin.employees.index') }}"
                 class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -74,7 +74,7 @@
                 @endif
 
                 <!-- Employee Form -->
-                <form action="{{ route('admin.employee.store') }}" method="POST" class="space-y-6" id="employeeForm">
+                <form action="{{ route('admin.employees.store') }}" method="POST" class="space-y-6" id="employeeForm">
                     @csrf
 
                     <!-- Name Field -->
@@ -128,7 +128,7 @@
                     <!-- Form Actions -->
                     <div class="flex items-center justify-end pt-6 space-x-4 border-t border-gray-200">
                         <!-- Cancel Button -->
-                        <a href="{{ route('admin.employee.index') }}"
+                        <a href="{{ route('admin.employees.index') }}"
                             class="px-6 py-3 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                             Cancel
                         </a>

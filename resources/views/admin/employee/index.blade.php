@@ -20,7 +20,7 @@
                     </svg>
                     Import Excel
                 </button> --}}
-                <a id="addEmployeeBtn" href="{{ route('admin.employee.create') }}"
+                <a id="addEmployeeBtn" href="{{ route('admin.employees.create') }}"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -35,7 +35,7 @@
     <div class="mb-6">
         <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
             <div class="">
-                <form class="flex flex-col gap-4 sm:flex-row" action="{{ route("admin.employee.index") }}"
+                <form class="flex flex-col gap-4 sm:flex-row" action="{{ route("admin.employees.index") }}"
                     method="GET">
                     <div class="flex-1">
                         <div class="relative">
@@ -65,58 +65,89 @@
                 <h3 class="text-lg font-semibold text-gray-900">Employee List</h3>
             </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="border-b border-gray-100 bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">No
-                        </th>
-                        <th class="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
-                            Name</th>
-                        <th class="px-6 py-4 text-xs font-semibold tracking-wider text-left text-gray-600 uppercase">
-                            Email</th>
-                        <th class="px-6 py-4 text-xs font-semibold tracking-wider text-center text-gray-600 uppercase">
-                            Action</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-100">
-                    @foreach ($employees as $employee)
-                    <tr class="transition-colors hover:bg-gray-50">
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{
-                            $employees->firstItem() + $loop->index }}
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{{ $employee->name }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{{ $employee->email }}</td>
-                        <td class="px-6 py-4 text-center whitespace-nowrap">
-                            <div class="flex items-center justify-center space-x-2">
-                                <a href="{{ route('admin.employee.edit', $employee->id) }}"
-                                    class="inline-flex items-center px-3 py-1 text-xs font-medium transition-colors rounded-md bg-sky-100 hover:bg-sky-200 text-sky-700">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                    Edit
-                                </a>
-                                <button type="button"
-                                    class="inline-flex items-center px-3 py-1 text-xs font-medium text-red-700 transition-colors bg-red-100 rounded-md delete-employee-btn hover:bg-red-200"
-                                    data-employee-id="{{ $employee->id }}"
-                                    data-employee-name="{{ $employee->name }}">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    Delete
-                                </button>
-                                <form id="delete-form-{{ $employee->id }}" action="{{ route('admin.employee.delete', $employee->id) }}" method="POST" style="display: none;">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+        <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-neutral-200">
+                    <thead class="bg-neutral-50">
+                        <tr>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                No</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Name</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Email</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-neutral-200">
+                        @forelse($employees as $employee)
+                        <tr class="transition-colors duration-200 hover:bg-neutral-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    {{
+                                    $employees->firstItem() + $loop->index }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-900">
+                                    {{ $employee->name }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-500">
+                                    {{ $employee->email }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                                <div class="flex items-center space-x-2">
+                                    <a href="{{ route('admin.employees.edit', $employee->id) }}"
+                                        class="text-secondary-600 hover:text-secondary-900" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button"
+                                        class="delete-employee-btn text-error-600 hover:text-error-900"
+                                        data-employee-id="{{ $employee->id }}"
+                                        data-employee-name="{{ $employee->name }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    <form id="delete-form-{{ $employee->id }}"
+                                        action="{{ route('admin.employees.destroy', $employee->id) }}" method="POST"
+                                        style="display: none;">
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="5" class="px-6 py-12 text-center">
+                                <div class="text-neutral-400">
+                                    <i class="mb-4 text-4xl fas fa-inbox"></i>
+                                    <p class="text-lg font-medium">No employees found</p>
+                                    <a href="{{ route('admin.employees.create') }}"
+                                        class="inline-flex items-center px-4 py-2 mt-4 text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
+                                        <i class="mr-2 fas fa-plus"></i>
+                                        New employee
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if($employees->hasPages())
+            <div class="px-6 py-4 border-t border-neutral-200">
+                {{ $employees->links() }}
+            </div>
+            @endif
         </div>
         <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
             {{ $employees->links() }}

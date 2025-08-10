@@ -18,26 +18,26 @@
             <span class="font-medium">Dashboard</span>
         </a>
 
-        <a href="{{ route('admin.employee.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.employee.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('admin.employees.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.employees.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-users"></i>
             <span class="font-medium">Employee</span>
         </a>
 
-        <a href="{{ route('admin.approver.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.approver.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('admin.approvers.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.approvers.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-user-check"></i>
             <span class="font-medium">Approver</span>
         </a>
 
-        <a href=""
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('admin.leaves.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
             <span class="font-medium">Leave Requests</span>
         </a>
 
-        <a href=""
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('admin.reimbursements.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-file-invoice-dollar"></i>
             <span class="font-medium">Reimbursement Requests</span>
         </a>
