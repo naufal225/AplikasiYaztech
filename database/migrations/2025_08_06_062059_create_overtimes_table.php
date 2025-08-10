@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('employee_id')->nullable()->constrained('users', 'id')->nullOnDelete();
             $table->foreignId('approver_id')->nullable()->constrained('users', 'id')->nullOnDelete();
-            $table->date('date_start');
-            $table->date('date_end');
+            $table->dateTime('date_start');
+            $table->dateTime('date_end');
             $table->bigInteger('total');
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
