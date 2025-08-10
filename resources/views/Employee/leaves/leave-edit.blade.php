@@ -145,8 +145,7 @@
         </div>
     </div>
 
-    <script>
-        // Calculate duration when dates change
+    @push('scripts')
         function calculateDuration() {
             const startDate = document.getElementById('date_start').value;
             const endDate = document.getElementById('date_end').value;
@@ -159,13 +158,12 @@
                     const timeDiff = end.getTime() - start.getTime();
                     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
                     
-                    // Calculate working days (excluding weekends)
                     let workingDays = 0;
                     let currentDate = new Date(start);
                     
                     while (currentDate <= end) {
                         const dayOfWeek = currentDate.getDay();
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Not Sunday (0) or Saturday (6)
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Sunday (0) | Saturday (6)
                             workingDays++;
                         }
                         currentDate.setDate(currentDate.getDate() + 1);
@@ -180,13 +178,11 @@
             }
         }
 
-        // Add event listeners
         document.getElementById('date_start').addEventListener('change', calculateDuration);
         document.getElementById('date_end').addEventListener('change', calculateDuration);
 
-        // Update end date minimum when start date changes
         document.getElementById('date_start').addEventListener('change', function() {
             document.getElementById('date_end').min = this.value;
         });
-    </script>
+    @endpush
 @endsection

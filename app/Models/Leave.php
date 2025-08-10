@@ -22,4 +22,9 @@ class Leave extends Model
     public function approver() {
         return $this->belongsTo(User::class, 'approver_id');
     }
+
+    protected $casts = [
+        'date_start' => 'date',
+        'date_end' => 'date',
+    ];
 }

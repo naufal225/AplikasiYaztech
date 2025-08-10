@@ -10,22 +10,38 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use App\Models\Customer;
 use App\Roles;
+use Carbon\Carbon;
 
 class ReimbursementController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        $reimbursements = Reimbursement::where('employee_id', $user->id)
-            ->with(['approver', 'customer']) // Load relationships
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $query = Reimbursement::where('employee_id', $user->id)
+            ->with(['approver', 'customer'])
+            ->orderBy('created_at', 'desc');
 
-        // For statistics
-        $totalRequests = $reimbursements->total();
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('from_date')) {
+            $query->where('date', '>=', 
+                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        if ($request->filled('to_date')) {
+            $query->where('date', '<=', 
+                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        $reimbursements = $query->paginate(10);
+        $totalRequests = Reimbursement::where('employee_id', $user->id)->count();
         $pendingRequests = Reimbursement::where('employee_id', $user->id)->where('status', 'pending')->count();
         $approvedRequests = Reimbursement::where('employee_id', $user->id)->where('status', 'approved')->count();
         $rejectedRequests = Reimbursement::where('employee_id', $user->id)->where('status', 'rejected')->count();
@@ -105,7 +121,7 @@ class ReimbursementController extends Controller
         
         $reimbursement->load(['approver', 'customer']);
 
-        return view('Employee.reimbursements.reimbursement-show', compact('reimbursement'));
+        return view('Employee.reimbursements.reimbursement-detail', compact('reimbursement'));
     }
 
     /**

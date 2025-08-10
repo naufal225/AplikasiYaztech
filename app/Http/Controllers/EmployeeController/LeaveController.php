@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Leave;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 
 class LeaveController extends Controller
@@ -15,24 +16,36 @@ class LeaveController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        if ($user->role === Roles::Admin->value || $user->role === Roles::Approver->value) {
-            // Admins and approvers can see all leaves they need to approve
-            $leaves = Leave::where('approver_id', $user->id)
-                ->orWhere('employee_id', $user->id)
-                ->with(['employee', 'approver']) // Memuat relasi employee dan approver
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
-        } else {
-            // Employees can only see their own leaves
-            $leaves = Leave::where('employee_id', $user->id)
-                ->with(['employee', 'approver']) // Memuat relasi employee dan approver
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
+        $query = Leave::where('employee_id', $user->id)
+            ->with(['employee', 'approver'])
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
         }
-        return view('Employee.leaves.leave-show', compact('leaves'));
+
+        if ($request->filled('from_date')) {
+            $query->where('date_start', '>=',
+                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        if ($request->filled('to_date')) {
+            $query->where('date_start', '<=',
+                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        $leaves = $query->paginate(10);
+        $totalRequests = Leave::where('employee_id', $user->id)->count();
+        $pendingRequests = Leave::where('employee_id', $user->id)->where('status', 'pending')->count();
+        $approvedRequests = Leave::where('employee_id', $user->id)->where('status', 'approved')->count();
+        $rejectedRequests = Leave::where('employee_id', $user->id)->where('status', 'rejected')->count();
+
+        return view('Employee.leaves.leave-show', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
 
     /**
@@ -97,8 +110,8 @@ class LeaveController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $leave->load(['employee', 'approver']); // Memuat relasi employee dan approver
-        return view('Employee.leaves.leave-show', compact('leave'));
+        $leave->load(['employee', 'approver']);
+        return view('Employee.leaves.leave-detail', compact('leave'));
     }
 
     /**
