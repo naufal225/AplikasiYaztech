@@ -13,40 +13,14 @@ Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Leave Requests
-    Route::prefix('leaves')->name('leaves.')->group(function () {
-        Route::get('/', [LeaveController::class, 'index'])->name('index');
-        Route::get('/request', [LeaveController::class, 'create'])->name('create');
-        Route::post('/store', [LeaveController::class, 'store'])->name('store');
-        Route::get('/{leave}', [LeaveController::class, 'show'])->name('show');
-        Route::get('/{leave}/edit', [LeaveController::class, 'edit'])->name('edit');
-        Route::put('/{leave}', [LeaveController::class, 'update'])->name('update');
-        Route::delete('/{leave}', [LeaveController::class, 'destroy'])->name('destroy');
-    });
-    
+    Route::resource('leaves', LeaveController::class);
+
     // Reimbursements
-    Route::prefix('reimbursements')->name('reimbursements.')->group(function () {
-        Route::get('/', [ReimbursementController::class, 'index'])->name('index');
-        Route::get('/request', [ReimbursementController::class, 'create'])->name('create');
-        Route::post('/store', [ReimbursementController::class, 'store'])->name('store');
-        Route::get('/{reimbursement}', [ReimbursementController::class, 'show'])->name('show');
-        Route::get('/{reimbursement}/edit', [ReimbursementController::class, 'edit'])->name('edit');
-        Route::put('/{reimbursement}', [ReimbursementController::class, 'update'])->name('update');
-        Route::delete('/{reimbursement}', [ReimbursementController::class, 'destroy'])->name('destroy');
-    });
-    
+    Route::resource('reimbursements', ReimbursementController::class);
+
     // Overtimes
-    Route::prefix('overtimes')->name('overtimes.')->group(function () {
-        Route::get('/', [OvertimeController::class, 'index'])->name('index');
-        Route::get('/request', [OvertimeController::class, 'create'])->name('create');
-        Route::post('/store', [OvertimeController::class, 'store'])->name('store');
-        Route::get('/{overtime}', [OvertimeController::class, 'show'])->name('show');
-        Route::get('/{overtime}/edit', [OvertimeController::class, 'edit'])->name('edit');
-        Route::put('/{overtime}', [OvertimeController::class, 'update'])->name('update');
-        Route::delete('/{overtime}', [OvertimeController::class, 'destroy'])->name('destroy');
-    });
-    
+    Route::resource('overtimes', OvertimeController::class);
+
     // Official Travels
     Route::resource('official-travels', OfficialTravelController::class);
-    Route::get('/official-travels/{officialTravel}/review', [OfficialTravelController::class, 'review'])->name('official-travels.review');
-    Route::post('/official-travels/{officialTravel}/review', [OfficialTravelController::class, 'processReview'])->name('official-travels.process-review');
 });

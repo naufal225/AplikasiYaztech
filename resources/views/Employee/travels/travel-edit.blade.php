@@ -1,8 +1,8 @@
 @extends('Employee.layouts.app')
 
-@section('title', 'Edit Overtime Request')
-@section('header', 'Edit Overtime Request')
-@section('subtitle', 'Modify your overtime request details')
+@section('title', 'Edit Official Travel Request')
+@section('header', 'Edit Official Travel Request')
+@section('subtitle', 'Modify your official travel request details')
 
 @section('content')
     <div class="max-w-3xl mx-auto">
@@ -17,13 +17,13 @@
                 <li>
                     <div class="flex items-center">
                         <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <a href="{{ route('employee.overtimes.index') }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Overtime Requests</a>
+                        <a href="{{ route('employee.official-travels.index') }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Official Travel Requests</a>
                     </div>
                 </li>
                 <li>
                     <div class="flex items-center">
                         <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <a href="{{ route('employee.overtimes.show', $overtime->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Request #{{ $overtime->id }}</a>
+                        <a href="{{ route('employee.official-travels.show', $officialTravel->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Request #{{ $officialTravel->id }}</a>
                     </div>
                 </li>
                 <li aria-current="page">
@@ -37,8 +37,8 @@
 
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200">
             <div class="px-6 py-4 border-b border-neutral-200">
-                <h2 class="text-lg font-bold text-neutral-900">Edit Overtime Request #{{ $overtime->id }}</h2>
-                <p class="text-neutral-600 text-sm">Update your overtime request information</p>
+                <h2 class="text-lg font-bold text-neutral-900">Edit Official Travel Request #{{ $officialTravel->id }}</h2>
+                <p class="text-neutral-600 text-sm">Update your official travel request information</p>
             </div>
 
             @if ($errors->any())
@@ -51,7 +51,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('employee.overtimes.update', $overtime->id) }}" method="POST" class="p-6 space-y-6">
+            <form action="{{ route('employee.official-travels.update', $officialTravel->id) }}" method="POST" class="p-6 space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -63,54 +63,46 @@
                     <select id="approver_id" name="approver_id" class="form-select" required>
                         <option value="">Select Approver</option>
                         @foreach($approvers as $approver)
-                            <option value="{{ $approver->id }}" {{ $overtime->approver_id == $approver->id ? 'selected' : '' }}>
+                            <option value="{{ $approver->id }}" {{ $officialTravel->approver_id == $approver->id ? 'selected' : '' }}>
                                 {{ $approver->name }} ({{ ucfirst($approver->role) }})
                             </option>
                         @endforeach
                     </select>
                 </div>
 
-                <!-- Work Hours Info -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div class="flex items-start">
-                        <i class="fas fa-clock text-blue-600 mr-3 mt-0.5"></i>
-                        <div>
-                            <h4 class="text-sm font-semibold text-blue-800 mb-1">Normal Work Hours</h4>
-                            <p class="text-xs text-blue-700">
-                                Regular working hours: 09:00 - 17:00 (8 hours)<br>
-                                Current overtime: {{ $overtime->total }} hours
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="date_start" class="block text-sm font-semibold text-neutral-700 mb-2">
                             <i class="fas fa-calendar-alt mr-2 text-primary-600"></i>
-                            Start Date & Time
+                            Start Date
                         </label>
-                        <input type="datetime-local" 
-                            name="date_start" 
-                            value="{{ old('date_start', $overtime->date_start->format('Y-m-d\TH:i')) }}"
-                            class="form-input"
-                            required>
+                        <input type="date" id="date_start" name="date_start" class="form-input"
+                               value="{{ $officialTravel->date_start->format('Y-m-d') }}" required min="{{ date('Y-m-d') }}" onchange="calculateDays()">
                     </div>
 
                     <div>
                         <label for="date_end" class="block text-sm font-semibold text-neutral-700 mb-2">
                             <i class="fas fa-calendar-alt mr-2 text-primary-600"></i>
-                            End Date & Time
+                            End Date
                         </label>
-                        <input type="datetime-local"
-                            name="date_end"
-                            value="{{ old('date_end', $overtime->date_end->format('Y-m-d\TH:i')) }}"
-                            class="form-input"
-                            required>
+                        <input type="date" id="date_end" name="date_end" class="form-input"
+                               value="{{ $officialTravel->date_end->format('Y-m-d') }}" required min="{{ date('Y-m-d') }}" onchange="calculateDays()">
+                        <p class="text-xs text-neutral-500 mt-1">Current duration: {{ $officialTravel->total }} day{{ $officialTravel->total > 1 ? 's' : '' }}</p>
                     </div>
                 </div>
 
-                 <!-- Warning Notice -->
+                 Travel Duration Display 
+                <div id="duration-calculation" class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-calculator text-green-600 mr-3 mt-0.5"></i>
+                        <div>
+                            <h4 class="text-sm font-semibold text-green-800 mb-1">Travel Duration</h4>
+                            <p id="duration-total" class="text-sm font-bold text-green-800"></p>
+                        </div>
+                    </div>
+                </div>
+
+                 Warning Notice 
                 <div class="bg-warning-50 border border-warning-200 rounded-lg p-4">
                     <div class="flex items-start">
                         <i class="fas fa-exclamation-triangle text-warning-600 mr-3 mt-0.5"></i>
@@ -124,7 +116,7 @@
                 </div>
 
                 <div class="flex justify-end space-x-4 pt-6 border-t border-neutral-200">
-                    <a href="{{ route('employee.overtimes.show', $overtime->id) }}" class="px-6 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors duration-200">
+                    <a href="{{ route('employee.official-travels.show', $officialTravel->id) }}" class="px-6 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors duration-200">
                         <i class="fas fa-times mr-2"></i>
                         Cancel
                     </a>
@@ -136,4 +128,40 @@
             </form>
         </div>
     </div>
+
+    @push('scripts')
+        function calculateDays() {
+            const startInput = document.getElementById('date_start');
+            const endInput = document.getElementById('date_end');
+            const calculationDiv = document.getElementById('duration-calculation');
+            const totalP = document.getElementById('duration-total');
+            
+            if (!startInput.value || !endInput.value) {
+                calculationDiv.style.display = 'none';
+                return;
+            }
+            
+            const startDate = new Date(startInput.value);
+            const endDate = new Date(endInput.value);
+            
+            if (endDate < startDate) {
+                calculationDiv.style.display = 'none';
+                return;
+            }
+            
+            const timeDiff = endDate.getTime() - startDate.getTime();
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // +1 to include both start and end date
+            
+            if (daysDiff > 0) {
+                calculationDiv.style.display = 'block';
+                totalP.textContent = `Total Duration: ${daysDiff} day${daysDiff > 1 ? 's' : ''}`;
+            } else {
+                calculationDiv.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateDays();
+        });
+    @endpush
 @endsection
