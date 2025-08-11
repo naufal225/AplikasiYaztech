@@ -52,7 +52,7 @@
                             <label class="text-sm font-semibold text-neutral-700">Email</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ Auth::user()->email }}</span>
+                                <span class="font-medium text-neutral-900">{{ $leave->employee->email ?? 'N/A' }}</span>
                             </div>
                         </div>
                         <!-- Approver -->

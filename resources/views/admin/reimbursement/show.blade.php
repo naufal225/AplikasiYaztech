@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-    
+
     <!-- Main Content -->
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <!-- Left Column - Main Details -->
@@ -55,7 +55,7 @@
                             <label class="text-sm font-semibold text-neutral-700">Email</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ Auth::user()->email }}</span>
+                                <span class="font-medium text-neutral-900">{{ $reimbursement->employee->email }}</span>
                             </div>
                         </div>
                         <!-- Total (was Amount) -->

@@ -43,8 +43,9 @@ class OfficialTravelController extends Controller
         return view('admin.official-travel.index', compact('officialTravels', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
 
-     public function show(OfficialTravel $officialTravel)
+     public function show($id)
     {
+        $officialTravel = OfficialTravel::findOrFail($id);
         $officialTravel->load(['employee', 'approver']);
         return view('admin.official-travel.show', compact('officialTravel'));
     }
