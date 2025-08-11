@@ -102,12 +102,10 @@ class LeaveController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show(Leave $leave)
     {
         // Check if the user has permission to view this leave
         $user = Auth::user();
-        $leave = \App\Models\Leave::find($id);
-
         if ($user->id !== $leave->employee_id && $user->id !== $leave->approver_id && $user->role !== Roles::Admin->value) {
             abort(403, 'Unauthorized action.');
         }
