@@ -42,14 +42,14 @@
             <span class="font-medium">Reimbursement Requests</span>
         </a>
 
-        <a href=""
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('admin.overtimes.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-clock"></i>
             <span class="font-medium">Overtime Requests</span>
         </a>
 
-        <a href=""
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('admin.official-travels.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-briefcase"></i>
             <span class="font-medium">Official Travel Requests</span>
         </a>

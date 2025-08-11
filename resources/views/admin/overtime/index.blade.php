@@ -1,14 +1,14 @@
 @extends('components.admin.layout.layout-admin')
 
-@section('header', 'Manage Leaves')
-@section('subtitle', 'Manage Leaves data')
+@section('header', 'Manage Overtimes')
+@section('subtitle', 'Manage overtimes data')
 
 @section('content')
 <main class="relative z-10 flex-1 p-0 space-y-6 overflow-x-hidden overflow-y-auto bg-gray-50">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-neutral-900">Leave Requests</h1>
-            <p class="text-neutral-600">Manage and track your leave requests</p>
+            <h1 class="text-2xl font-bold text-neutral-900">Overtime Requests</h1>
+            <p class="text-neutral-600">Manage and track overtime requests</p>
         </div>
         <div class="mt-4 sm:mt-0">
             <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:flex-row">
@@ -69,7 +69,7 @@
     </div>
 
     <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
-        <form method="GET" action="{{ route('employee.leaves.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <form method="GET" action="{{ route('admin.overtimes.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div>
                 <label class="block mb-2 text-sm font-medium text-neutral-700">Status</label>
                 <select name="status" class="form-select">
@@ -92,7 +92,7 @@
                     <i class="mr-2 fas fa-search"></i>
                     Filter
                 </button>
-                <a href="{{ route('employee.leaves.index') }}" class="btn-secondary">
+                <a href="{{ route('admin.overtimes.index') }}" class="btn-secondary">
                     <i class="mr-2 fas fa-refresh"></i>
                     Reset
                 </a>
@@ -103,7 +103,7 @@
     <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-900">Leave Requests</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Overtime Requests</h3>
             </div>
         </div>
         <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
@@ -111,92 +111,107 @@
                 <table class="min-w-full divide-y divide-neutral-200">
                     <thead class="bg-neutral-50">
                         <tr>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Request</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Duration</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Approver</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Actions</th>
+                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Request ID</th>
+                            <th class="py-3 text-xs font-medium tracking-wider text-left uppercase -6 text-neutral-500">Employee</th>
+                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Duration</th>
+                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Hours</th>
+                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Status</th>
+                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-neutral-200">
-                        @forelse($leaves as $leave)
-                        <tr class="transition-colors duration-200 hover:bg-neutral-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                    <div class="text-sm font-medium text-neutral-900">#{{ $leave->id }}</div>
-                                    <div class="text-sm text-neutral-500">{{ $leave->created_at->format('M d, Y') }}
+                        @forelse($overtimes as $overtime)
+                            @php
+                                $totalMinutes = $overtime->total;
+                                $hours = floor($totalMinutes / 60);
+                                $minutes = $totalMinutes % 60;
+                            @endphp
+
+                            <tr class="transition-colors duration-200 hover:bg-neutral-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div>
+                                        <div class="text-sm font-medium text-neutral-900">#{{ $overtime->id }}</div>
+                                        <div class="text-sm text-neutral-500">{{ $overtime->created_at->format('M d, Y') }}</div>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">
-                                    {{ \Carbon\Carbon::parse($leave->date_start)->format('M d') }} - {{
-                                    \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
-                                </div>
-                                <div class="text-sm text-neutral-500">
-                                    {{
-                                    \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
-                                    + 1 }} days
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($leave->status === 'pending')
-                                <span class="badge-pending">
-                                    <i class="mr-1 fas fa-clock"></i>
-                                    Pending
-                                </span>
-                                @elseif($leave->status === 'approved')
-                                <span class="badge-approved">
-                                    <i class="mr-1 fas fa-check-circle"></i>
-                                    Approved
-                                </span>
-                                @elseif($leave->status === 'rejected')
-                                <span class="badge-rejected">
-                                    <i class="mr-1 fas fa-times-circle"></i>
-                                    Rejected
-                                </span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $leave->approver->name }}</div>
-                                <div class="text-sm text-neutral-500">{{ ucfirst($leave->approver->role) }}</div>
-                            </td>
-                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                                <div class="flex items-center space-x-2">
-                                    <a href="{{ route('employee.leaves.show', $leave->id) }}"
-                                        class="text-primary-600 hover:text-primary-900" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-success-100">
+                                            <span class="text-xs font-semibold text-success-600">{{ substr($overtime->employee->name, 0, 1) }}</span>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-neutral-900">{{ $overtime->employee->name }}</div>
+                                            <div class="text-sm text-neutral-500">{{ $overtime->employee->email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">
+                                        {{ $overtime->date_start->format('M d, H:i') }}
+                                    </div>
+                                    <div class="text-sm text-neutral-500">
+                                        to {{ $overtime->date_end->format('H:i') }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-bold text-neutral-900">{{ $hours }}h {{ $minutes }}m</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($overtime->status === 'pending')
+                                        <span class="badge-pending">
+                                            <i class="mr-1 fas fa-clock"></i>
+                                            Pending
+                                        </span>
+                                    @elseif($overtime->status === 'approved')
+                                        <span class="badge-approved">
+                                            <i class="mr-1 fas fa-check-circle"></i>
+                                            Approved
+                                        </span>
+                                    @elseif($overtime->status === 'rejected')
+                                        <span class="badge-rejected">
+                                            <i class="mr-1 fas fa-times-circle"></i>
+                                            Rejected
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ route('employee.overtimes.show', $overtime->id) }}" class="text-primary-600 hover:text-primary-900">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if(Auth::id() === $overtime->employee_id && $overtime->status === 'pending')
+                                            <a href="{{ route('employee.overtimes.edit', $overtime->id) }}" class="text-secondary-600 hover:text-secondary-900">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('employee.overtimes.destroy', $overtime->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-error-600 hover:text-error-900">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
                         @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
-                                <div class="text-neutral-400">
-                                    <i class="mb-4 text-4xl fas fa-inbox"></i>
-                                    <p class="text-lg font-medium">No leave requests found</p>
-                                </div>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td colspan="6" class="px-6 py-12 text-center">
+                                    <div class="text-neutral-400">
+                                        <i class="mb-4 text-4xl fas fa-clock"></i>
+                                        <p class="text-lg font-medium">No overtime requests found</p>
+                                        <p class="text-sm">Submit your first overtime request to get started</p>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            @if($leaves->hasPages())
+            @if($overtimes->hasPages())
             <div class="px-6 py-4 border-t border-neutral-200">
-                {{ $leaves->links() }}
+                {{ $overtimes->links() }}
             </div>
             @endif
         </div>
