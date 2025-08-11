@@ -21,8 +21,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         ->name('leaves.export');
     Route::resource('leaves', LeaveController::class);
 
+    Route::get('/reimbursements/export', [ReimbursementController::class, 'export'])
+        ->name('reimbursements.export');
     Route::resource('reimbursements', ReimbursementController::class);
 
+    Route::get('/overtimes/export', [OvertimeController::class, 'export'])
+        ->name('overtimes.export');
     Route::resource('overtimes', OvertimeController::class);
 
     Route::get('/official-travels/export', [OfficialTravelController::class, 'export'])
