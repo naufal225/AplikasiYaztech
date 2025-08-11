@@ -64,6 +64,9 @@ class OvertimesExport implements FromCollection, WithHeadings, WithMapping, With
         $startDate = Carbon::parse($overtime->date_start);
         $endDate   = Carbon::parse($overtime->date_end);
         $duration  = $startDate->diffInDays($endDate) + 1;
+        $totalMinutes = $overtime->total;
+        $hours = floor($totalMinutes / 60);
+        $minutes = $totalMinutes % 60;
 
         return [
             '#'.$overtime->id,
@@ -72,7 +75,7 @@ class OvertimesExport implements FromCollection, WithHeadings, WithMapping, With
             $startDate->format('M d, Y'),
             $endDate->format('M d, Y'),
             $duration,
-            $overtime->total ?? 0,
+            $hours . " jam, " . $minutes . " menit",
             ucfirst((string) $overtime->status),
             optional($overtime->approver)->name ?? 'N/A',
             $overtime->created_at?->format('M d, Y H:i') ?? '-',
