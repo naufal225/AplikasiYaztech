@@ -190,17 +190,17 @@
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
-                                    <a href="{{ route('employee.reimbursements.show', $reimbursement->id) }}"
+                                    <a href="{{ route('admin.reimbursements.show', $reimbursement->id) }}"
                                         class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     @if(Auth::id() === $reimbursement->employee_id && $reimbursement->status ===
                                     'pending')
-                                    <a href="{{ route('employee.reimbursements.edit', $reimbursement->id) }}"
+                                    <a href="{{ route('admin.reimbursements.edit', $reimbursement->id) }}"
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('employee.reimbursements.destroy', $reimbursement->id) }}"
+                                    <form action="{{ route('admin.reimbursements.destroy', $reimbursement->id) }}"
                                         method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
                                         @csrf
                                         @method('DELETE')
