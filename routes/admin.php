@@ -16,6 +16,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::resource('approvers', ApproverController::class);
 
+
+    Route::get('/leaves/export', [LeaveController::class, 'export'])
+        ->name('leaves.export');
     Route::resource('leaves', LeaveController::class);
 
     Route::resource('reimbursements', ReimbursementController::class);
