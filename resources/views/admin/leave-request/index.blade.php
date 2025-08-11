@@ -24,7 +24,7 @@
         </div>
     </div>
 
-    <!-- Statistics Cards -->
+     Statistics Cards
     <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
         <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
             <div class="flex items-center">
@@ -199,13 +199,15 @@
         </div>
     </div>
 
-    <!-- Success/Error Messages -->
-    <div id="exportMessage" class="fixed z-50 hidden p-4 rounded-lg shadow-lg top-4 right-4">
-        <div class="flex items-center">
-            <span id="exportMessageText"></span>
-            <button onclick="document.getElementById('exportMessage').classList.add('hidden')" class="ml-2 text-white">
-                <i class="fas fa-times"></i>
-            </button>
+     Toast Notification
+    <div id="toast" class="fixed z-50 hidden top-4 right-4">
+        <div id="toastContent" class="px-6 py-4 rounded-lg shadow-lg">
+            <div class="flex items-center">
+                <span id="toastMessage"></span>
+                <button onclick="hideToast()" class="ml-4 text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
     </div>
 </main>
@@ -213,55 +215,98 @@
 
 @push('scripts')
 <script>
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const toastContent = document.getElementById('toastContent');
+    const toastMessage = document.getElementById('toastMessage');
+
+    toastMessage.textContent = message;
+
+    if (type === 'success') {
+        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-green-500 text-white';
+    } else {
+        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-red-500 text-white';
+    }
+
+    toast.classList.remove('hidden');
+
+    setTimeout(() => {
+        hideToast();
+    }, 5000);
+}
+
+function hideToast() {
+    document.getElementById('toast').classList.add('hidden');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const exportButton = document.getElementById('exportLeaveRequests');
     const exportButtonText = document.getElementById('exportButtonText');
     const exportSpinner = document.getElementById('exportSpinner');
-    const exportMessage = document.getElementById('exportMessage');
-    const exportMessageText = document.getElementById('exportMessageText');
 
-    function showMessage(message, isError = false) {
-        exportMessageText.textContent = message;
-        exportMessage.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${isError ? 'bg-red-500' : 'bg-green-500'} text-white`;
-        exportMessage.classList.remove('hidden');
-        setTimeout(() => exportMessage.classList.add('hidden'), 5000);
-    }
-
-    exportButton.addEventListener('click', function() {
-        // Ubah tombol jadi loading state
+    exportButton.addEventListener('click', async function() {
+        // Show loading state
         exportButtonText.textContent = 'Exporting...';
         exportSpinner.classList.remove('hidden');
         exportButton.disabled = true;
 
-        // Ambil filter yang sedang dipilih
-        const status = document.getElementById('statusFilter').value;
-        const fromDate = document.getElementById('fromDateFilter').value;
-        const toDate = document.getElementById('toDateFilter').value;
+        try {
+            // Get current filter values
+            const status = document.getElementById('statusFilter').value;
+            const fromDate = document.getElementById('fromDateFilter').value;
+            const toDate = document.getElementById('toDateFilter').value;
 
-        // Susun URL export
-        const params = new URLSearchParams();
-        if (status) params.append('status', status);
-        if (fromDate) params.append('from_date', fromDate);
-        if (toDate) params.append('to_date', toDate);
+            // Build export URL with filters
+            const params = new URLSearchParams();
+            if (status) params.append('status', status);
+            if (fromDate) params.append('from_date', fromDate);
+            if (toDate) params.append('to_date', toDate);
 
-        const exportUrl = `{{ route('admin.leaves.export') }}?${params.toString()}`;
+            const exportUrl = `{{ route('admin.leaves.export') }}?${params.toString()}`;
 
-        // Buat iframe tersembunyi untuk trigger download
-        const iframe = document.createElement('iframe');
-        iframe.style.display = 'none';
-        iframe.src = exportUrl;
-        document.body.appendChild(iframe);
+            // Use fetch to get the file
+            const response = await fetch(exportUrl, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            });
 
-        // Setelah download dipicu, reset tombol & tampilkan pesan
-        setTimeout(() => {
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Export failed');
+            }
+
+            // Get the blob from response
+            const blob = await response.blob();
+
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `leave-requests-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.xlsx`;
+
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Clean up
+            window.URL.revokeObjectURL(url);
+
+            showToast('Export completed successfully!', 'success');
+
+        } catch (error) {
+            console.error('Export error:', error);
+            showToast('Export failed: ' + error.message, 'error');
+        } finally {
+            // Reset button state
             exportButtonText.textContent = 'Export Data';
             exportSpinner.classList.add('hidden');
             exportButton.disabled = false;
-            document.body.removeChild(iframe);
-            showMessage('Export completed successfully!', false);
-        }, 3000);
+        }
     });
 });
 </script>
-
 @endpush
