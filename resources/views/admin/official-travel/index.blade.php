@@ -12,11 +12,15 @@
         </div>
         <div class="mt-4 sm:mt-0">
             <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:flex-row">
-                <a id="exportleaveuests"
+                <button id="exportOfficialTravelsData"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
                     <i class="mr-2 fa-solid fa-file-export"></i>
-                    Export Data
-                </a>
+                    <span id="exportButtonText">Export Data</span>
+                    <svg id="exportSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
             </div>
         </div>
     </div>
@@ -69,10 +73,10 @@
     </div>
 
     <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
-        <form method="GET" action="{{ route('admin.official-travels.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <form id="filterForm" method="GET" action="{{ route('admin.official-travels.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div>
                 <label class="block mb-2 text-sm font-medium text-neutral-700">Status</label>
-                <select name="status" class="form-select">
+                <select name="status" id="statusFilter" class="form-select">
                     <option value="">All Status</option>
                     <option value="pending" {{ request('status')==='pending' ? 'selected' : '' }}>Pending</option>
                     <option value="approved" {{ request('status')==='approved' ? 'selected' : '' }}>Approved</option>
@@ -81,11 +85,11 @@
             </div>
             <div>
                 <label class="block mb-2 text-sm font-medium text-neutral-700">From Date</label>
-                <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-input">
+                <input type="date" name="from_date" id="fromDateFilter" value="{{ request('from_date') }}" class="form-input">
             </div>
             <div>
                 <label class="block mb-2 text-sm font-medium text-neutral-700">To Date</label>
-                <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-input">
+                <input type="date" name="to_date" id="toDateFilter" value="{{ request('to_date') }}" class="form-input">
             </div>
             <div class="flex items-end">
                 <button type="submit" class="mr-2 btn-primary">
@@ -174,7 +178,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                     <div class="flex items-center space-x-2">
-                                        <a href="{{ route('employee.official-travels.show', $officialTravel->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
+                                        <a href="{{ route('admin.official-travels.show', $officialTravel->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                     </div>
@@ -199,6 +203,16 @@
                 {{ $officialTravels->links() }}
             </div>
             @endif
+        </div>
+    </div>
+    <div id="toast" class="fixed z-50 hidden top-4 right-4">
+        <div id="toastContent" class="px-6 py-4 rounded-lg shadow-lg">
+            <div class="flex items-center">
+                <span id="toastMessage"></span>
+                <button onclick="hideToast()" class="ml-4 text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
     </div>
 </main>
@@ -250,3 +264,102 @@
 </div>
 
 @endsection
+
+
+@push('scripts')
+<script>
+function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const toastContent = document.getElementById('toastContent');
+    const toastMessage = document.getElementById('toastMessage');
+
+    toastMessage.textContent = message;
+
+    if (type === 'success') {
+        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-green-500 text-white';
+    } else {
+        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-red-500 text-white';
+    }
+
+    toast.classList.remove('hidden');
+
+    setTimeout(() => {
+        hideToast();
+    }, 5000);
+}
+
+function hideToast() {
+    document.getElementById('toast').classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const exportButton = document.getElementById('exportOfficialTravelsData');
+    const exportButtonText = document.getElementById('exportButtonText');
+    const exportSpinner = document.getElementById('exportSpinner');
+
+    exportButton.addEventListener('click', async function() {
+        // Show loading state
+        exportButtonText.textContent = 'Exporting...';
+        exportSpinner.classList.remove('hidden');
+        exportButton.disabled = true;
+
+        try {
+            // Get current filter values
+            const status = document.getElementById('statusFilter').value;
+            const fromDate = document.getElementById('fromDateFilter').value;
+            const toDate = document.getElementById('toDateFilter').value;
+
+            // Build export URL with filters
+            const params = new URLSearchParams();
+            if (status) params.append('status', status);
+            if (fromDate) params.append('from_date', fromDate);
+            if (toDate) params.append('to_date', toDate);
+
+            const exportUrl = `{{ route('admin.official-travels.export') }}?${params.toString()}`;
+
+            // Use fetch to get the file
+            const response = await fetch(exportUrl, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Export failed');
+            }
+
+            // Get the blob from response
+            const blob = await response.blob();
+
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `official-travel-requests-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.xlsx`;
+
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Clean up
+            window.URL.revokeObjectURL(url);
+
+            showToast('Export completed successfully!', 'success');
+
+        } catch (error) {
+            console.error('Export error:', error);
+            showToast('Export failed: ' + error.message, 'error');
+        } finally {
+            // Reset button state
+            exportButtonText.textContent = 'Export Data';
+            exportSpinner.classList.add('hidden');
+            exportButton.disabled = false;
+        }
+    });
+});
+</script>
+@endpush
