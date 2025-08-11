@@ -13,7 +13,11 @@ Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Leave Requests
-    Route::resource('leaves', LeaveController::class);
+    Route::resource('leaves', LeaveController::class)
+        ->parameters([
+            "leaves" => "leave"
+        ]);
+    ;
 
     // Reimbursements
     Route::resource('reimbursements', ReimbursementController::class);

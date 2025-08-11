@@ -46,9 +46,8 @@ class LeaveController extends Controller
         return view('admin.leave-request.index', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
 
-    public function show($id)
+    public function show(Leave $leave)
     {
-        $leave = Leave::findOrFail($id);
         $leave->load(['employee', 'approver']);
         return view('admin.leave-request.show', compact('leave'));
     }
