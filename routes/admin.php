@@ -25,5 +25,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::resource('overtimes', OvertimeController::class);
 
+    Route::get('/official-travels/export', [OfficialTravelController::class, 'export'])
+        ->name('official-travels.export');
     Route::resource('official-travels', OfficialTravelController::class);
 });

@@ -199,7 +199,6 @@
         </div>
     </div>
 
-     Toast Notification
     <div id="toast" class="fixed z-50 hidden top-4 right-4">
         <div id="toastContent" class="px-6 py-4 rounded-lg shadow-lg">
             <div class="flex items-center">
