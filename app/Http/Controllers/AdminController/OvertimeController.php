@@ -42,8 +42,9 @@ class OvertimeController extends Controller
         return view('admin.overtime.index', compact('overtimes', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
 
-    public function show(Overtime $overtime)
+    public function show($id)
     {
+        $overtime = Overtime::findOrFail($id);
         $overtime->load(['employee', 'approver']);
         return view('admin.overtime.show', compact('overtime'));
     }

@@ -42,8 +42,9 @@ class ReimbursementController extends Controller
         return view('admin.reimbursement.index', compact('reimbursements', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
 
-     public function show(Reimbursement $reimbursement)
+     public function show($id)
     {
+        $reimbursement = Reimbursement::findOrFail($id);
         $reimbursement->load(['approver', 'customer']);
 
         return view('admin.reimbursement.show', compact('reimbursement'));
