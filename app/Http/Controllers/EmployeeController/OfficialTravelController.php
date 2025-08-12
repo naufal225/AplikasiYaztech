@@ -28,13 +28,13 @@ class OfficialTravelController extends Controller
         }
 
         if ($request->filled('from_date')) {
-            $query->where('date_start', '>=', 
+            $query->where('date_start', '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $query->where('date_start', '<=', 
+            $query->where('date_start', '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -143,9 +143,10 @@ class OfficialTravelController extends Controller
         ]);
 
         // Calculate total days
-        $startDate = Carbon::parse($request->date_start);
-        $endDate = Carbon::parse($request->date_end);
-        $totalDays = $endDate->diffInDays($startDate) + 1;
+        $start = Carbon::parse($request->date_start);
+        $end = Carbon::parse($request->date_end);
+
+        $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
 
         $officialTravel->approver_id = $request->approver_id;
         $officialTravel->date_start = $request->date_start;

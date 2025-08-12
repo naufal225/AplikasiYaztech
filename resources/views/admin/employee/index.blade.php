@@ -30,6 +30,20 @@
                 </a>
             </div>
         </div>
+
+        <!-- Success Message -->
+        @if(session('success'))
+        <div class="flex items-center p-4 my-6 border border-green-200 bg-green-50 rounded-xl">
+            <div class="flex-shrink-0">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+            </div>
+        </div>
+        @endif
     </div>
 
     <div class="mb-6">
@@ -162,10 +176,12 @@
 <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
 
-        <div class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+        <div
+            class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
             <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
                 <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
             </div>
 
@@ -178,17 +194,20 @@
             </div>
 
             <div class="flex justify-center space-x-3">
-                <button type="button"
-                    id="cancelDeleteButton"
+                <button type="button" id="cancelDeleteButton"
                     class="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg cancel-delete-btn hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                     Cancel
                 </button>
                 <button type="button" id="confirmDeleteBtn"
                     class="px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                     <span id="deleteButtonText">Delete</span>
-                    <svg id="deleteSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg id="deleteSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
                     </svg>
                 </button>
             </div>
@@ -198,7 +217,7 @@
 
 @endsection
 {{--@section('partial-modal')
- Import Excel Modal with Enhanced Drag & Drop
+Import Excel Modal with Enhanced Drag & Drop
 <div id="importExcelModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div
@@ -217,10 +236,10 @@
             </div>
             <form action="" method="POST" enctype="multipart/form-data" class="space-y-6">
                 @csrf
-                 Enhanced Drag & Drop Area
+                Enhanced Drag & Drop Area
                 <div id="dropZone"
                     class="relative p-8 text-center transition-all duration-300 border-2 border-gray-300 border-dashed cursor-pointer rounded-xl hover:border-amber-400 hover:bg-amber-50 group">
-                     Default State
+                    Default State
                     <div id="defaultState" class="space-y-4">
                         <div class="flex justify-center">
                             <div
@@ -242,7 +261,7 @@
                             <span class="px-2 py-1 font-medium text-gray-600 bg-gray-100 rounded">.xls</span>
                         </div>
                     </div>
-                     Drag Over State
+                    Drag Over State
                     <div id="dragOverState" class="hidden space-y-4">
                         <div class="flex justify-center">
                             <div
@@ -259,11 +278,11 @@
                             <p class="text-sm text-amber-600">Drop your Excel file here</p>
                         </div>
                     </div>
-                     File Input
+                    File Input
                     <input id="excel-file" name="excel_file" type="file" accept=".xlsx,.xls"
                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required>
                 </div>
-                 Selected File Display
+                Selected File Display
                 <div id="selected-file" class="hidden">
                     <div class="flex items-center p-4 border border-green-200 bg-green-50 rounded-xl">
                         <div class="flex-shrink-0">
@@ -288,7 +307,7 @@
                         </button>
                     </div>
                 </div>
-                 Error Display
+                Error Display
                 <div id="error-message" class="hidden">
                     <div class="flex items-center p-4 border border-red-200 bg-red-50 rounded-xl">
                         <div class="flex-shrink-0">
@@ -302,7 +321,7 @@
                         </div>
                     </div>
                 </div>
-                 Download Template Section
+                Download Template Section
                 <div class="p-4 border border-blue-200 bg-blue-50 rounded-xl">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
@@ -321,7 +340,7 @@
                         </div>
                     </div>
                 </div>
-                 Action Buttons
+                Action Buttons
                 <div class="flex justify-end pt-4 space-x-3 border-t border-gray-200">
                     <button type="button" id="cancelImportBtn"
                         class="px-6 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50">

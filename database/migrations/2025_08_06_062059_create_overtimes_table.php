@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('overtimes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->nullable()->constrained('users', 'id')->nullOnDelete();
-            $table->foreignId('approver_id')->nullable()->constrained('users', 'id')->nullOnDelete();
             $table->dateTime('date_start');
             $table->dateTime('date_end');
             $table->bigInteger('total');

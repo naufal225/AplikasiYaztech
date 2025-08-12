@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Roles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -47,38 +49,63 @@ class User extends Authenticatable
     }
 
     //Leaves
-    public function leavesNeedApproval() {
-        return $this->hasMany(Leave::class, 'approver_id');
+    public function leaves() {
+        return $this->hasManyThrough(
+            Leave::class,
+            User::class,
+            'id',
+            'id'
+        )->where('users.role', Roles::Employee->value);
     }
 
-    public function leavesThatApplied() {
-        return $this->hasMany(Leave::class, 'employee_id');
+    public function leavesPending() {
+        $this->leaves()->where('status', 'pending');
     }
 
     //Reimbursements
-    public function reimbursementsNeedApproval() {
-        return $this->hasMany(Reimbursement::class, 'approver_id');
+    public function reimbursements() {
+        return $this->hasManyThrough(
+            Reimbursement::class,
+            User::class,
+            'id',
+            'id'
+        )->where('users.role', Roles::Employee->value);
     }
 
-    public function reimbursementsApplied() {
-        return $this->hasMany(Reimbursement::class, 'employee_id');
+    public function reimbursementsPending() {
+        $this->reimbursements()->where('status', 'pending');
+    }
+
+    //OfficialTravels
+     public function officialTravels() {
+        return $this->hasManyThrough(
+            OfficialTravel::class,
+            User::class,
+            'id',
+            'id'
+        )->where('users.role', Roles::Employee->value);
+    }
+
+    public function officialTravelsPending() {
+        $this->officialTravels()->where('status', 'pending');
     }
 
     //Overtimes
-    public function overtimesNeedApproval() {
-        return $this->hasMany(Overtime::class, 'approver_id');
+     public function overtimes() {
+        return $this->hasManyThrough(
+            Overtime::class,
+            User::class,
+            'id',
+            'id'
+        )->where('users.role', Roles::Employee->value);
     }
 
-    public function overtimesApplied() {
-        return $this->hasMany(Overtime::class, 'employee_id');
+    public function overtimesPending() {
+        $this->overtimes()->where('status', 'pending');
     }
 
-    //Official Travel
-    public function officialTravelNeedApproval() {
-        return $this->hasMany(OfficialTravel::class, 'approver_id');
-    }
-
-    public function officialTracelApplied() {
-        return $this->hasMany(OfficialTravel::class, 'employee_id');
+    //Division
+    public function division() {
+        return $this->belongsTo(Division::class, 'division_id');
     }
 }

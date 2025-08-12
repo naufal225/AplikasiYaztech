@@ -11,13 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('leaves', function (Blueprint $table) {
+        Schema::create('divisions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->nullable()->constrained('users', 'id')->nullOnDelete();
-            $table->date('date_start');
-            $table->date('date_end');
-            $table->longText('reason');
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->foreignId('leader_id')->nullable()->constrained('users', 'id')->nullOnDelete();
+            $table->string('name')->unique();
             $table->timestamps();
         });
     }
@@ -27,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('leaves');
+        Schema::dropIfExists('divisions');
     }
 };
