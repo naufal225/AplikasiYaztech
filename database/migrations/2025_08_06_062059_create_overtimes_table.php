@@ -17,7 +17,8 @@ return new class extends Migration
             $table->dateTime('date_start');
             $table->dateTime('date_end');
             $table->bigInteger('total');
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status_1', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status_2', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });
     }

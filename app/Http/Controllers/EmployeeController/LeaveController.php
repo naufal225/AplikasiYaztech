@@ -24,7 +24,8 @@ class LeaveController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('status_1', $request->status)
+            ->orWhere('status_2', $request->status);
         }
 
         if ($request->filled('from_date')) {
@@ -41,9 +42,9 @@ class LeaveController extends Controller
 
         $leaves = $query->paginate(10);
         $totalRequests = Leave::where('employee_id', $user->id)->count();
-        $pendingRequests = Leave::where('employee_id', $user->id)->where('status', 'pending')->count();
-        $approvedRequests = Leave::where('employee_id', $user->id)->where('status', 'approved')->count();
-        $rejectedRequests = Leave::where('employee_id', $user->id)->where('status', 'rejected')->count();
+        $pendingRequests = Leave::where('employee_id', $user->id)->where('status_1', 'pending')->orWhere('status_2', 'pending')->count();
+        $approvedRequests = Leave::where('employee_id', $user->id)->where('status_1', 'approved')->orWhere('status_2', 'approved')->count();
+        $rejectedRequests = Leave::where('employee_id', $user->id)->where('status_1', 'rejected')->orWhere('status_2', 'rejected')->count();
 
         return view('Employee.leaves.leave-show', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
@@ -65,7 +66,6 @@ class LeaveController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'approver_id' => 'required|exists:users,id',
             'date_start' => 'required|date',
             'date_end' => 'required|date|after_or_equal:date_start',
             'reason' => 'required|string|max:1000',
@@ -73,11 +73,11 @@ class LeaveController extends Controller
 
         $leave = new Leave();
         $leave->employee_id = Auth::id();
-        $leave->approver_id = $request->approver_id;
         $leave->date_start = $request->date_start;
         $leave->date_end = $request->date_end;
         $leave->reason = $request->reason;
-        $leave->status = 'pending';
+        $leave->status_1 = 'pending';
+        $leave->status_2 = 'pending';
         $leave->save();
 
         // Send notification email to the approver
@@ -127,7 +127,7 @@ class LeaveController extends Controller
 
 
         // Only allow editing if the leave is still pending
-        if ($leave->status !== 'pending') {
+        if ($leave->status_1 !== 'pending' || $leave->status_2 !== 'pending') {
             return redirect()->route('employee.leaves.show', $leave->id)
                 ->with('error', 'You cannot edit a leave request that has already been processed.');
         }
@@ -149,23 +149,22 @@ class LeaveController extends Controller
         }
 
         // Only allow updating if the leave is still pending
-        if ($leave->status !== 'pending') {
+        if ($leave->status_1 !== 'pending' || $leave->status_2 !== 'pending') {
             return redirect()->route('employee.leaves.show', $leave->id)
                 ->with('error', 'You cannot update a leave request that has already been processed.');
         }
 
         $request->validate([
-            'approver_id' => 'required|exists:users,id', // Validasi approver_id
             'date_start' => 'required|date',
             'date_end' => 'required|date|after_or_equal:date_start',
             'reason' => 'required|string|max:1000',
         ]);
 
-        $leave->approver_id = $request->approver_id; // Memperbarui approver_id
         $leave->date_start = $request->date_start;
         $leave->date_end = $request->date_end;
         $leave->reason = $request->reason;
         $leave->save();
+        
         return redirect()->route('employee.leaves.show', $leave->id)
             ->with('success', 'Leave request updated successfully.');
     }
@@ -182,7 +181,7 @@ class LeaveController extends Controller
         }
 
         // Only allow deleting if the leave is still pending
-        if ($leave->status !== 'pending' && $user->role !== Roles::Admin->value) {
+        if (($leave->status_1 !== 'pending' || $leave->status_2 !== 'pending') && $user->role !== Roles::Admin->value) {
             return redirect()->route('employee.leaves.show', $leave->id)
                 ->with('error', 'You cannot delete a leave request that has already been processed.');
         }

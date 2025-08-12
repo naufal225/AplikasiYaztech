@@ -23,7 +23,8 @@ class OvertimeController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('status_1', $request->status)
+            ->orWhere('status_2', $request->status);
         }
 
         if ($request->filled('from_date')) {
@@ -40,9 +41,9 @@ class OvertimeController extends Controller
 
         $overtimes = $query->paginate(10);
         $totalRequests = Overtime::where('employee_id', $user->id)->count();
-        $pendingRequests = Overtime::where('employee_id', $user->id)->where('status', 'pending')->count();
-        $approvedRequests = Overtime::where('employee_id', $user->id)->where('status', 'approved')->count();
-        $rejectedRequests = Overtime::where('employee_id', $user->id)->where('status', 'rejected')->count();
+        $pendingRequests = Overtime::where('employee_id', $user->id)->where('status_1', 'pending')->orWhere('status_2', 'pending')->count();
+        $approvedRequests = Overtime::where('employee_id', $user->id)->where('status_1', 'approved')->orWhere('status_2', 'approved')->count();
+        $rejectedRequests = Overtime::where('employee_id', $user->id)->where('status_1', 'rejected')->orWhere('status_2', 'rejected')->count();
 
         return view('Employee.overtimes.overtime-show', compact('overtimes', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
@@ -63,7 +64,6 @@ class OvertimeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'approver_id' => 'required|exists:users,id',
             'date_start' => 'required|date_format:Y-m-d\TH:i',
             'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
         ]);
@@ -85,11 +85,11 @@ class OvertimeController extends Controller
 
         Overtime::create([
             'employee_id' => Auth::id(),
-            'approver_id' => $request->approver_id,
             'date_start' => $start,
             'date_end' => $end,
             'total' => $overtimeMinutes,
-            'status' => 'pending',
+            'status_1' => 'pending',
+            'status_2' => 'pending',
         ]);
 
         return redirect()->route('employee.overtimes.index')
@@ -120,7 +120,7 @@ class OvertimeController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        if ($overtime->status !== 'pending') {
+        if ($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') {
             return redirect()->route('employee.overtimes.show', $overtime->id)
                 ->with('error', 'You cannot edit an overtime request that has already been processed.');
         }
@@ -140,13 +140,12 @@ class OvertimeController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        if ($overtime->status !== 'pending') {
+        if ($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') {
             return redirect()->route('employee.overtimes.show', $overtime->id)
                 ->with('error', 'You cannot update an overtime request that has already been processed.');
         }
 
         $request->validate([
-            'approver_id' => 'required|exists:users,id',
             'date_start' => 'required|date_format:Y-m-d\TH:i',
             'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
         ]);
@@ -165,7 +164,6 @@ class OvertimeController extends Controller
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
         }
 
-        $overtime->approver_id = $request->approver_id;
         $overtime->date_start = $request->date_start;
         $overtime->date_end = $request->date_end;
         $overtime->total = $overtimeMinutes;
@@ -185,7 +183,7 @@ class OvertimeController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        if ($overtime->status !== 'pending' && $user->role !== Roles::Admin->value) {
+        if (($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') && $user->role !== Roles::Admin->value) {
             return redirect()->route('employee.overtimes.show', $overtime->id)
                 ->with('error', 'You cannot delete an overtime request that has already been processed.');
         }
