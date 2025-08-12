@@ -8,7 +8,6 @@ class Reimbursement extends Model
 {
     protected $fillable = [
         'employee_id',
-        'approver_id',
         'date',
         'total',
         'invoice_path',
@@ -17,10 +16,6 @@ class Reimbursement extends Model
 
     public function employee() {
         return $this->belongsTo(User::class, 'employee_id');
-    }
-
-    public function approver() {
-        return $this->belongsTo(User::class, 'approver_id');
     }
 
     public function customer() {

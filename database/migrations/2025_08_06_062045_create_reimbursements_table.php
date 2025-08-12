@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('reimbursements', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->nullable()->constrained('users', 'id')->nullOnDelete();
-            $table->foreignId('approver_id')->nullable()->constrained('users', 'id')->nullOnDelete();
+            $table->foreignId('customer_id')->nullable()->constrained('customer', 'id')->nullOnDelete();
             $table->date('date');
             $table->bigInteger('total');
             $table->text('invoice_path');

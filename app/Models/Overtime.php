@@ -8,7 +8,6 @@ class Overtime extends Model
 {
     protected $fillable = [
         'employee_id',
-        'approver_id',
         'date_start',
         'date_end',
         'total',
@@ -17,10 +16,6 @@ class Overtime extends Model
 
     public function employee() {
         return $this->belongsTo(User::class, 'employee_id');
-    }
-
-    public function approver() {
-        return $this->belongsTo(User::class, 'approver_id');
     }
 
     protected $casts = [

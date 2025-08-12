@@ -18,7 +18,7 @@
             <span class="font-medium">Dashboard</span>
         </a>
 
-        <a href=""
+        <a href="{{ route('approver.leaves.index') }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
             <span class="font-medium">Leave Requests</span>
