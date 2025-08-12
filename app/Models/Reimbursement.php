@@ -11,7 +11,8 @@ class Reimbursement extends Model
         'date',
         'total',
         'invoice_path',
-        'status'
+        'status_1',
+        'status_2'
     ];
 
     public function employee() {

@@ -24,7 +24,8 @@ class OfficialTravelController extends Controller
 
         // Apply filters
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('status', $request->status)
+            ->orWhere('status_2', $request->status);
         }
 
         if ($request->filled('from_date')) {
@@ -41,9 +42,9 @@ class OfficialTravelController extends Controller
 
         $officialTravels = $query->paginate(10);
         $totalRequests = OfficialTravel::where('employee_id', $user->id)->count();
-        $pendingRequests = OfficialTravel::where('employee_id', $user->id)->where('status', 'pending')->count();
-        $approvedRequests = OfficialTravel::where('employee_id', $user->id)->where('status', 'approved')->count();
-        $rejectedRequests = OfficialTravel::where('employee_id', $user->id)->where('status', 'rejected')->count();
+        $pendingRequests = OfficialTravel::where('employee_id', $user->id)->where('status_1', 'pending')->orWhere('status_2', 'pending')->count();
+        $approvedRequests = OfficialTravel::where('employee_id', $user->id)->where('status_1', 'approved')->orWhere('status_2', 'approved')->count();
+        $rejectedRequests = OfficialTravel::where('employee_id', $user->id)->where('status_1', 'rejected')->orWhere('status_2', 'rejected')->count();
 
         return view('Employee.travels.travel-show', compact('officialTravels', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
@@ -76,11 +77,11 @@ class OfficialTravelController extends Controller
 
         $officialTravel = new OfficialTravel();
         $officialTravel->employee_id = Auth::id();
-        $officialTravel->approver_id = $request->approver_id;
         $officialTravel->date_start = $start;
         $officialTravel->date_end = $end;
         $officialTravel->total = $totalDays;
-        $officialTravel->status = 'pending';
+        $officialTravel->status_1 = 'pending';
+        $officialTravel->status_2 = 'pending';
         $officialTravel->save();
 
         return redirect()->route('employee.official-travels.index')
@@ -111,7 +112,7 @@ class OfficialTravelController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        if ($officialTravel->status !== 'pending') {
+        if ($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') {
             return redirect()->route('employee.official-travels.show', $officialTravel->id)
                 ->with('error', 'You cannot edit a travel request that has already been processed.');
         }
@@ -131,13 +132,12 @@ class OfficialTravelController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        if ($officialTravel->status !== 'pending') {
+        if ($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') {
             return redirect()->route('employee.official-travels.show', $officialTravel->id)
                 ->with('error', 'You cannot update a travel request that has already been processed.');
         }
 
         $request->validate([
-            'approver_id' => 'required|exists:users,id',
             'date_start' => 'required|date|after_or_equal:today',
             'date_end' => 'required|date|after_or_equal:date_start',
         ]);
@@ -148,7 +148,6 @@ class OfficialTravelController extends Controller
 
         $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
 
-        $officialTravel->approver_id = $request->approver_id;
         $officialTravel->date_start = $request->date_start;
         $officialTravel->date_end = $request->date_end;
         $officialTravel->total = $totalDays;
@@ -168,7 +167,7 @@ class OfficialTravelController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        if ($officialTravel->status !== 'pending' && $user->role !== Roles::Admin->value) {
+        if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') && $user->role !== Roles::Admin->value) {
             return redirect()->route('employee.official-travels.show', $officialTravel->id)
                 ->with('error', 'You cannot delete a travel request that has already been processed.');
         }

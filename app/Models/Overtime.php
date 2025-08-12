@@ -11,7 +11,8 @@ class Overtime extends Model
         'date_start',
         'date_end',
         'total',
-        'status'
+        'status_1',
+        'status_2'
     ];
 
     public function employee() {

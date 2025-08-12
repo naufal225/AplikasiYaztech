@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('reimbursements', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->nullable()->constrained('users', 'id')->nullOnDelete();
-            $table->foreignId('customer_id')->nullable()->constrained('customer', 'id')->nullOnDelete();
             $table->date('date');
             $table->bigInteger('total');
             $table->text('invoice_path');
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status_1', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status_2', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });
     }

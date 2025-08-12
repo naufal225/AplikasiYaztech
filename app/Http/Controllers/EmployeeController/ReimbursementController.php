@@ -26,7 +26,8 @@ class ReimbursementController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('status_1', $request->status)
+            ->orWhere('status_2', $request->status);
         }
 
         if ($request->filled('from_date')) {
@@ -43,9 +44,9 @@ class ReimbursementController extends Controller
 
         $reimbursements = $query->paginate(10);
         $totalRequests = Reimbursement::where('employee_id', $user->id)->count();
-        $pendingRequests = Reimbursement::where('employee_id', $user->id)->where('status', 'pending')->count();
-        $approvedRequests = Reimbursement::where('employee_id', $user->id)->where('status', 'approved')->count();
-        $rejectedRequests = Reimbursement::where('employee_id', $user->id)->where('status', 'rejected')->count();
+        $pendingRequests = Reimbursement::where('employee_id', $user->id)->where('status_1', 'pending')->orWhere('status_2', 'pending')->count();
+        $approvedRequests = Reimbursement::where('employee_id', $user->id)->where('status_1', 'approved')->orWhere('status_2', 'approved')->count();
+        $rejectedRequests = Reimbursement::where('employee_id', $user->id)->where('status_1', 'rejected')->orWhere('status_2', 'rejected')->count();
 
         return view('Employee.reimbursements.reimbursement-show', compact('reimbursements', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
@@ -68,7 +69,6 @@ class ReimbursementController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'approver_id' => 'required|exists:users,id',
             'customer_id' => 'required|exists:customers,id',
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
@@ -77,11 +77,11 @@ class ReimbursementController extends Controller
 
         $reimbursement = new Reimbursement();
         $reimbursement->employee_id = Auth::id();
-        $reimbursement->approver_id = $request->approver_id;
         $reimbursement->customer_id = $request->customer_id;
         $reimbursement->total = $request->total;
         $reimbursement->date = $request->date;
-        $reimbursement->status = 'pending';
+        $reimbursement->status_1 = 'pending';
+        $reimbursement->status_2 = 'pending';
 
         if ($request->hasFile('invoice_path')) {
             $path = $request->file('invoice_path')->store('reimbursement_invoices', 'public');
@@ -138,7 +138,7 @@ class ReimbursementController extends Controller
         }
 
         // Only allow editing if the reimbursement is still pending
-        if ($reimbursement->status !== 'pending') {
+        if ($reimbursement->status_1 !== 'pending' || $reimbursement->status_2 !== 'pending') {
             return redirect()->route('employee.reimbursements.show', $reimbursement->id)
                 ->with('error', 'You cannot edit a reimbursement request that has already been processed.');
         }
@@ -162,24 +162,23 @@ class ReimbursementController extends Controller
         }
 
         // Only allow updating if the reimbursement is still pending
-        if ($reimbursement->status !== 'pending') {
+        if ($reimbursement->status_1 !== 'pending' || $reimbursement->status_2 !== 'pending') {
             return redirect()->route('employee.reimbursements.show', $reimbursement->id)
                 ->with('error', 'You cannot update a reimbursement request that has already been processed.');
         }
 
         $request->validate([
-            'approver_id' => 'required|exists:users,id',
             'customer_id' => 'required|exists:customers,id',
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
             'invoice_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        $reimbursement->approver_id = $request->approver_id;
         $reimbursement->customer_id = $request->customer_id;
         $reimbursement->total = $request->total;
         $reimbursement->date = $request->date;
-        $reimbursement->status = 'pending';
+        $reimbursement->status_1 = 'pending';
+        $reimbursement->status_2 = 'pending';
 
         if ($request->hasFile('invoice_path')) {
             // Delete old invoice_path if exists
@@ -214,7 +213,7 @@ class ReimbursementController extends Controller
         }
 
         // Only allow deleting if the reimbursement is still pending
-        if ($reimbursement->status !== 'pending') {
+        if ($reimbursement->status_1 !== 'pending' || $reimbursement->status_2 !== 'pending') {
             return redirect()->route('employee.reimbursements.show', $reimbursement->id)
                 ->with('error', 'You cannot delete a reimbursement request that has already been processed.');
         }
