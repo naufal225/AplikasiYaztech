@@ -149,17 +149,17 @@
                                     <div class="text-sm font-bold text-neutral-900">{{ $hours }}h {{ $minutes }}m</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($overtime->status === 'pending')
+                                    @if($overtime->status_1 === 'pending' || $overtime->status_2 === 'pending')
                                         <span class="badge-pending">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
-                                    @elseif($overtime->status === 'approved')
+                                    @elseif($overtime->status_1 === 'approved' && $overtime->status_2 === 'approved')
                                         <span class="badge-approved">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
-                                    @elseif($overtime->status === 'rejected')
+                                    @elseif($overtime->status_1 === 'rejected' || $overtime->status_2 === 'rejected')
                                         <span class="badge-rejected">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
@@ -171,7 +171,7 @@
                                         <a href="{{ route('employee.overtimes.show', $overtime->id) }}" class="text-primary-600 hover:text-primary-900">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if(Auth::id() === $overtime->employee_id && $overtime->status === 'pending')
+                                        @if(Auth::id() === $overtime->employee_id && ($overtime->status_1 === 'pending' || $overtime->status_2 === 'pending'))
                                             <a href="{{ route('employee.overtimes.edit', $overtime->id) }}" class="text-secondary-600 hover:text-secondary-900">
                                                 <i class="fas fa-edit"></i>
                                             </a>
