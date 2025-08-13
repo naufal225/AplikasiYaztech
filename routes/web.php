@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ResetPasswordController;
 use App\Roles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -8,6 +9,18 @@ use Illuminate\Support\Facades\Route;
 require __DIR__.'/admin.php';
 require __DIR__.'/approver.php';
 require __DIR__.'/employee.php';
+
+Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])
+    ->middleware('guest')
+    ->name('password.reset');
+
+Route::post('/reset-password', [ResetPasswordController::class, 'store'])
+    ->middleware('guest')
+    ->name('password.update');
+
+Route::get('/password-reset-success', [ResetPasswordController::class, 'success'])
+    ->middleware('guest')
+    ->name('password.reset.success');
 
 Route::get('/', function () {
     $user = Auth::user();

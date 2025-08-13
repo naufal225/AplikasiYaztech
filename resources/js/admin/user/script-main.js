@@ -230,7 +230,7 @@ window.addEventListener("resize", function () {
     }
 });
 // Delete confirmation functionality
-let employeeIdToDelete = null;
+let userIdToDelete = null;
 
 // Initialize delete functionality when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -239,13 +239,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializeDeleteFunctionality() {
     // Add event listeners to all delete buttons
-    const deleteButtons = document.querySelectorAll('.delete-employee-btn');
+    const deleteButtons = document.querySelectorAll('.delete-user-btn');
     const cancelButtons = document.querySelectorAll('#cancelDeleteButton');
     deleteButtons.forEach(button => {
         button.addEventListener('click', function() {
-            const employeeId = this.getAttribute('data-employee-id');
-            const employeeName = this.getAttribute('data-employee-name');
-            confirmDelete(employeeId, employeeName);
+            const userId = this.getAttribute('data-user-id');
+            const userName = this.getAttribute('data-user-name');
+            confirmDelete(userId, userName);
         });
     });
 
@@ -267,21 +267,21 @@ function initializeDeleteFunctionality() {
     });
 }
 
-function confirmDelete(employeeId, employeeName) {
-    employeeIdToDelete = employeeId;
-    document.getElementById('employeeName').textContent = employeeName;
+function confirmDelete(userId, userName) {
+    userIdToDelete = userId;
+    document.getElementById('userName').textContent = userName;
     document.getElementById('deleteConfirmModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
 }
 
 function closeDeleteModal() {
-    employeeIdToDelete = null;
+    userIdToDelete = null;
     document.getElementById('deleteConfirmModal').classList.add('hidden');
     document.body.style.overflow = 'auto'; // Restore scrolling
 }
 
 function executeDelete() {
-    if (!employeeIdToDelete) return;
+    if (!userIdToDelete) return;
 
     // Show loading state
     const deleteBtn = document.getElementById('confirmDeleteBtn');
@@ -298,7 +298,7 @@ function executeDelete() {
     deleteSpinner.classList.remove('hidden');
 
     // Submit the form
-    document.getElementById(`delete-form-${employeeIdToDelete}`).submit();
+    document.getElementById(`delete-form-${userIdToDelete}`).submit();
 }
 
 // Close modal when pressing Escape key

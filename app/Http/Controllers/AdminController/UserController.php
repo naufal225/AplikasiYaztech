@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\AdminController;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ResetPasswordMail;
 use App\Models\Division;
 use App\Models\User;
 use App\Roles;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 
 class UserController extends Controller
@@ -67,7 +69,14 @@ class UserController extends Controller
             "password" => bcrypt("password")
         ]);
 
-        // Password::sendResetLink(["email" => $user->email]);
+        $token = Password::createToken($user);
+
+        $resetUrl = route('password.reset', [
+            'token' => $token,
+            'email' => $user->email, // dibaca di query oleh showResetForm
+        ]);
+
+        Mail::to($user->email)->send(new ResetPasswordMail($user->name, $resetUrl));
 
         return redirect()->route('admin.users.index')->with('success', 'Successfully create user.');
     }
