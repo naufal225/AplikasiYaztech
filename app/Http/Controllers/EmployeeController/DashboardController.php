@@ -55,16 +55,16 @@ class DashboardController extends Controller
     private function getUserRequestCounts($userId, $status = 'pending', $type = "cuti", $thisMonth = false): String {
         switch ($type) {
             case TypeRequest::Leaves->value:
-                return $thisMonth ? Leave::where('employee_id', $userId)->where('status', $status)->whereMonth('created_at', Carbon::now()->month)->count() : Leave::where('employee_id', $userId)->where('status', $status)->count();
+                return $thisMonth ? Leave::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->whereMonth('created_at', Carbon::now()->month)->count() : Leave::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->count();
                 break;
             case TypeRequest::Reimbursements->value:
-                return $thisMonth ? Reimbursement::where('employee_id', $userId)->where('status', $status)->whereMonth('created_at', Carbon::now()->month)->count() : Reimbursement::where('employee_id', $userId)->where('status', $status)->count();
+                return $thisMonth ? Reimbursement::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->whereMonth('created_at', Carbon::now()->month)->count() : Reimbursement::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->count();
                 break;
             case TypeRequest::Overtimes->value:
-                return $thisMonth ? Overtime::where('employee_id', $userId)->where('status', $status)->whereMonth('created_at', Carbon::now()->month)->count() : Overtime::where('employee_id', $userId)->where('status', $status)->count();
+                return $thisMonth ? Overtime::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->whereMonth('created_at', Carbon::now()->month)->count() : Overtime::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->count();
                 break;
             case TypeRequest::Travels->value:
-                return $thisMonth ? OfficialTravel::where('employee_id', $userId)->where('status', $status)->whereMonth('created_at', Carbon::now()->month)->count() : OfficialTravel::where('employee_id', $userId)->where('status', $status)->count();
+                return $thisMonth ? OfficialTravel::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->whereMonth('created_at', Carbon::now()->month)->count() : OfficialTravel::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->count();
                 break;
             default:
                 return 0;
@@ -84,7 +84,8 @@ class DashboardController extends Controller
                     'type' => TypeRequest::Leaves->value,
                     'title' => 'Leave Request: ' . Carbon::parse($leave->date_start)->format('M d') . ' - ' . Carbon::parse($leave->date_end)->format('M d'),
                     'date' => Carbon::parse($leave->created_at)->format('M d, Y'),
-                    'status' => $leave->status,
+                    'status_1' => $leave->status_1,
+                    'status_2' => $leave->status_2,
                     'url' => route('employee.leaves.show', $leave->id),
                     'created_at' => $leave->created_at
                 ];
@@ -101,7 +102,8 @@ class DashboardController extends Controller
                     'type' => TypeRequest::Reimbursements->value,
                     'title' => 'Reimbursement: Rp ' . number_format($reimbursement->total),
                     'date' => Carbon::parse($reimbursement->created_at)->format('M d, Y'),
-                    'status' => $reimbursement->status,
+                    'status_1' => $reimbursement->status_1,
+                    'status_2' => $reimbursement->status_2,
                     'url' => route('employee.reimbursements.show', $reimbursement->id),
                     'created_at' => $reimbursement->created_at
                 ];
@@ -118,7 +120,8 @@ class DashboardController extends Controller
                     'type' => TypeRequest::Overtimes->value,
                     'title' => 'Overtime: ' . Carbon::parse($overtime->date_start)->format('M d'),
                     'date' => Carbon::parse($overtime->created_at)->format('M d, Y'),
-                    'status' => $overtime->status,
+                    'status_1' => $overtime->status_1,
+                    'status_2' => $overtime->status_2,
                     'url' => route('employee.overtimes.show', $overtime->id),
                     'created_at' => $overtime->created_at
                 ];
@@ -135,7 +138,8 @@ class DashboardController extends Controller
                     'type' => TypeRequest::Travels->value,
                     'title' => 'Official Travel: ' . Carbon::parse($travel->date_start)->format('M d') . ' - ' . Carbon::parse($travel->date_end)->format('M d'),
                     'date' => Carbon::parse($travel->created_at)->format('M d, Y'),
-                    'status' => $travel->status,
+                    'status_1' => $travel->status_1,
+                    'status_2' => $travel->status_2,
                     'url' => route('employee.official-travels.show', $travel->id),
                     'created_at' => $travel->created_at
                 ];
