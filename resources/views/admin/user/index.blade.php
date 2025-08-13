@@ -1,15 +1,15 @@
 @extends('components.admin.layout.layout-admin')
 
-@section('header', 'Manage Employee')
-@section('subtitle', 'Manage Employee data')
+@section('header', 'Manage User')
+@section('subtitle', 'Manage User Data')
 
 @section('content')
 <main class="relative z-10 flex-1 p-0 overflow-x-hidden overflow-y-auto bg-gray-50">
     <div class="mb-8">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Manage Employee</h1>
-                <p class="mt-2 text-sm text-gray-600">Manage your employee data and information</p>
+                <h1 class="text-2xl font-bold text-gray-900">Manage user</h1>
+                <p class="mt-2 text-sm text-gray-600">Manage your user data and information</p>
             </div>
             <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:flex-row">
                 {{-- <button id="importExcelBtn"
@@ -20,13 +20,13 @@
                     </svg>
                     Import Excel
                 </button> --}}
-                <a id="addEmployeeBtn" href="{{ route('admin.employees.create') }}"
+                <a id="adduserBtn" href="{{ route('admin.users.create') }}"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
-                    Add Employee
+                    Add user
                 </a>
             </div>
         </div>
@@ -49,11 +49,11 @@
     <div class="mb-6">
         <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
             <div class="">
-                <form class="flex flex-col gap-4 sm:flex-row" action="{{ route("admin.employees.index") }}"
+                <form class="flex flex-col gap-4 sm:flex-row" action="{{ route("admin.users.index") }}"
                     method="GET">
                     <div class="flex-1">
                         <div class="relative">
-                            <input type="text" placeholder="Search employees..." name="search"
+                            <input type="text" placeholder="Search users..." name="search"
                                 class="w-full py-2 pl-10 pr-4 transition-colors border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
@@ -76,7 +76,7 @@
     <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-900">Employee List</h3>
+                <h3 class="text-lg font-semibold text-gray-900">User List</h3>
             </div>
         </div>
         <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
@@ -98,47 +98,55 @@
                                 Division</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Role</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-neutral-200">
-                        @forelse($employees as $employee)
+                        @forelse($users as $user)
                         <tr class="transition-colors duration-200 hover:bg-neutral-50">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div>
                                     {{
-                                    $employees->firstItem() + $loop->index }}
+                                    $users->firstItem() + $loop->index }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-900">
-                                    {{ $employee->name }}
+                                    {{ $user->name }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-500">
-                                    {{ $employee->email }}
+                                    {{ $user->email }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-500">
-                                    {{ $employee->division->name ?? "N/A" }}
+                                    {{ $user->division->name ?? "N/A" }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-500">
+                                    {{ $user->role }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
-                                    <a href="{{ route('admin.employees.edit', $employee->id) }}"
+                                    <a href="{{ route('admin.users.edit', $user->id) }}"
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <button type="button"
-                                        class="delete-employee-btn text-error-600 hover:text-error-900"
-                                        data-employee-id="{{ $employee->id }}"
-                                        data-employee-name="{{ $employee->name }}">
+                                        class="delete-user-btn text-error-600 hover:text-error-900"
+                                        data-user-id="{{ $user->id }}"
+                                        data-user-name="{{ $user->name }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                    <form id="delete-form-{{ $employee->id }}"
-                                        action="{{ route('admin.employees.destroy', $employee->id) }}" method="POST"
+                                    <form id="delete-form-{{ $user->id }}"
+                                        action="{{ route('admin.users.destroy', $user->id) }}" method="POST"
                                         style="display: none;">
                                         @csrf
                                         @method('DELETE')
@@ -151,11 +159,11 @@
                             <td colspan="5" class="px-6 py-12 text-center">
                                 <div class="text-neutral-400">
                                     <i class="mb-4 text-4xl fas fa-inbox"></i>
-                                    <p class="text-lg font-medium">No employees found</p>
-                                    <a href="{{ route('admin.employees.create') }}"
+                                    <p class="text-lg font-medium">No users found</p>
+                                    <a href="{{ route('admin.users.create') }}"
                                         class="inline-flex items-center px-4 py-2 mt-4 text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
                                         <i class="mr-2 fas fa-plus"></i>
-                                        New employee
+                                        New user
                                     </a>
                                 </div>
                             </td>
@@ -165,14 +173,14 @@
                 </table>
             </div>
 
-            @if($employees->hasPages())
+            @if($users->hasPages())
             <div class="px-6 py-4 border-t border-neutral-200">
-                {{ $employees->links() }}
+                {{ $users->links() }}
             </div>
             @endif
         </div>
         <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
-            {{ $employees->links() }}
+            {{ $users->links() }}
         </div>
     </div>
 </main>
@@ -194,9 +202,9 @@
             </div>
 
             <div class="text-center">
-                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Employee</h3>
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete user</h3>
                 <p class="mb-6 text-sm text-gray-500">
-                    Are you sure you want to delete <span id="employeeName" class="font-medium text-gray-900"></span>?
+                    Are you sure you want to delete <span id="userName" class="font-medium text-gray-900"></span>?
                     This action cannot be undone.
                 </p>
             </div>
@@ -232,8 +240,8 @@ Import Excel Modal with Enhanced Drag & Drop
             class="inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h3 class="text-xl font-semibold text-gray-900">Import Employee Data</h3>
-                    <p class="mt-1 text-sm text-gray-500">Upload Excel file to import employee data</p>
+                    <h3 class="text-xl font-semibold text-gray-900">Import user Data</h3>
+                    <p class="mt-1 text-sm text-gray-500">Upload Excel file to import user data</p>
                 </div>
                 <button id="closeImportModal" class="text-gray-400 transition-colors hover:text-gray-600">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -375,5 +383,5 @@ Import Excel Modal with Enhanced Drag & Drop
 @endsection --}}
 
 @push('scripts')
-@vite("resources/js/admin/employee/script-main.js")
+@vite("resources/js/admin/user/script-main.js")
 @endpush

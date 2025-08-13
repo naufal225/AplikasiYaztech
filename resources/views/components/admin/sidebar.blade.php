@@ -24,16 +24,10 @@
             <span class="font-medium">Division</span>
         </a>
 
-        <a href="{{ route('admin.employees.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.employees.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('admin.users.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-users"></i>
-            <span class="font-medium">Employee</span>
-        </a>
-
-        <a href="{{ route('admin.approvers.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.approvers.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-            <i class="w-5 mr-3 text-center fas fa-user-check"></i>
-            <span class="font-medium">Approver</span>
+            <span class="font-medium">User</span>
         </a>
 
         <a href="{{ route('admin.leaves.index') }}"
