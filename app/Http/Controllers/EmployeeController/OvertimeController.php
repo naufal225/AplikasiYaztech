@@ -68,15 +68,12 @@ class OvertimeController extends Controller
             'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
         ]);
 
-        // 1 Parse dengan timezone eksplisit
+        // Parsing waktu input
         $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
-        $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
+        $end   = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
 
-        // 2: Set jam kerja normal
-        $workEnd = (clone $start)->setTime(17, 0, 0);
-
-        // 3: Hitung overtime dengan benar
-        $overtimeMinutes = max(0, $workEnd->diffInMinutes($end, false));
+        // Hitung langsung dari date_start
+        $overtimeMinutes = $start->diffInMinutes($end);
         $overtimeHours = $overtimeMinutes / 60;
 
         if ($overtimeHours < 0.5) {
@@ -85,11 +82,11 @@ class OvertimeController extends Controller
 
         Overtime::create([
             'employee_id' => Auth::id(),
-            'date_start' => $start,
-            'date_end' => $end,
-            'total' => $overtimeMinutes,
-            'status_1' => 'pending',
-            'status_2' => 'pending',
+            'date_start'  => $start,
+            'date_end'    => $end,
+            'total'       => $overtimeMinutes, // Simpan dalam menit
+            'status_1'    => 'pending',
+            'status_2'    => 'pending',
         ]);
 
         return redirect()->route('employee.overtimes.index')
@@ -136,37 +133,43 @@ class OvertimeController extends Controller
     public function update(Request $request, Overtime $overtime)
     {
         $user = Auth::user();
+
+        // Pastikan user adalah pemilik pengajuan
         if ($user->id !== $overtime->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
+        // Pastikan status masih pending
         if ($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') {
             return redirect()->route('employee.overtimes.show', $overtime->id)
                 ->with('error', 'You cannot update an overtime request that has already been processed.');
         }
 
+        // Validasi input
         $request->validate([
             'date_start' => 'required|date_format:Y-m-d\TH:i',
-            'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
+            'date_end'   => 'required|date_format:Y-m-d\TH:i|after:date_start',
         ]);
 
+        // Parsing waktu dari input request
         $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
-        $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
+        $end   = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
 
-        // 2: Set jam kerja normal
-        $workEnd = (clone $start)->setTime(17, 0, 0);
+        // Hitung durasi lembur dalam menit
+        $overtimeMinutes = $start->diffInMinutes($end);
 
-        // 3: Hitung overtime dengan benar
-        $overtimeMinutes = max(0, $workEnd->diffInMinutes($end, false));
+        // Konversi ke jam (desimal)
         $overtimeHours = $overtimeMinutes / 60;
 
+        // Minimal lembur 0.5 jam
         if ($overtimeHours < 0.5) {
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
         }
 
+        // Simpan data
         $overtime->date_start = $request->date_start;
-        $overtime->date_end = $request->date_end;
-        $overtime->total = $overtimeMinutes;
+        $overtime->date_end   = $request->date_end;
+        $overtime->total      = $overtimeMinutes; // Disimpan dalam menit
         $overtime->save();
 
         return redirect()->route('employee.overtimes.show', $overtime->id)

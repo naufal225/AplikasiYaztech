@@ -55,21 +55,6 @@
                 @csrf
                 @method('PUT')
 
-                <div>
-                    <label for="approver_id" class="block text-sm font-semibold text-neutral-700 mb-2">
-                        <i class="fas fa-user-check mr-2 text-primary-600"></i>
-                        Approver
-                    </label>
-                    <select id="approver_id" name="approver_id" class="form-select" required>
-                        <option value="">Select Approver</option>
-                        @foreach($approvers as $approver)
-                            <option value="{{ $approver->id }}" {{ $overtime->approver_id == $approver->id ? 'selected' : '' }}>
-                                {{ $approver->name }} ({{ ucfirst($approver->role) }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
                 <!-- Work Hours Info -->
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div class="flex items-start">
