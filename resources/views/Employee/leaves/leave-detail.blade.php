@@ -144,7 +144,7 @@
                         <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                     </div>
                     <div class="p-6 space-y-3">
-                        @if(Auth::id() === $leave->employee_id && $leave->status === 'pending')
+                        @if(Auth::id() === $leave->employee_id && ($leave->status_1 === 'pending' || $leave->status_2 === 'pending'))
                             <a href="{{ route('employee.leaves.edit', $leave->id) }}" class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
                                 <i class="mr-2 fas fa-edit"></i>
                                 Edit Request

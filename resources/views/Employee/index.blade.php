@@ -138,11 +138,11 @@
                         @endif
                     </div>
                     <div class="flex items-center">
-                        @if($request['status'] === 'pending')
+                        @if($request['status_1'] === 'pending' || $request['status_2'] === 'pending')
                             <span class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 mr-3">Pending</span>
-                        @elseif($request['status'] === 'approved')
+                        @elseif($request['status_1'] === 'approved' && $request['status_2'] === 'approved')
                             <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 mr-3">Approved</span>
-                        @elseif($request['status'] === 'rejected')
+                        @elseif($request['status_1'] === 'rejected' || $request['status_2'] === 'rejected')
                             <span class="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 mr-3">Rejected</span>
                         @endif
                         <a href="{{ $request['url'] }}" class="text-gray-400 hover:text-gray-600">
