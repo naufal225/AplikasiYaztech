@@ -4,7 +4,7 @@ use App\Http\Controllers\AdminController\ApproverController;
 use App\Http\Controllers\AdminController\CustomerController;
 use App\Http\Controllers\AdminController\DashboardController;
 use App\Http\Controllers\AdminController\DivisionController;
-use App\Http\Controllers\AdminController\EmployeeController;
+use App\Http\Controllers\AdminController\UserController;
 use App\Http\Controllers\AdminController\LeaveController;
 use App\Http\Controllers\AdminController\OfficialTravelController;
 use App\Http\Controllers\AdminController\OvertimeController;
@@ -18,10 +18,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::resource('customers', CustomerController::class);
 
-    Route::resource('employees', EmployeeController::class);
-
-    Route::resource('approvers', ApproverController::class);
-
+    Route::resource('users', UserController::class);
 
     Route::get('/leaves/export', [LeaveController::class, 'export'])
         ->name('leaves.export');
