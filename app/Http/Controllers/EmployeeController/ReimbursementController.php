@@ -58,7 +58,7 @@ class ReimbursementController extends Controller
     {
         $approvers = User::where('role', Roles::Approver->value)
             ->get();
-        $customers = Customer::all(); // Get all customers
+        $customers = Customer::all();
 
         return view('Employee.reimbursements.reimbursement-request', compact('approvers', 'customers'));
     }
@@ -91,19 +91,23 @@ class ReimbursementController extends Controller
         $reimbursement->save();
 
         // Send notification email to the approver
-        $approver = User::find($request->approver_id);
-        $namaPengaju = Auth::user()->name;
-        if ($approver) {
+        if ($reimbursement->approver) {
             $linkTanggapan = route('employee.reimbursements.show', $reimbursement->id);
-            $pesan = "Pengajuan reimbursement baru dari $namaPengaju. <br> Total: Rp " . number_format($reimbursement->total) . "<br> Tanggal: {$request->date}";
 
-            Mail::to($approver->email)->send(new \App\Mail\SendMessage(
-                Auth::user()->name,
-                $pesan,
-                $approver->name,
-                $linkTanggapan,
-                Auth::user()->email
-            ));
+            $pesan = "Terdapat pengajuan reimbursement baru atas nama " . Auth::user()->name . ".
+          <br> Total: Rp " . number_format($reimbursement->total, 0, ',', '.') . "
+          <br> Tanggal: {$request->date}";
+
+            Mail::to($reimbursement->approver->email)->send(
+                new \App\Mail\SendMessage(
+                    namaPengaju: Auth::user()->name,
+                    pesan: $pesan,
+                    namaApprover: $reimbursement->approver->name,
+                    linkTanggapan: $linkTanggapan,
+                    emailPengaju: Auth::user()->email,
+                    attachmentPath: $reimbursement->invoice_path
+                )
+            );
         }
 
         return redirect()->route('employee.reimbursements.index')
@@ -143,11 +147,9 @@ class ReimbursementController extends Controller
                 ->with('error', 'You cannot edit a reimbursement request that has already been processed.');
         }
 
-        $approvers = User::where('role', Roles::Approver->value)
-            ->get();
         $customers = Customer::all();
 
-        return view('Employee.reimbursements.reimbursement-edit', compact('reimbursement', 'approvers', 'customers'));
+        return view('Employee.reimbursements.reimbursement-edit', compact('reimbursement', 'customers'));
     }
 
     /**
@@ -188,7 +190,6 @@ class ReimbursementController extends Controller
             $path = $request->file('invoice_path')->store('reimbursement_invoices', 'public');
             $reimbursement->invoice_path = $path;
         } elseif ($request->input('remove_invoice_path')) {
-            // Remove invoice_path if checkbox is checked
             if ($reimbursement->invoice_path) {
                 Storage::disk('public')->delete($reimbursement->invoice_path);
                 $reimbursement->invoice_path = null;
@@ -196,6 +197,26 @@ class ReimbursementController extends Controller
         }
 
         $reimbursement->save();
+
+        // Send notification email to the approver
+        if ($reimbursement->approver) {
+            $linkTanggapan = route('employee.reimbursements.show', $reimbursement->id);
+
+            $pesan = "Pengajuan pengajuan reimbursement milik " . Auth::user()->name . " telah dilakukan perubahan data.
+                <br> Total: Rp " . number_format($request->total, 0, ',', '.') . "
+                <br> Tanggal: {$request->date}";
+
+            Mail::to($reimbursement->approver->email)->send(
+                new \App\Mail\SendMessage(
+                    namaPengaju: Auth::user()->name,
+                    pesan: $pesan,
+                    namaApprover: $reimbursement->approver->name,
+                    linkTanggapan: $linkTanggapan,
+                    emailPengaju: Auth::user()->email,
+                    attachmentPath: $reimbursement->invoice_path
+                )
+            );
+        }
 
         return redirect()->route('employee.reimbursements.show', $reimbursement->id)
             ->with('success', 'Reimbursement request updated successfully.');

@@ -56,21 +56,6 @@
                 @csrf
                 @method('PUT')
                 
-                <div>
-                    <label for="approver_id" class="block text-sm font-semibold text-neutral-700 mb-2">
-                        <i class="fas fa-user-check mr-2 text-primary-600"></i>
-                        Approver
-                    </label>
-                    <select id="approver_id" name="approver_id" class="form-select" required>
-                        <option value="">Select Approver</option>
-                        @foreach($approvers as $approver)
-                            <option value="{{ $approver->id }}" {{ $leave->approver_id == $approver->id ? 'selected' : '' }}>
-                                {{ $approver->name }} ({{ ucfirst($approver->role) }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="date_start" class="block text-sm font-semibold text-neutral-700 mb-2">
@@ -78,7 +63,7 @@
                             Start Date
                         </label>
                         <input type="date" id="date_start" name="date_start" class="form-input" 
-                               value="value="{{ \Carbon\Carbon::parse($leave->date_start)->format('Y-m-d') }}" required>
+                               value="{{ \Carbon\Carbon::parse($leave->date_start)->format('Y-m-d') }}" required>
                     </div>
                     
                     <div>

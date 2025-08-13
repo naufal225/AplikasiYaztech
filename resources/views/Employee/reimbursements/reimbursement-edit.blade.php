@@ -55,21 +55,6 @@
             <form action="{{ route('employee.reimbursements.update', $reimbursement->id) }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
                 @csrf
                 @method('PUT')
-                
-                <div>
-                    <label for="approver_id" class="block text-sm font-semibold text-neutral-700 mb-2">
-                        <i class="fas fa-user-check mr-2 text-primary-600"></i>
-                        Approver
-                    </label>
-                    <select id="approver_id" name="approver_id" class="form-select" required>
-                        <option value="">Select Approver</option>
-                        @foreach($approvers as $approver)
-                            <option value="{{ $approver->id }}" {{ old('approver_id', $reimbursement->approver_id) == $approver->id ? 'selected' : '' }}>
-                                {{ $approver->name }} ({{ ucfirst($approver->role) }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
 
                 <div>
                     <label for="customer_id" class="block text-sm font-semibold text-neutral-700 mb-2">

@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Leave;
 use App\Models\User;
+use App\Models\Division;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 
@@ -81,18 +82,22 @@ class LeaveController extends Controller
         $leave->save();
 
         // Send notification email to the approver
-        $approver = User::find($request->approver_id);
-        if ($approver) {
+        if ($leave->approver) {
             $linkTanggapan = route('employee.leaves.show', $leave->id);
-            $pesan = "Pengajuan cuti baru dari " . Auth::user()->name . ". <br> Tanggal mulai: {$request->date_start} <br> Tanggal selesai: {$request->date_end} <br> Alasan: {$request->reason}";
+            $pesan = "Terdapat pengajuan cuti baru atas nama " . Auth::user()->name . ".
+                <br> Tanggal Mulai: {$request->date_start}
+                <br> Tanggal Selesai: {$request->date_end}
+                <br> Alasan: {$request->reason}";
 
-            Mail::to($approver->email)->send(new \App\Mail\SendMessage(
-                namaPengaju: Auth::user()->name,
-                pesan: $pesan,
-                namaApprover: $approver->name,
-                linkTanggapan: $linkTanggapan,
-                emailPengaju: Auth::user()->email
-            ));
+            Mail::to($leave->approver->email)->send(
+                new \App\Mail\SendMessage(
+                    namaPengaju: Auth::user()->name,
+                    pesan: $pesan,
+                    namaApprover: $leave->approver->name,
+                    linkTanggapan: $linkTanggapan,
+                    emailPengaju: Auth::user()->email
+                )
+            );
         }
 
         return redirect()->route('employee.leaves.index')
@@ -106,7 +111,7 @@ class LeaveController extends Controller
     {
         // Check if the user has permission to view this leave
         $user = Auth::user();
-        if ($user->id !== $leave->employee_id && $user->id !== $leave->approver_id && $user->role !== Roles::Admin->value) {
+        if ($user->id !== $leave->employee_id && ($user->role == Roles::Admin->value || $user->role == Roles::HR->value || $user->role == Roles::Approver->value)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -132,9 +137,7 @@ class LeaveController extends Controller
                 ->with('error', 'You cannot edit a leave request that has already been processed.');
         }
 
-        $approvers = User::where('role', Roles::Approver->value)
-            ->get();
-        return view('Employee.leaves.leave-edit', compact('leave', 'approvers'));
+        return view('Employee.leaves.leave-edit', compact('leave'));
     }
 
     /**
@@ -163,7 +166,28 @@ class LeaveController extends Controller
         $leave->date_start = $request->date_start;
         $leave->date_end = $request->date_end;
         $leave->reason = $request->reason;
+        $leave->status_1 = 'pending';
+        $leave->status_2 = 'pending';
         $leave->save();
+
+        // Send notification email to the approver
+        if ($leave->approver) {
+            $linkTanggapan = route('employee.leaves.show', $leave->id);
+            $pesan = "Pengajuan cuti milik " . Auth::user()->name . " telah dilakukan perubahan data.
+                <br> Tanggal Mulai: {$request->date_start}
+                <br> Tanggal Selesai: {$request->date_end}
+                <br> Alasan: {$request->reason}";
+
+            Mail::to($leave->approver->email)->send(
+                new \App\Mail\SendMessage(
+                    namaPengaju: Auth::user()->name,
+                    pesan: $pesan,
+                    namaApprover: $leave->approver->name,
+                    linkTanggapan: $linkTanggapan,
+                    emailPengaju: Auth::user()->email
+                )
+            );
+        }
         
         return redirect()->route('employee.leaves.show', $leave->id)
             ->with('success', 'Leave request updated successfully.');

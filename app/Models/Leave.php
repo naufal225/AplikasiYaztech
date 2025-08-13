@@ -23,4 +23,16 @@ class Leave extends Model
         'date_start' => 'date',
         'date_end' => 'date',
     ];
+
+    public function approver()
+    {
+        return $this->hasOneThrough(
+            User::class,       // Tujuan: user leader
+            Division::class,   // Perantara: division
+            'id',              // PK di divisions
+            'id',              // PK di users (leader)
+            'employee_id',     // FK di leaves → users.id (employee)
+            'leader_id'        // FK di divisions → users.id (leader)
+        );
+    }
 }

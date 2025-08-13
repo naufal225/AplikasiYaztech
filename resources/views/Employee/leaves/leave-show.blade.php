@@ -129,17 +129,17 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($leave->status === 'pending')
+                                    @if($leave->status_1 === 'pending' || $leave->status_2 === 'pending')
                                         <span class="badge-pending">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
-                                    @elseif($leave->status === 'approved')
+                                    @elseif($leave->status_1 === 'approved' || $leave->status_2 === 'approved')
                                         <span class="badge-approved">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
-                                    @elseif($leave->status === 'rejected')
+                                    @elseif($leave->status_1 === 'rejected' || $leave->status_2 === 'rejected')
                                         <span class="badge-rejected">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
@@ -147,15 +147,14 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $leave->approver->name }}</div>
-                                    <div class="text-sm text-neutral-500">{{ ucfirst($leave->approver->role) }}</div>
+                                    <div class="text-sm text-neutral-900">{{ $leave->approver->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('employee.leaves.show', $leave->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if(Auth::id() === $leave->employee_id && $leave->status === 'pending')
+                                        @if(Auth::id() === $leave->employee_id && ($leave->status_1 === 'pending' || $leave->status_2 === 'pending'))
                                             <a href="{{ route('employee.leaves.edit', $leave->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>

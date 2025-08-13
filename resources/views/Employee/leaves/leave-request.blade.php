@@ -49,22 +49,6 @@
             <form action="{{ route('employee.leaves.store') }}" method="POST" class="p-6 space-y-6">
                 @csrf
 
-                <div>
-                    <label for="approver_id" class="block mb-2 text-sm font-semibold text-neutral-700">
-                        <i class="mr-2 fas fa-user-check text-primary-600"></i>
-                        Approver
-                    </label>
-                    <select id="approver_id" name="approver_id" class="form-select" required>
-                        <option value="">Select Approver</option>
-                        @foreach($approvers as $approver)
-                            <option value="{{ $approver->id }}" {{ old('approver_id') == $approver->id ? 'selected' : '' }}>
-                                {{ $approver->name }} ({{ ucfirst($approver->role) }})
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-neutral-500">Choose who will review and approve your leave request</p>
-                </div>
-
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
                         <label for="date_start" class="block mb-2 text-sm font-semibold text-neutral-700">

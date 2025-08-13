@@ -106,12 +106,11 @@
                     <thead class="bg-neutral-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Total</th> {{-- Changed from Amount --}}
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Total</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver</th> {{-- Added Approver --}}
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Customer</th> {{-- Added Customer --}}
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Customer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -125,26 +124,23 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $reimbursement->type }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">Rp {{ number_format($reimbursement->total, 2, ',', '.') }}</div> {{-- Changed from Amount --}}
+                                    <div class="text-sm text-neutral-900">Rp {{ number_format($reimbursement->total, 0, ',', '.') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">{{ \Carbon\Carbon::parse($reimbursement->date)->format('M d, Y') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($reimbursement->status === 'pending')
+                                    @if($reimbursement->status_1 === 'pending' || $reimbursement->status_2 === 'pending')
                                         <span class="badge-pending">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
-                                    @elseif($reimbursement->status === 'approved')
+                                    @elseif($reimbursement->status_1 === 'approved' || $reimbursement->status_2 === 'approved')
                                         <span class="badge-approved">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
-                                    @elseif($reimbursement->status === 'rejected')
+                                    @elseif($reimbursement->status_1 === 'rejected' || $reimbursement->status_2 === 'rejected')
                                         <span class="badge-rejected">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
@@ -152,17 +148,17 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $reimbursement->approver->name ?? 'N/A' }}</div> {{-- Added Approver --}}
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->approver->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer->name ?? 'N/A' }}</div> {{-- Added Customer --}}
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('employee.reimbursements.show', $reimbursement->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if(Auth::id() === $reimbursement->employee_id && $reimbursement->status === 'pending')
+                                        @if(Auth::id() === $reimbursement->employee_id && ($reimbursement->status_1 === 'pending' || $reimbursement->status_2 === 'pending'))
                                             <a href="{{ route('employee.reimbursements.edit', $reimbursement->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
