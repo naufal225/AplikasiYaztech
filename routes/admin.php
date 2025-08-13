@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\AdminController\ApproverController;
+use App\Http\Controllers\AdminController\CustomerController;
 use App\Http\Controllers\AdminController\DashboardController;
+use App\Http\Controllers\AdminController\DivisionController;
 use App\Http\Controllers\AdminController\EmployeeController;
 use App\Http\Controllers\AdminController\LeaveController;
 use App\Http\Controllers\AdminController\OfficialTravelController;
@@ -11,6 +13,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::resource('divisions', DivisionController::class);
+
+    Route::resource('customers', CustomerController::class);
 
     Route::resource('employees', EmployeeController::class);
 

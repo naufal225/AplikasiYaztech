@@ -1,15 +1,15 @@
 @extends('components.admin.layout.layout-admin')
 
-@section('header', 'Manage Approver')
-@section('subtitle', 'Manage Approver data')
+@section('header', 'Manage Division')
+@section('subtitle', 'Manage division data')
 
 @section('content')
 <main class="relative z-10 flex-1 p-0 overflow-x-hidden overflow-y-auto bg-gray-50">
     <div class="mb-8">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Manage Approver</h1>
-                <p class="mt-2 text-sm text-gray-600">Manage your approver data and information</p>
+                <h1 class="text-2xl font-bold text-gray-900">Manage Division</h1>
+                <p class="mt-2 text-sm text-gray-600">Manage your division data and information</p>
             </div>
             <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:flex-row">
                 {{-- <button id="importExcelBtn"
@@ -20,16 +20,17 @@
                     </svg>
                     Import Excel
                 </button> --}}
-                <a id="addApproverBtn" href="{{ route('admin.approvers.create') }}"
+                <a id="addDivisionBtn" href="{{ route('admin.divisions.create') }}"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                     </svg>
-                    Add Approver
+                    Add Division
                 </a>
             </div>
         </div>
+
         <!-- Success Message -->
         @if(session('success'))
         <div class="flex items-center p-4 my-6 border border-green-200 bg-green-50 rounded-xl">
@@ -48,11 +49,11 @@
     <div class="mb-6">
         <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
             <div class="">
-                <form class="flex flex-col gap-4 sm:flex-row" action="{{ route("admin.approvers.index") }}"
+                <form class="flex flex-col gap-4 sm:flex-row" action="{{ route("admin.divisions.index") }}"
                     method="GET">
                     <div class="flex-1">
                         <div class="relative">
-                            <input type="text" placeholder="Search approvers..." name="search"
+                            <input type="text" placeholder="Search divisions..." name="search"
                                 class="w-full py-2 pl-10 pr-4 transition-colors border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
@@ -75,7 +76,7 @@
     <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-900">Approver List</h3>
+                <h3 class="text-lg font-semibold text-gray-900">Division List</h3>
             </div>
         </div>
         <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
@@ -91,53 +92,45 @@
                                 Name</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Email</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Division</th>
+                                Leader</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-neutral-200">
-                        @forelse($approvers as $approver)
+                        @forelse($divisions as $division)
                         <tr class="transition-colors duration-200 hover:bg-neutral-50">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div>
                                     {{
-                                    $approvers->firstItem() + $loop->index }}
+                                    $divisions->firstItem() + $loop->index }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-900">
-                                    {{ $approver->name }}
+                                    {{ $division->name }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-500">
-                                    {{ $approver->email }}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-500">
-                                    {{ $approver->division->name ?? "N/A" }}
+                                    {{ $division->leader->name ?? "N/A" }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
-                                    <a href="{{ route('admin.approvers.edit', $approver->id) }}"
+                                    <a href="{{ route('admin.divisions.edit', $division->id) }}"
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <button type="button"
-                                        class="delete-approver-btn text-error-600 hover:text-error-900"
-                                        data-approver-id="{{ $approver->id }}"
-                                        data-approver-name="{{ $approver->name }}">
+                                        class="delete-division-btn text-error-600 hover:text-error-900"
+                                        data-division-id="{{ $division->id }}"
+                                        data-division-name="{{ $division->name }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                    <form id="delete-form-{{ $approver->id }}"
-                                        action="{{ route('admin.approvers.destroy', $approver->id) }}" method="POST"
+                                    <form id="delete-form-{{ $division->id }}"
+                                        action="{{ route('admin.divisions.destroy', $division->id) }}" method="POST"
                                         style="display: none;">
                                         @csrf
                                         @method('DELETE')
@@ -150,11 +143,11 @@
                             <td colspan="5" class="px-6 py-12 text-center">
                                 <div class="text-neutral-400">
                                     <i class="mb-4 text-4xl fas fa-inbox"></i>
-                                    <p class="text-lg font-medium">No approvers found</p>
-                                    <a href="{{ route('admin.approvers.create') }}"
+                                    <p class="text-lg font-medium">No divisions found</p>
+                                    <a href="{{ route('admin.divisions.create') }}"
                                         class="inline-flex items-center px-4 py-2 mt-4 text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
                                         <i class="mr-2 fas fa-plus"></i>
-                                        New approver
+                                        New division
                                     </a>
                                 </div>
                             </td>
@@ -164,16 +157,12 @@
                 </table>
             </div>
 
-            @if($approvers->hasPages())
+            @if($divisions->hasPages())
             <div class="px-6 py-4 border-t border-neutral-200">
-                {{ $approvers->links() }}
+                {{ $divisions->links() }}
             </div>
             @endif
         </div>
-    </div>
-    <div class="px-6 py-4 border-t border-gray-100 bg-gray-50">
-        {{ $approvers->links() }}
-    </div>
     </div>
 </main>
 
@@ -194,9 +183,9 @@
             </div>
 
             <div class="text-center">
-                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete approver</h3>
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Division</h3>
                 <p class="mb-6 text-sm text-gray-500">
-                    Are you sure you want to delete <span id="approverName" class="font-medium text-gray-900"></span>?
+                    Are you sure you want to delete <span id="divisionName" class="font-medium text-gray-900"></span>?
                     This action cannot be undone.
                 </p>
             </div>
@@ -223,9 +212,6 @@
     </div>
 </div>
 
-@endsection
-
-
 @push('scripts')
-@vite("resources/js/admin/approver/script.js")
+@vite("resources/js/admin/division/script.js")
 @endpush
