@@ -40,17 +40,17 @@
                                 <p class="text-sm text-primary-100">Submitted on {{ Carbon\Carbon::parse($leave->created_at)->format('M d, Y \a\t H:i') }}</p>
                             </div>
                             <div class="text-right">
-                                @if($leave->status === 'pending')
+                                @if($leave->status_1 === 'pending' || $leave->status_2 === 'pending')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
                                         <i class="mr-1 fas fa-clock"></i>
                                         Pending Review
                                     </span>
-                                @elseif($leave->status === 'approved')
+                                @elseif($leave->status_1 === 'approved' || $leave->status_2 === 'approved')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
                                         <i class="mr-1 fas fa-check-circle"></i>
                                         Approved
                                     </span>
-                                @elseif($leave->status === 'rejected')
+                                @elseif($leave->status_1 === 'rejected' || $leave->status_2 === 'rejected')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
                                         <i class="mr-1 fas fa-times-circle"></i>
                                         Rejected
@@ -114,13 +114,13 @@
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Status</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                    @if($leave->status === 'pending')
+                                    @if($leave->status_1 === 'pending' || $leave->status_2 === 'pending')
                                         <i class="mr-3 fas fa-clock text-warning-600"></i>
                                         <span class="font-medium text-warning-800">Pending Review</span>
-                                    @elseif($leave->status === 'approved')
+                                    @elseif($leave->status_1 === 'approved' || $leave->status_2 === 'approved')
                                         <i class="mr-3 fas fa-check-circle text-success-600"></i>
                                         <span class="font-medium text-success-800">Approved</span>
-                                    @elseif($leave->status === 'rejected')
+                                    @elseif($leave->status_1 === 'rejected' || $leave->status_2 === 'rejected')
                                         <i class="mr-3 fas fa-times-circle text-error-600"></i>
                                         <span class="font-medium text-error-800">Rejected</span>
                                     @endif
