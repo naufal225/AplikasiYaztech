@@ -1,22 +1,22 @@
 @extends('components.admin.layout.layout-admin')
 
-@section('header', 'Update Approver')
-@section('subtitle', 'Update Approver data')
+@section('header', 'Update Division')
+@section('subtitle', 'Update Division data')
 
 @section('content')
-<!-- Add Approver Content -->
+<!-- Update Division Content -->
 <main class="relative z-10 flex-1 p-6 overflow-x-hidden overflow-y-auto bg-gray-50">
 
     <!-- Page Header -->
     <div class="mb-8">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Update Approver</h1>
-                <p class="mt-2 text-sm text-gray-600">Update approver record in the system</p>
+                <h1 class="text-2xl font-bold text-gray-900">Update Division</h1>
+                <p class="mt-2 text-sm text-gray-600">Update Division record in the system</p>
             </div>
 
             <!-- Back Button -->
-            <a href="{{ route('admin.approvers.index') }}"
+            <a href="{{ route('admin.divisions.index') }}"
                 class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -32,8 +32,8 @@
         <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
             <!-- Form Header -->
             <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
-                <h3 class="text-lg font-semibold text-gray-900">Approver Information</h3>
-                <p class="mt-1 text-sm text-gray-600">Please fill in the approver details below</p>
+                <h3 class="text-lg font-semibold text-gray-900">Division Information</h3>
+                <p class="mt-1 text-sm text-gray-600">Please fill in the Division details below</p>
             </div>
 
             <!-- Form Content -->
@@ -72,74 +72,48 @@
                 </div>
                 @endif
 
-                <!-- Approver Form -->
-                <form action="{{ route('admin.approvers.update', $approver) }}" method="POST" class="space-y-6" id="approverForm">
+                <!-- Division Form -->
+                <form action="{{ route('admin.divisions.update', $division) }}" method="POST" class="space-y-6" id="DivisionForm">
                     @csrf
                     @method('PUT')
-                    <!-- ... existing code ... -->
-
                     <!-- Name Field -->
                     <div>
                         <label for="name" class="block mb-2 text-sm font-medium text-gray-700">
-                            Full Name <span class="text-red-500">*</span>
+                            Name <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input type="text" id="name" name="name" value="{{ old('name', $approver->name) }}"
-                                class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('email') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror"
-                                placeholder="Enter approver name" required>
+                            <input type="text" id="name" name="name" value="{{ old('name', $division->name) }}"
+                                class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('name') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror"
+                                placeholder="Enter Division Name" required>
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                        d="M3 21h18M5 21V5a2 2 0 012-2h3v18M14 21V9h3a2 2 0 012 2v10" />
                                 </svg>
                             </div>
                         </div>
                         @error('name')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        </p>
+                        <p class="mt-2 text-xs text-gray-500">Enter the Division's Name as it appears on official
+                            documents</p>
                     </div>
 
-                    <!-- Email Field -->
+                    <!-- approver Selection Field -->
                     <div>
-                        <label for="email" class="block mb-2 text-sm font-medium text-gray-700">
-                            Email Address <span class="text-red-500">*</span>
+                        <label for="leader_id" class="block mb-2 text-sm font-medium text-gray-700">
+                            Select approver <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <input type="email" id="email" name="email" value="{{ old('email', $approver->email) }}"
-                                class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('email') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror"
-                                placeholder="Enter approver email address" required>
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-                                </svg>
-                            </div>
-                        </div>
-                        @error('email')
-                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        <p class="mt-2 text-xs text-gray-500">This email will be used for system login and notifications
-                        </p>
-                    </div>
-
-                    <!-- <CHANGE> Added Division Selection Field -->
-                    <!-- Division Selection Field -->
-                    <div>
-                        <label for="division_id" class="block mb-2 text-sm font-medium text-gray-700">
-                            Select Division <span class="text-red-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <select id="division_id" name="division_id"
-                                class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('division_id') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror"
+                            <select id="leader_id" name="leader_id"
+                                class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('leader_id') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror"
                                 required>
-                                <option value="">Select a division...</option>
-                                @if(isset($divisions))
-                                    @foreach($divisions as $division)
-                                        <option value="{{ $division->id }}" {{ old('division_id', $approver->division_id) == $division->id ? 'selected' : '' }}>
-                                            {{ $division->name }}
+                                <option value="">Select an approver...</option>
+                                @if(isset($approvers))
+                                    @foreach($approvers as $approver)
+                                        <option value="{{ $approver->id }}" {{ old('leader_id', $division->leader_id) == $approver->id ? 'selected' : '' }}>
+                                            {{ $approver->name }} - {{ $approver->email ?? $approver->position ?? '' }}
                                         </option>
                                     @endforeach
                                 @endif
@@ -147,26 +121,28 @@
                             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                             </div>
                         </div>
-                        @error('division_id')
+                        @error('leader_id')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="mt-2 text-xs text-gray-500">Choose the division this approver will be responsible for</p>
+                        <p class="mt-2 text-xs text-gray-500">Choose the approver who will be assigned to this division</p>
                     </div>
 
+                    <!-- Form Actions -->
                     <div class="flex items-center justify-end pt-6 space-x-4 border-t border-gray-200">
                         <!-- Cancel Button -->
-                        <a href="{{ route('admin.approvers.index') }}"
+                        <a href="{{ route('admin.divisions.index') }}"
                             class="px-6 py-3 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                             Cancel
                         </a>
+
                         <!-- Submit Button -->
                         <button type="submit" id="submitBtn"
                             class="px-6 py-3 text-sm font-medium text-white transition-all rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span id="submitBtnText">Update Approver</span>
+                            <span id="submitBtnText">Update Division</span>
                             <svg id="submitBtnSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin"
                                 fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
@@ -177,6 +153,7 @@
                             </svg>
                         </button>
                     </div>
+
                 </form>
             </div>
         </div>
@@ -194,18 +171,18 @@
 <script>
 $(document).ready(function() {
     // Initialize Select2 with search functionality
-    $('#division_id').select2({
+    $('#leader_id').select2({
         theme: 'bootstrap-5',
-        placeholder: 'Search and select a division...',
+        placeholder: 'Search and select an approver...',
         allowClear: true,
         width: '100%',
-        dropdownParent: $('#division_id').parent(),
+        dropdownParent: $('#leader_id').parent(),
         language: {
             noResults: function() {
-                return "No divisions found";
+                return "No approvers found";
             },
             searching: function() {
-                return "Searching divisions...";
+                return "Searching approvers...";
             }
         }
     });
@@ -228,11 +205,11 @@ $(document).ready(function() {
     }
 
     // Focus styling
-    $('#division_id').on('select2:open', function() {
+    $('#leader_id').on('select2:open', function() {
         $('.select2-container--bootstrap-5 .select2-selection--single').addClass('focus:ring-2 focus:ring-blue-500 focus:border-blue-500');
     });
 
-    $('#division_id').on('select2:close', function() {
+    $('#leader_id').on('select2:close', function() {
         $('.select2-container--bootstrap-5 .select2-selection--single').removeClass('focus:ring-2 focus:ring-blue-500 focus:border-blue-500');
     });
 });
@@ -276,6 +253,12 @@ $(document).ready(function() {
 .select2-results__option--highlighted {
     background-color: #3b82f6 !important;
     color: white !important;
+}
+
+/* Position the user icon */
+.select2-container + .absolute {
+    pointer-events: none;
+    z-index: 10;
 }
 </style>
 

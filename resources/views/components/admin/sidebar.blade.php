@@ -18,6 +18,12 @@
             <span class="font-medium">Dashboard</span>
         </a>
 
+        <a href="{{ route('admin.divisions.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.divisions.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+            <i class="w-5 mr-3 text-center fas fa-users"></i>
+            <span class="font-medium">Division</span>
+        </a>
+
         <a href="{{ route('admin.employees.index') }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.employees.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-users"></i>
@@ -52,6 +58,12 @@
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-briefcase"></i>
             <span class="font-medium">Official Travel Requests</span>
+        </a>
+
+        <a href="{{ route('admin.customers.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.customers.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+            <i class="w-5 mr-3 text-center fas fa-users"></i>
+            <span class="font-medium">Customer</span>
         </a>
 
     </nav>
