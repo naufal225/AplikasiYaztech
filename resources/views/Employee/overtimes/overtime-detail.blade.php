@@ -48,17 +48,17 @@
                                 <p class="text-primary-100 text-sm">Submitted on {{ $overtime->created_at->format('M d, Y \a\t H:i') }}</p>
                             </div>
                             <div class="text-right">
-                                @if($overtime->status === 'pending')
+                                @if($overtime->status_1 === 'pending' || $overtime->status_2 === 'pending')
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-warning-100 text-warning-800">
                                         <i class="fas fa-clock mr-1"></i>
                                         Pending Review
                                     </span>
-                                @elseif($overtime->status === 'approved')
+                                @elseif($overtime->status_1 === 'approved' || $overtime->status_2 === 'approved')
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-success-100 text-success-800">
                                         <i class="fas fa-check-circle mr-1"></i>
                                         Approved
                                     </span>
-                                @elseif($overtime->status === 'rejected')
+                                @elseif($overtime->status_1 === 'rejected' || $overtime->status_2 === 'rejected')
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-error-100 text-error-800">
                                         <i class="fas fa-times-circle mr-1"></i>
                                         Rejected
@@ -116,13 +116,13 @@
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Status</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                                    @if($overtime->status === 'pending')
+                                    @if($overtime->status_1 === 'pending' || $overtime->status_2 === 'pending')
                                         <i class="fas fa-clock text-warning-600 mr-3"></i>
                                         <span class="text-warning-800 font-medium">Pending Review</span>
-                                    @elseif($overtime->status === 'approved')
+                                    @elseif($overtime->status_1 === 'approved' || $overtime->status_2 === 'approved')
                                         <i class="fas fa-check-circle text-success-600 mr-3"></i>
                                         <span class="text-success-800 font-medium">Approved</span>
-                                    @elseif($overtime->status === 'rejected')
+                                    @elseif($overtime->status_1 === 'rejected' || $overtime->status_2 === 'rejected')
                                         <i class="fas fa-times-circle text-error-600 mr-3"></i>
                                         <span class="text-error-800 font-medium">Rejected</span>
                                     @endif
