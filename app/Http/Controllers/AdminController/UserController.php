@@ -5,6 +5,7 @@ namespace App\Http\Controllers\AdminController;
 use App\Http\Controllers\Controller;
 use App\Mail\ResetPasswordMail;
 use App\Models\Division;
+use App\Models\Leave;
 use App\Models\User;
 use App\Roles;
 use Illuminate\Http\Request;
@@ -109,8 +110,15 @@ class UserController extends Controller
 
             'role.required' => 'The role field is required.',
             'role.string' => 'The role must be a valid string.',
-            'role.in' => 'The role must be employee, approver or hr.'
+            'role.in' => 'The role must be employee, approver or hr.',
+
+            'division_id.required' => 'The division field is required.',
+            'division_id.exists' => 'The division field must be exists.'
         ]);
+
+        if (($user->division_id != $validated['division_id'] && $user->division->leader_id == $user->id)) {
+            $user->division->leader_id = null;
+        }
 
         $user->update([
             "email" => $validated["email"],
@@ -127,5 +135,23 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('admin.users.index')->with('success', 'Successfully delete user.');
+    }
+
+    public function approve(Leave $leave)
+    {
+        $leave->update([
+            'status' => 'approved'
+        ]);
+
+        return redirect()->route('approver.leaves.index');
+    }
+
+    public function reject(Leave $leave)
+    {
+        $leave->update([
+            'status' => 'rejected'
+        ]);
+
+        return redirect()->route('approver.leaves.index');
     }
 }
