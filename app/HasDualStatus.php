@@ -17,7 +17,7 @@ trait HasDualStatus
         // Validasi minimal
         [$c1, $c2] = $this->finalStatusColumns + [null, null];
         if (!$c1 || !$c2) {
-            throw new \RuntimeException(static::class.' must define two status columns');
+            throw new \RuntimeException(static::class . ' must define two status columns');
         }
         return [$c1, $c2];
     }
@@ -27,7 +27,8 @@ trait HasDualStatus
      */
     public function scopeFilterFinalStatus(Builder $query, ?string $status): Builder
     {
-        if (!$status) return $query;
+        if (!$status)
+            return $query;
 
         [$s1, $s2] = $this->getFinalStatusColumns();
 
@@ -35,19 +36,19 @@ trait HasDualStatus
             'approved' => $query->where($s1, 'approved')->where($s2, 'approved'),
 
             'rejected' => $query->where(function ($q) use ($s1, $s2) {
-                $q->where($s1, 'rejected')->orWhere($s2, 'rejected');
-            }),
+                    $q->where($s1, 'rejected')->orWhere($s2, 'rejected');
+                }),
 
-            'pending'  => $query->where(function ($q) use ($s1, $s2) {
-                // pending = (ada pending) && (tidak ada rejected)
-                $q->where(function ($qq) use ($s1, $s2) {
-                    $qq->where($s1, 'pending')->orWhere($s2, 'pending');
-                })->where(function ($qq) use ($s1, $s2) {
-                    $qq->where($s1, '!=', 'rejected')->where($s2, '!=', 'rejected');
-                });
-            }),
+            'pending' => $query->where(function ($q) use ($s1, $s2) {
+                    // pending = (ada pending) && (tidak ada rejected)
+                    $q->where(function ($qq) use ($s1, $s2) {
+                        $qq->where($s1, 'pending')->orWhere($s2, 'pending');
+                    })->where(function ($qq) use ($s1, $s2) {
+                        $qq->where($s1, '!=', 'rejected')->where($s2, '!=', 'rejected');
+                    });
+                }),
 
-            default    => $query,
+            default => $query,
         };
     }
 
@@ -91,4 +92,23 @@ trait HasDualStatus
         }
         return $query;
     }
+
+    public function getFinalStatusAttribute(): string
+    {
+        // Normalisasi, kalau mau NULL dianggap 'pending'
+        $s1 = $this->status_1 ?? 'pending';
+        $s2 = $this->status_2 ?? 'pending';
+
+        if ($s1 === 'rejected' || $s2 === 'rejected') {
+            return 'rejected';
+        }
+
+        if ($s1 === 'approved' && $s2 === 'approved') {
+            return 'approved';
+        }
+
+        // default pending
+        return 'pending';
+    }
+
 }

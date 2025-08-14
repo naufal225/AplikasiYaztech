@@ -62,7 +62,7 @@ class LeaveController extends Controller
 
     public function show(Leave $leave)
     {
-        if ($leave->approver->id !== Auth::id()) {
+        if ($leave->employee->division->leader->id !== Auth::id()) {
             return abort(403, 'Unauthorized');
         }
 
@@ -85,9 +85,34 @@ class LeaveController extends Controller
 
     }
 
-    public function update(Request $request)
+    public function update(Request $request, Leave $leave)
     {
+        $validated = $request->validate([
+            'status_1' => 'string|in:approved,rejected',
+            'status_2' => 'string|in:approved,rejected',
+        ], [
+            'status_1.string' => 'Status must be a valid string.',
+            'status_1.in' => 'Status must approved or rejected.',
 
+            'status_2.string' => 'Status must be a valid string.',
+            'status_2.in' => 'Status must approved or rejected.',
+        ]);
+
+        $status = '';
+
+        if($request->has('status_1')) {
+            $leave->update([
+                'status_1' => $validated['status_1'],
+            ]);
+            $status = $validated['status_1'];
+        } else if($request->has('status_2')) {
+            $leave->update([
+                'status_2' => $validated['status_2'],
+            ]);
+            $status = $validated['status_1'];
+        }
+
+        return redirect()->route('approver.leaves.index')->with('success', 'Leave request ' . $status . ' successfully.');
     }
 
     public function destroy(Leave $leave)
@@ -127,5 +152,21 @@ class LeaveController extends Controller
         }
     }
 
+
+    public function approver(Leave $leave) {
+        $leave->update([
+            'status_1' => 'approved'
+        ]);
+
+        return redirect()->route('approver.leaves.index')->with('success', 'Leave request approved.');
+    }
+
+    public function reject(Leave $leave) {
+        $leave->update([
+            'status_1' => 'rejected'
+        ]);
+
+        return redirect()->route('approver.leaves.index')->with('success', 'Leave request rejected.');
+    }
 
 }
