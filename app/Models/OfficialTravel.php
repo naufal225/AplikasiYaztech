@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\HasDualStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class OfficialTravel extends Model
 {
+    use HasDualStatus;
     protected $table = 'official_travels';
 
     protected $fillable = [

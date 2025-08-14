@@ -26,9 +26,11 @@ class OfficialTravelsExport implements FromCollection, WithHeadings, WithMapping
         $query = OfficialTravel::with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
 
-        if (!empty($this->filters['status'])) {
-            $query->where('status', $this->filters['status']);
+         if (!empty($this->filters['status'])) {
+            $query->where('status_1', $this->filters['status'])
+                ->orWhere('status_2', $this->filters['status']);
         }
+
 
         // Pakai whereDate untuk kolom DATE; lebih aman
         if (!empty($this->filters['from_date'])) {
@@ -51,7 +53,8 @@ class OfficialTravelsExport implements FromCollection, WithHeadings, WithMapping
             'End Date',
             'Duration (Days)',
             'Total',
-            'Status',
+            'Status 1',
+            'Status 2',
             'Approver Name',
             'Applied Date',
             'Updated Date',
@@ -73,7 +76,8 @@ class OfficialTravelsExport implements FromCollection, WithHeadings, WithMapping
             $endDate->format('M d, Y'),
             $duration,
             $officialTravel->total ?? 0,
-            ucfirst((string) $officialTravel->status),
+            ucfirst((string) $officialTravel->status_1),
+            ucfirst((string) $officialTravel->status_2),
             optional($officialTravel->approver)->name ?? 'N/A',
             $officialTravel->created_at?->format('M d, Y H:i') ?? '-',
             $officialTravel->updated_at?->format('M d, Y H:i') ?? '-',

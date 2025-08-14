@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\HasDualStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Leave extends Model
 {
+    use HasDualStatus;
     protected $fillable = [
         'employee_id',
         'date_start',
@@ -15,7 +17,8 @@ class Leave extends Model
         'status_2'
     ];
 
-    public function employee() {
+    public function employee()
+    {
         return $this->belongsTo(User::class, 'employee_id');
     }
 
@@ -35,4 +38,6 @@ class Leave extends Model
             'leader_id'        // FK di divisions → users.id (leader)
         );
     }
+
+
 }
