@@ -19,6 +19,8 @@ return new class extends Migration
             $table->bigInteger('total');
             $table->enum('status_1', ['pending', 'approved', 'rejected'])->default('pending');
             $table->enum('status_2', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->text('note_1')->nullable();
+            $table->text('note_2')->nullable();
             $table->timestamps();
         });
     }

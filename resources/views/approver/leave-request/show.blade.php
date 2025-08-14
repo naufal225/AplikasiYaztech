@@ -17,19 +17,19 @@
                                 Carbon\Carbon::parse($leave->created_at)->format('M d, Y \a\t H:i') }}</p>
                         </div>
                         <div class="text-right">
-                            @if($leave->status === 'pending')
+                            @if($leave->final_status === 'pending')
                             <span
                                 class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
                                 <i class="mr-1 fas fa-clock"></i>
                                 Pending Review
                             </span>
-                            @elseif($leave->status === 'approved')
+                            @elseif($leave->final_status === 'approved')
                             <span
                                 class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
                                 <i class="mr-1 fas fa-check-circle"></i>
                                 Approved
                             </span>
-                            @elseif($leave->status === 'rejected')
+                            @elseif($leave->final_status === 'rejected')
                             <span
                                 class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
                                 <i class="mr-1 fas fa-times-circle"></i>
@@ -96,17 +96,17 @@
                                 </span>
                             </div>
                         </div>
-                        <!-- Status -->
+                        <!-- final_status -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Status</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                @if($leave->status === 'pending')
+                                @if($leave->final_status === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
                                 <span class="font-medium text-warning-800">Pending Review</span>
-                                @elseif($leave->status === 'approved')
+                                @elseif($leave->final_status === 'approved')
                                 <i class="mr-3 fas fa-check-circle text-success-600"></i>
                                 <span class="font-medium text-success-800">Approved</span>
-                                @elseif($leave->status === 'rejected')
+                                @elseif($leave->final_status === 'rejected')
                                 <i class="mr-3 fas fa-times-circle text-error-600"></i>
                                 <span class="font-medium text-error-800">Rejected</span>
                                 @endif
@@ -120,6 +120,32 @@
                             <p class="leading-relaxed text-neutral-900">{{ $leave->reason }}</p>
                         </div>
                     </div>
+
+                    <!-- Added approval/rejection notes section if final_status is not pending -->
+                    @if($leave->final_status !== 'pending' && !empty($leave->approval_notes))
+                    <div class="mt-6 space-y-2">
+                        <label class="text-sm font-semibold text-neutral-700">
+                            @if($leave->final_status === 'approved')
+                            Approval Notes
+                            @else
+                            Rejection Notes
+                            @endif
+                        </label>
+                        <div class="p-4 border rounded-lg
+                            @if($leave->final_status === 'approved')
+                                bg-success-50 border-success-200
+                            @else
+                                bg-error-50 border-error-200
+                            @endif">
+                            <p class="leading-relaxed
+                                @if($leave->final_status === 'approved')
+                                    text-success-900
+                                @else
+                                    text-error-900
+                                @endif">{{ $leave->approval_notes }}</p>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -142,7 +168,65 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Added approval/rejection form for pending requests -->
+            @if($leave->final_status === 'pending')
+            <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
+                <div class="px-6 py-4 border-b border-neutral-200">
+                    <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
+                </div>
+                <div class="p-6">
+                    <form id="approvalForm" method="POST" action="{{ route('approver.leaves.update', $leave) }}">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="action" id="status_1" value="">
+
+                        <div class="space-y-4">
+                            <div>
+                                <label for="approval_notes" class="block mb-2 text-sm font-semibold text-neutral-700">
+                                    Notes <span class="text-neutral-500">(Optional)</span>
+                                </label>
+                                <textarea name="approval_notes" id="approval_notes" rows="4"
+                                    class="w-full px-3 py-2 border rounded-lg resize-none border-neutral-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    placeholder="Add any comments or reasons for your decision..."></textarea>
+                            </div>
+
+                            <div class="flex flex-col space-y-3">
+                                <button type="button" onclick="submitApproval('approve')"
+                                    class="flex items-center justify-center w-full px-4 py-3 font-semibold text-white transition-colors duration-200 rounded-lg bg-success-600 hover:bg-success-700 focus:ring-2 focus:ring-success-500 focus:ring-offset-2">
+                                    <i class="mr-2 fas fa-check"></i>
+                                    Approve Request
+                                </button>
+
+                                <button type="button" onclick="submitApproval('reject')"
+                                    class="flex items-center justify-center w-full px-4 py-3 font-semibold text-white transition-colors duration-200 rounded-lg bg-error-600 hover:bg-error-700 focus:ring-2 focus:ring-error-500 focus:ring-offset-2">
+                                    <i class="mr-2 fas fa-times"></i>
+                                    Reject Request
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>
+
+@push('scripts')
+
+<!-- Added JavaScript for form submission with confirmation -->
+<script>
+    function submitApproval(action) {
+        const actionText = action === 'approve' ? 'approve' : 'reject';
+        // const confirmMessage = `Are you sure you want to ${actionText} this leave request?`;
+
+        // if (confirm(confirmMessage)) {
+        document.getElementById('status_1').value = action;
+        document.getElementById('approvalForm').submit();
+        // }
+    }
+</script>
+
+@endpush
 @endsection
