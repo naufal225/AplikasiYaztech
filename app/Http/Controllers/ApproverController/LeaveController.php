@@ -90,6 +90,8 @@ class LeaveController extends Controller
         $validated = $request->validate([
             'status_1' => 'string|in:approved,rejected',
             'status_2' => 'string|in:approved,rejected',
+            'note_1' => 'string',
+            'note_2' => 'string',
         ], [
             'status_1.string' => 'Status must be a valid string.',
             'status_1.in' => 'Status must approved or rejected.',
@@ -103,11 +105,13 @@ class LeaveController extends Controller
         if($request->has('status_1')) {
             $leave->update([
                 'status_1' => $validated['status_1'],
+                'note_1' => $validated['note_1'] ?? ""
             ]);
             $status = $validated['status_1'];
         } else if($request->has('status_2')) {
             $leave->update([
                 'status_2' => $validated['status_2'],
+                'note_2' => $validated['note_2'] ?? ""
             ]);
             $status = $validated['status_1'];
         }

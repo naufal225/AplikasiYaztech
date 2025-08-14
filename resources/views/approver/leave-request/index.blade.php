@@ -26,6 +26,19 @@
                 </button>
             </div>
         </div>
+
+        @if(session('success'))
+        <div class="flex items-center p-4 my-6 border border-green-200 bg-green-50 rounded-xl">
+            <div class="flex-shrink-0">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+            </div>
+        </div>
+        @endif
     </div>
 
     <!-- Statistics Cards -->
@@ -190,7 +203,7 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
 
-                                   
+
                                 </div>
                             </td>
                         </tr>
