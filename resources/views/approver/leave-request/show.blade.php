@@ -10,6 +10,26 @@
         <div class="space-y-6 lg:col-span-2">
             <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
+                    @if($errors->any())
+                    <div class="flex items-start p-4 mb-6 border border-red-200 bg-red-50 rounded-xl">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-red-600 mt-0.5" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h4 class="text-sm font-medium text-red-800">Please correct the following errors:</h4>
+                            <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+                                @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                    @endif
+
                     <div class="flex items-center justify-between">
                         <div>
                             <h1 class="text-xl font-bold text-white">Leave Request #{{ $leave->id }}</h1>
@@ -170,7 +190,7 @@
             </div>
 
             <!-- Added approval/rejection form for pending requests -->
-            @if($leave->final_status === 'pending')
+            @if($leave->final_status === 'pending' && $leave->status_1 == 'pending')
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
                     <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
@@ -179,26 +199,26 @@
                     <form id="approvalForm" method="POST" action="{{ route('approver.leaves.update', $leave) }}">
                         @csrf
                         @method('PUT')
-                        <input type="hidden" name="action" id="status_1" value="">
+                        <input type="hidden" name="status_1" id="status_1" value="">
 
                         <div class="space-y-4">
                             <div>
                                 <label for="approval_notes" class="block mb-2 text-sm font-semibold text-neutral-700">
                                     Notes <span class="text-neutral-500">(Optional)</span>
                                 </label>
-                                <textarea name="approval_notes" id="approval_notes" rows="4"
+                                <textarea name="note_1" id="approval_notes" rows="4"
                                     class="w-full px-3 py-2 border rounded-lg resize-none border-neutral-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                     placeholder="Add any comments or reasons for your decision..."></textarea>
                             </div>
 
                             <div class="flex flex-col space-y-3">
-                                <button type="button" onclick="submitApproval('approve')"
+                                <button type="button" onclick="submitApproval('approved')"
                                     class="flex items-center justify-center w-full px-4 py-3 font-semibold text-white transition-colors duration-200 rounded-lg bg-success-600 hover:bg-success-700 focus:ring-2 focus:ring-success-500 focus:ring-offset-2">
                                     <i class="mr-2 fas fa-check"></i>
                                     Approve Request
                                 </button>
 
-                                <button type="button" onclick="submitApproval('reject')"
+                                <button type="button" onclick="submitApproval('rejected')"
                                     class="flex items-center justify-center w-full px-4 py-3 font-semibold text-white transition-colors duration-200 rounded-lg bg-error-600 hover:bg-error-700 focus:ring-2 focus:ring-error-500 focus:ring-offset-2">
                                     <i class="mr-2 fas fa-times"></i>
                                     Reject Request
@@ -206,6 +226,15 @@
                             </div>
                         </div>
                     </form>
+                </div>
+            </div>
+            @else
+            <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
+                <div class="px-6 py-4 border-b border-neutral-200">
+                    <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
+                </div>
+                <div class="p-6">
+                    <h1>You have reviewed this request</h1>
                 </div>
             </div>
             @endif
@@ -218,7 +247,7 @@
 <!-- Added JavaScript for form submission with confirmation -->
 <script>
     function submitApproval(action) {
-        const actionText = action === 'approve' ? 'approve' : 'reject';
+        const actionText = action === 'approved' ? 'approved' : 'rejected';
         // const confirmMessage = `Are you sure you want to ${actionText} this leave request?`;
 
         // if (confirm(confirmMessage)) {

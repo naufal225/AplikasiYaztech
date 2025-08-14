@@ -166,8 +166,8 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $leave->approver->name }}</div>
-                                <div class="text-sm text-neutral-500">{{ ucfirst($leave->approver->role) }}</div>
+                                <div class="text-sm text-neutral-900">{{ $leave->employee->division->leader->name ?? "N/A" }}</div>
+                                <div class="text-sm text-neutral-500">{{ ucfirst($leave->employee->division->leader->role ?? "N/A") }}</div>
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
