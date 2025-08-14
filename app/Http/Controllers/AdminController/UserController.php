@@ -124,7 +124,7 @@ class UserController extends Controller
             "email" => $validated["email"],
             "name" => $validated["name"],
             'division_id' => $validated['division_id'],
-            "role" => Roles::Employee->value,
+            "role" => $validated['role'],
         ]);
 
         return redirect()->route('admin.users.index')->with('success', 'Successfully update user.');

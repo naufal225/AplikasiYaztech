@@ -27,9 +27,21 @@ class DashboardController extends Controller
         $pendings = $approveds = $rejecteds = [];
 
         foreach ($models as $key => $model) {
-            $pendings[$key] = $model::where('created_at', '>=', $startOfMonth)->where('status', 'pending')->count();
-            $rejecteds[$key] = $model::where('created_at', '>=', $startOfMonth)->where('status', 'rejected')->count();
-            $approveds[$key] = $model::where('created_at', '>=', $startOfMonth)->where('status', 'approved')->count();
+            $pendings[$key] = $model::where('created_at', '>=', $startOfMonth)
+                ->where('status_1', 'pending')
+                ->orWhere('status_2', 'pending')
+                ->where('status_1', '!=', 'rejected')
+                ->where('status_2', '!=', 'rejected')
+                ->count();
+            $rejecteds[$key] = $model::where('created_at', '>=', $startOfMonth)
+                ->where('status_1', 'rejected')
+                ->orWhere('status_2', 'rejected')->count();
+            $approveds[$key] = $model::where('created_at', '>=', $startOfMonth)
+                ->where('status_1', 'approved')
+                ->where('status_2', 'approved')
+                ->where('status_1', '!=', 'rejected')
+                ->where('status_2', '!=', 'rejected')
+                ->count();
         }
 
         $total_pending = array_sum($pendings);

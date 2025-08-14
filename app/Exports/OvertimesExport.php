@@ -26,9 +26,11 @@ class OvertimesExport implements FromCollection, WithHeadings, WithMapping, With
         $query = Overtime::with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
 
-        if (!empty($this->filters['status'])) {
-            $query->where('status', $this->filters['status']);
+         if (!empty($this->filters['status'])) {
+            $query->where('status_1', $this->filters['status'])
+                ->orWhere('status_2', $this->filters['status']);
         }
+
 
         // Pakai whereDate untuk kolom DATE; lebih aman
         if (!empty($this->filters['from_date'])) {
@@ -51,7 +53,8 @@ class OvertimesExport implements FromCollection, WithHeadings, WithMapping, With
             'End Date',
             'Duration (Days)',
             'Total',
-            'Status',
+            'Status 1',
+            'Status 2',
             'Approver Name',
             'Applied Date',
             'Updated Date',
@@ -76,7 +79,8 @@ class OvertimesExport implements FromCollection, WithHeadings, WithMapping, With
             $endDate->format('M d, Y'),
             $duration,
             $hours . " jam, " . $minutes . " menit",
-            ucfirst((string) $overtime->status),
+            ucfirst((string) $overtime->status_1),
+            ucfirst((string) $overtime->status_2),
             optional($overtime->approver)->name ?? 'N/A',
             $overtime->created_at?->format('M d, Y H:i') ?? '-',
             $overtime->updated_at?->format('M d, Y H:i') ?? '-',

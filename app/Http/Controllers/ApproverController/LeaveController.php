@@ -15,42 +15,54 @@ class LeaveController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Leave::where('approver_id', Auth::id())
+        $query = Leave::query()
+            ->forLeader(Auth::id())
             ->with(['employee', 'approver'])
-            ->orderBy('created_at', 'desc');
+            ->orderByDesc('created_at')
+            ->filterFinalStatus($request->input('status'));
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
+        // Filter tanggal (opsional)
         if ($request->filled('from_date')) {
-            $query->where(
-                'date_start',
-                '>=',
-                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
-            );
+            $from = Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta');
+            $query->where('date_start', '>=', $from);
         }
-
         if ($request->filled('to_date')) {
-            $query->where(
-                'date_start',
-                '<=',
-                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
-            );
+            $to = Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta');
+            $query->where('date_start', '<=', $to);
         }
 
         $leaves = $query->paginate(10);
-        $totalRequests = Leave::count();
-        $pendingRequests = Leave::where('status', 'pending')->count();
-        $approvedRequests = Leave::where('status', 'approved')->count();
-        $rejectedRequests = Leave::where('status', 'rejected')->count();
 
-        return view('approver.leave-request.index', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        // Total (sesuai akses approver/leader, bukan semua tabel)
+        $baseForCounts = Leave::forLeader(Auth::id());
+
+        // Terapkan filter tanggal yg sama ke agregasi
+        if (isset($from))
+            $baseForCounts->where('date_start', '>=', $from);
+        if (isset($to))
+            $baseForCounts->where('date_start', '<=', $to);
+
+        // Satu query untuk 3 angka
+        $counts = (clone $baseForCounts)->withFinalStatusCount()->first();
+
+        $totalRequests = (clone $baseForCounts)->count();
+        $approvedRequests = (int) ($counts->approved ?? 0);
+        $rejectedRequests = (int) ($counts->rejected ?? 0);
+        $pendingRequests = (int) ($counts->pending ?? 0);
+
+        return view('approver.leave-request.index', compact(
+            'leaves',
+            'totalRequests',
+            'pendingRequests',
+            'approvedRequests',
+            'rejectedRequests'
+        ));
     }
+
 
     public function show(Leave $leave)
     {
-        if($leave->approver->id !== Auth::id()) {
+        if ($leave->approver->id !== Auth::id()) {
             return abort(403, 'Unauthorized');
         }
 

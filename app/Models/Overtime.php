@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\HasDualStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Overtime extends Model
 {
+    use HasDualStatus;
     protected $fillable = [
         'employee_id',
         'date_start',

@@ -20,16 +20,41 @@ class DashboardController extends Controller
             "reimbursements" => Reimbursement::class,
             "overtimes" => Overtime::class,
             "leaves" => Leave::class,
-            "official_travels" => OfficialTravel::class
+            "official_travels" => OfficialTravel::class,
         ];
 
         $startOfMonth = Carbon::now()->startOfMonth();
         $pendings = $approveds = $rejecteds = [];
 
+
         foreach ($models as $key => $model) {
-            $pendings[$key] = $model::where('approver_id', Auth::id())->where('created_at', '>=', $startOfMonth)->where('status', 'pending')->count();
-            $rejecteds[$key] = $model::where('approver_id', Auth::id())->where('created_at', '>=', $startOfMonth)->where('status', 'rejected')->count();
-            $approveds[$key] = $model::where('approver_id', Auth::id())->where('created_at', '>=', $startOfMonth)->where('status', 'approved')->count();
+            $table = (new $model)->getTable();
+
+            // Klasifikasi final_status berdasar dua kolom status
+            $caseExpr = "
+                CASE
+                    WHEN {$table}.status_1 = 'rejected' OR {$table}.status_2 = 'rejected'
+                        THEN 'rejected'
+                    WHEN {$table}.status_1 = 'pending' OR {$table}.status_2 = 'pending'
+                        THEN 'pending'
+                    WHEN {$table}.status_1 = 'approved' AND {$table}.status_2 = 'approved'
+                        THEN 'approved'
+                    ELSE 'unknown'
+                END AS final_status
+            ";
+
+            $counts = $model::query()
+                ->selectRaw("$caseExpr, COUNT(*) AS aggregate")
+                ->whereHas('employee.division', function ($q) {
+                    $q->where('leader_id', Auth::id());
+                })
+                ->where("{$table}.created_at", '>=', $startOfMonth)
+                ->groupBy('final_status')
+                ->pluck('aggregate', 'final_status');
+
+            $pendings[$key] = (int) ($counts['pending'] ?? 0);
+            $approveds[$key] = (int) ($counts['approved'] ?? 0);
+            $rejecteds[$key] = (int) ($counts['rejected'] ?? 0);
         }
 
         $total_pending = array_sum($pendings);
@@ -49,11 +74,21 @@ class DashboardController extends Controller
             $end = $date->copy()->endOfMonth();
 
             $months[] = $monthName;
-            $reimbursementsChartData[] = Reimbursement::where('approver_id', Auth::id())->whereBetween('created_at', [$start, $end])->count();
-            $reimbursementsRupiahChartData[] = Reimbursement::where('approver_id', Auth::id())->whereBetween('created_at', [$start, $end])->sum('total');
-            $overtimesChartData[] = Overtime::where('approver_id', Auth::id())->whereBetween('created_at', [$start, $end])->count();
-            $leavesChartData[] = Leave::where('approver_id', Auth::id())->whereBetween('created_at', [$start, $end])->count();
-            $officialTravelsChartData[] = OfficialTravel::where('approver_id', Auth::id())->whereBetween('created_at', [$start, $end])->count();
+            $reimbursementsChartData[] = Reimbursement::whereHas('employee.division', function ($q) {
+                $q->where('leader_id', Auth::id());
+            })->whereBetween('created_at', [$start, $end])->count();
+            $reimbursementsRupiahChartData[] = Reimbursement::whereHas('employee.division', function ($q) {
+                $q->where('leader_id', Auth::id());
+            })->whereBetween('created_at', [$start, $end])->sum('total');
+            $overtimesChartData[] = Overtime::whereHas('employee.division', function ($q) {
+                $q->where('leader_id', Auth::id());
+            })->whereBetween('created_at', [$start, $end])->count();
+            $leavesChartData[] = Leave::whereHas('employee.division', function ($q) {
+                $q->where('leader_id', Auth::id());
+            })->whereBetween('created_at', [$start, $end])->count();
+            $officialTravelsChartData[] = OfficialTravel::whereHas('employee.division', function ($q) {
+                $q->where('leader_id', Auth::id());
+            })->whereBetween('created_at', [$start, $end])->count();
         }
 
 

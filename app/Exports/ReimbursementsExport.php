@@ -26,9 +26,11 @@ class ReimbursementsExport implements FromCollection, WithHeadings, WithMapping,
         $query = Reimbursement::with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
 
-        if (!empty($this->filters['status'])) {
-            $query->where('status', $this->filters['status']);
+         if (!empty($this->filters['status'])) {
+            $query->where('status_1', $this->filters['status'])
+                ->orWhere('status_2', $this->filters['status']);
         }
+
 
         // Pakai whereDate untuk kolom DATE; lebih aman
         if (!empty($this->filters['from_date'])) {
@@ -40,7 +42,7 @@ class ReimbursementsExport implements FromCollection, WithHeadings, WithMapping,
 
         return $query->get();
     }
-    
+
 
     public function headings(): array
     {
@@ -50,7 +52,8 @@ class ReimbursementsExport implements FromCollection, WithHeadings, WithMapping,
             'Employee Email',
             'Date',
             'Total',
-            'Status',
+            'Status 1',
+            'Status 2',
             'Approver Name',
             'Applied Date',
             'Updated Date',
@@ -68,7 +71,8 @@ class ReimbursementsExport implements FromCollection, WithHeadings, WithMapping,
             optional($reimbursement->employee)->email ?? 'N/A',
             $date->format('M d, Y'),
             $reimbursement->total ?? 0,
-            ucfirst((string) $reimbursement->status),
+            ucfirst((string) $reimbursement->status_1),
+            ucfirst((string) $reimbursement->status_2),
             optional($reimbursement->approver)->name ?? 'N/A',
             $reimbursement->created_at?->format('M d, Y H:i') ?? '-',
             $reimbursement->updated_at?->format('M d, Y H:i') ?? '-',
