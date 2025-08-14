@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'role:approver'])->prefix('approver')->name('approver.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    Route::get('/leaves/{leave:id}/approve', [LeaveController::class, 'approve']);
+    Route::get('/leaves/{leave:id}/reject', [LeaveController::class, 'reject']);
     Route::get('/leaves/export', [LeaveController::class, 'export'])
         ->name('leaves.export');
     Route::resource('leaves', LeaveController::class)
