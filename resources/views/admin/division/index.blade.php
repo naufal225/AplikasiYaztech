@@ -31,6 +31,10 @@
             </div>
         </div>
 
+
+    </div>
+
+    <div class="">
         <!-- Success Message -->
         @if(session('success'))
         <div class="flex items-center p-4 my-6 border border-green-200 bg-green-50 rounded-xl">

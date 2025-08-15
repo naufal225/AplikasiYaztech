@@ -16,8 +16,8 @@ class LeaveController extends Controller
     public function index(Request $request)
     {
         $query = Leave::query()
-            ->forLeader(Auth::id())
             ->with(['employee', 'approver'])
+            ->forLeader(Auth::id())
             ->orderByDesc('created_at')
             ->filterFinalStatus($request->input('status'));
 
@@ -105,13 +105,13 @@ class LeaveController extends Controller
 
         $status = '';
 
-        if($request->has('status_1')) {
+        if ($request->has('status_1')) {
             $leave->update([
                 'status_1' => $validated['status_1'],
                 'note_1' => $validated['note_1'] ?? ""
             ]);
             $status = $validated['status_1'];
-        } else if($request->has('status_2')) {
+        } else if ($request->has('status_2')) {
             $leave->update([
                 'status_2' => $validated['status_2'],
                 'note_2' => $validated['note_2'] ?? ""

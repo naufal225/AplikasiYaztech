@@ -9,24 +9,11 @@
             <h1 class="text-2xl font-bold text-neutral-900">Leave Requests</h1>
             <p class="text-neutral-600">Manage and track your leave requests</p>
         </div>
-        <div class="mt-4 sm:mt-0">
-            <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:flex-row">
-                <button id="exportLeaveRequests"
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
-                    <i class="mr-2 fa-solid fa-file-export"></i>
-                    <span id="exportButtonText">Export Data</span>
-                    <svg id="exportSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                </button>
-            </div>
-        </div>
+        
 
+    </div>
+
+    <div class="">
         @if(session('success'))
         <div class="flex items-center p-4 my-6 border border-green-200 bg-green-50 rounded-xl">
             <div class="flex-shrink-0">
@@ -40,6 +27,7 @@
         </div>
         @endif
     </div>
+
 
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
@@ -142,13 +130,10 @@
                                 Duration</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 1</th>
+                                Status 1 - Team Lead</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 2</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Approver</th>
+                                Status 2 - Manager</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Actions</th>
@@ -175,47 +160,41 @@
                                     + 1 }} days
                                 </div>
                             </td>
-                             <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($leave->status_1 === 'pending')
-                                        <span class="text-yellow-500 badge-pending">
-                                            <i class="mr-1 fas fa-clock"></i>
-                                            Pending
-                                        </span>
-                                    @elseif($leave->status_1 === 'approved')
-                                        <span class="text-green-500 badge-approved">
-                                            <i class="mr-1 fas fa-check-circle"></i>
-                                            Approved
-                                        </span>
-                                    @elseif($leave->status_1 === 'rejected')
-                                        <span class="text-red-500 badge-rejected">
-                                            <i class="mr-1 fas fa-times-circle"></i>
-                                            Rejected
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($leave->status_2 === 'pending')
-                                        <span class="text-yellow-500 badge-pending">
-                                            <i class="mr-1 fas fa-clock"></i>
-                                            Pending
-                                        </span>
-                                    @elseif($leave->status_2 === 'approved')
-                                        <span class="text-green-500 badge-approved">
-                                            <i class="mr-1 fas fa-check-circle"></i>
-                                            Approved
-                                        </span>
-                                    @elseif($leave->status_2 === 'rejected')
-                                        <span class="text-red-500 badge-rejected">
-                                            <i class="mr-1 fas fa-times-circle"></i>
-                                            Rejected
-                                        </span>
-                                    @endif
-                                </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $leave->approver->name ??
-                                    "N/A" }}</div>
-                                <div class="text-sm text-neutral-500">{{
-                                    ucfirst($leave->employee->division->leader->role ?? "N/A" ) }}</div>
+                                @if($leave->status_1 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
+                                    <i class="mr-1 fas fa-clock"></i>
+                                    Pending
+                                </span>
+                                @elseif($leave->status_1 === 'approved')
+                                <span class="text-green-500 badge-approved">
+                                    <i class="mr-1 fas fa-check-circle"></i>
+                                    Approved
+                                </span>
+                                @elseif($leave->status_1 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
+                                    <i class="mr-1 fas fa-times-circle"></i>
+                                    Rejected
+                                </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($leave->status_2 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
+                                    <i class="mr-1 fas fa-clock"></i>
+                                    Pending
+                                </span>
+                                @elseif($leave->status_2 === 'approved')
+                                <span class="text-green-500 badge-approved">
+                                    <i class="mr-1 fas fa-check-circle"></i>
+                                    Approved
+                                </span>
+                                @elseif($leave->status_2 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
+                                    <i class="mr-1 fas fa-times-circle"></i>
+                                    Rejected
+                                </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">

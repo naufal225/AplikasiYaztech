@@ -41,4 +41,9 @@ class OfficialTravel extends Model
             'leader_id'        // FK di divisions → users.id (leader)
         );
     }
+
+    public function getApproverAttribute()
+    {
+        return $this->employee?->division?->leader; // bisa null-safe
+    }
 }
