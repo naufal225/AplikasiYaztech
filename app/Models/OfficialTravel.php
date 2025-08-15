@@ -16,7 +16,9 @@ class OfficialTravel extends Model
         'date_end',
         'total',
         'status_1',
-        'status_2'
+        'status_2',
+        'note_1',
+        'note_2',
     ];
 
     public function employee() {
