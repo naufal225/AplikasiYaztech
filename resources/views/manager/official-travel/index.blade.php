@@ -1,4 +1,4 @@
-@extends('components.admin.layout.layout-admin')
+@extends('components.manager.layout.layout-manager')
 
 @section('header', 'Manage Official Travels')
 @section('subtitle', 'Manage official travels data')
@@ -16,9 +16,13 @@
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
                     <i class="mr-2 fa-solid fa-file-export"></i>
                     <span id="exportButtonText">Export Data</span>
-                    <svg id="exportSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg id="exportSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
                     </svg>
                 </button>
             </div>
@@ -73,7 +77,8 @@
     </div>
 
     <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
-        <form id="filterForm" method="GET" action="{{ route('admin.official-travels.index') }}" class="grid grid-cols-1 gap-4 md:grid-cols-4">
+        <form id="filterForm" method="GET" action="{{ route('manager.official-travels.index') }}"
+            class="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div>
                 <label class="block mb-2 text-sm font-medium text-neutral-700">Status</label>
                 <select name="status" id="statusFilter" class="form-select">
@@ -85,7 +90,8 @@
             </div>
             <div>
                 <label class="block mb-2 text-sm font-medium text-neutral-700">From Date</label>
-                <input type="date" name="from_date" id="fromDateFilter" value="{{ request('from_date') }}" class="form-input">
+                <input type="date" name="from_date" id="fromDateFilter" value="{{ request('from_date') }}"
+                    class="form-input">
             </div>
             <div>
                 <label class="block mb-2 text-sm font-medium text-neutral-700">To Date</label>
@@ -96,7 +102,7 @@
                     <i class="mr-2 fas fa-search"></i>
                     Filter
                 </button>
-                <a href="{{ route('admin.official-travels.index') }}" class="btn-secondary">
+                <a href="{{ route('manager.official-travels.index') }}" class="btn-secondary">
                     <i class="mr-2 fas fa-refresh"></i>
                     Reset
                 </a>
@@ -115,84 +121,140 @@
                 <table class="min-w-full divide-y divide-neutral-200">
                     <thead class="bg-neutral-50">
                         <tr>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Request ID</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Employee</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Duration</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Days</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Status</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Approver</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Actions</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Request ID</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Employee</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Duration</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Days</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Status 1 - Team Lead</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Status 2 - Manager</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Team Lead</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Manager</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-neutral-200">
                         @forelse($officialTravels as $officialTravel)
-                            <tr class="transition-colors duration-200 hover:bg-neutral-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                        <tr class="transition-colors duration-200 hover:bg-neutral-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-neutral-900">#{{ $officialTravel->id }}</div>
+                                    <div class="text-sm text-neutral-500">{{ $officialTravel->created_at->format('M d,
+                                        Y') }}</div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div
+                                        class="flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-success-100">
+                                        <span class="text-xs font-semibold text-success-600">{{
+                                            substr($officialTravel->employee->name, 0, 1) }}</span>
+                                    </div>
                                     <div>
-                                        <div class="text-sm font-medium text-neutral-900">#{{ $officialTravel->id }}</div>
-                                        <div class="text-sm text-neutral-500">{{ $officialTravel->created_at->format('M d, Y') }}</div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-success-100">
-                                            <span class="text-xs font-semibold text-success-600">{{ substr($officialTravel->employee->name, 0, 1) }}</span>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-neutral-900">{{ $officialTravel->employee->name }}</div>
-                                            <div class="text-sm text-neutral-500">{{ $officialTravel->employee->email }}</div>
+                                        <div class="text-sm font-medium text-neutral-900">{{
+                                            $officialTravel->employee->name }}</div>
+                                        <div class="text-sm text-neutral-500">{{ $officialTravel->employee->email }}
                                         </div>
                                     </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">
-                                        {{ $officialTravel->date_start->format('M d') }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-900">
+                                    {{ $officialTravel->date_start->format('M d') }}
+                                </div>
+                                <div class="text-sm text-neutral-500">
+                                    to {{ $officialTravel->date_end->format('M d') }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-bold text-neutral-900">{{ $officialTravel->total }} day{{
+                                    $officialTravel->total > 1 ? 's' : '' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($officialTravel->status_1 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
+                                    <i class="mr-1 fas fa-clock"></i>
+                                    Pending
+                                </span>
+                                @elseif($officialTravel->status_1 === 'approved')
+                                <span class="text-green-500 badge-approved">
+                                    <i class="mr-1 fas fa-check-circle"></i>
+                                    Approved
+                                </span>
+                                @elseif($officialTravel->status_1 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
+                                    <i class="mr-1 fas fa-times-circle"></i>
+                                    Rejected
+                                </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($officialTravel->status_2 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
+                                    <i class="mr-1 fas fa-clock"></i>
+                                    Pending
+                                </span>
+                                @elseif($officialTravel->status_2 === 'approved')
+                                <span class="text-green-500 badge-approved">
+                                    <i class="mr-1 fas fa-check-circle"></i>
+                                    Approved
+                                </span>
+                                @elseif($officialTravel->status_2 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
+                                    <i class="mr-1 fas fa-times-circle"></i>
+                                    Rejected
+                                </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-neutral-900">{{
+                                        $officialTravel->approver->name ?? "N/A" }}</div>
+
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-neutral-900">{{ $manager->name ?? "N/A" }}
                                     </div>
-                                    <div class="text-sm text-neutral-500">
-                                        to {{ $officialTravel->date_end->format('M d') }}
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-bold text-neutral-900">{{ $officialTravel->total }} day{{ $officialTravel->total > 1 ? 's' : '' }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($officialTravel->status === 'pending')
-                                        <span class="badge-pending">
-                                            <i class="mr-1 fas fa-clock"></i>
-                                            Pending
-                                        </span>
-                                    @elseif($officialTravel->status === 'approved')
-                                        <span class="badge-approved">
-                                            <i class="mr-1 fas fa-check-circle"></i>
-                                            Approved
-                                        </span>
-                                    @elseif($officialTravel->status === 'rejected')
-                                        <span class="badge-rejected">
-                                            <i class="mr-1 fas fa-times-circle"></i>
-                                            Rejected
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A' }}</div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                                    <div class="flex items-center space-x-2">
-                                        <a href="{{ route('admin.official-travels.show', $officialTravel->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                                <div class="flex items-center space-x-2">
+                                    <a href="{{ route('approver.official-travels.show', $officialTravel->id) }}"
+                                        class="text-primary-600 hover:text-primary-900" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
                         @empty
-                            <tr>
-                                <td colspan="7" class="px-6 py-12 text-center">
-                                    <div class="text-neutral-400">
-                                        <i class="mb-4 text-4xl fas fa-plane"></i>
-                                        <p class="text-lg font-medium">No official travel requests found</p>
-                                    </div>
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <div class="text-neutral-400">
+                                    <i class="mb-4 text-4xl fas fa-plane"></i>
+                                    <p class="text-lg font-medium">No official travel requests found</p>
+                                </div>
+                            </td>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -268,7 +330,7 @@
 
 @push('scripts')
 <script>
-function showToast(message, type = 'success') {
+    function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const toastContent = document.getElementById('toastContent');
     const toastMessage = document.getElementById('toastMessage');
@@ -315,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (fromDate) params.append('from_date', fromDate);
             if (toDate) params.append('to_date', toDate);
 
-            const exportUrl = `{{ route('admin.official-travels.export') }}?${params.toString()}`;
+            const exportUrl = `{{ route('manager.official-travels.export') }}?${params.toString()}`;
 
             // Use fetch to get the file
             const response = await fetch(exportUrl, {
