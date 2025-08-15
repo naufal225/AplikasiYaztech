@@ -1,5 +1,5 @@
 @extends('components.approver.layout.layout-approver')
-@section('header', 'officialTravel Detail')
+@section('header', 'Official Travel Detail')
 @section('subtitle', '')
 
 @section('content')
@@ -133,7 +133,7 @@
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Reason for officialTravel</label>
+                            <label class="text-sm font-semibold text-neutral-700">Reason for official travel</label>
                             <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <p class="leading-relaxed text-neutral-900">{{ $officialTravel->reason }}</p>
                             </div>
@@ -192,7 +192,7 @@
                     <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                 </div>
                 <div class="p-6 space-y-3">
-                    <a href="{{ route('approver.officialTravels.index') }}"
+                    <a href="{{ route('approver.official-travels.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                         <i class="mr-2 fas fa-arrow-left"></i>
                         Back to List
@@ -212,7 +212,7 @@
                     <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
                 </div>
                 <div class="p-6">
-                    <form id="approvalForm" method="POST" action="{{ route('approver.officialTravels.update', $officialTravel) }}">
+                    <form id="approvalForm" method="POST" action="{{ route('approver.official-travels.update', $officialTravel) }}">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="status_1" id="status_1" value="">

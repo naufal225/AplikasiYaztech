@@ -142,7 +142,10 @@
                                 Duration</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status</th>
+                                Status 1</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Status 2</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Approver</th>
@@ -172,24 +175,42 @@
                                     + 1 }} days
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($leave->final_status === 'pending')
-                                <span class="badge-pending">
-                                    <i class="mr-1 fas fa-clock"></i>
-                                    Pending
-                                </span>
-                                @elseif($leave->final_status === 'approved')
-                                <span class="badge-approved">
-                                    <i class="mr-1 fas fa-check-circle"></i>
-                                    Approved
-                                </span>
-                                @elseif($leave->final_status === 'rejected')
-                                <span class="badge-rejected">
-                                    <i class="mr-1 fas fa-times-circle"></i>
-                                    Rejected
-                                </span>
-                                @endif
-                            </td>
+                             <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($leave->status_1 === 'pending')
+                                        <span class="text-yellow-500 badge-pending">
+                                            <i class="mr-1 fas fa-clock"></i>
+                                            Pending
+                                        </span>
+                                    @elseif($leave->status_1 === 'approved')
+                                        <span class="text-green-500 badge-approved">
+                                            <i class="mr-1 fas fa-check-circle"></i>
+                                            Approved
+                                        </span>
+                                    @elseif($leave->status_1 === 'rejected')
+                                        <span class="text-red-500 badge-rejected">
+                                            <i class="mr-1 fas fa-times-circle"></i>
+                                            Rejected
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($leave->status_2 === 'pending')
+                                        <span class="text-yellow-500 badge-pending">
+                                            <i class="mr-1 fas fa-clock"></i>
+                                            Pending
+                                        </span>
+                                    @elseif($leave->status_2 === 'approved')
+                                        <span class="text-green-500 badge-approved">
+                                            <i class="mr-1 fas fa-check-circle"></i>
+                                            Approved
+                                        </span>
+                                    @elseif($leave->status_2 === 'rejected')
+                                        <span class="text-red-500 badge-rejected">
+                                            <i class="mr-1 fas fa-times-circle"></i>
+                                            Rejected
+                                        </span>
+                                    @endif
+                                </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-900">{{ $leave->employee->division->leader->name ??
                                     "N/A" }}</div>
