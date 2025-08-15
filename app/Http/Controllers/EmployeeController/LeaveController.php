@@ -128,6 +128,15 @@ class LeaveController extends Controller
     }
 
     /**
+     * Export the specified resource as a PDF.
+     */
+    public function exportPdf(Leave $leave)
+    {
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('Employee.leaves.pdf', compact('leave'))->setPaper('A4', 'portrait');
+        return $pdf->download("Leave_Request_{$leave->id}.pdf");
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Leave $leave)

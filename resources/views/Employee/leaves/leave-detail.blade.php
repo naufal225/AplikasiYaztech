@@ -1,8 +1,8 @@
 @extends('Employee.layouts.app')
 
-@section('title', 'Reimbursement Requests')
-@section('header', 'Reimbursement Requests')
-@section('subtitle', 'Manage your reimbursement claims')
+@section('title', 'Leave Requests')
+@section('header', 'Leave Requests')
+@section('subtitle', 'Manage your leave requests')
 
 @section('content')
     <div class="max-w-4xl mx-auto">
@@ -43,7 +43,7 @@
                                 @if($leave->status_1 === 'pending' || $leave->status_2 === 'pending')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
                                         <i class="mr-1 fas fa-clock"></i>
-                                        Pending Review
+                                        {{ $leave->status_1 === 'pending' ? 'Pending' : 'In Progress' }} Review
                                     </span>
                                 @elseif($leave->status_1 === 'approved' || $leave->status_2 === 'approved')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
@@ -119,7 +119,7 @@
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Reason for Leave</label>
                                 <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
-                                    <p class="leading-relaxed text-neutral-900">{{ $leave->reason }}</p>
+                                    <p class="leading-relaxed font text-neutral-900">{{ $leave->reason }}</p>
                                 </div>
                             </div>
 
@@ -160,14 +160,14 @@
                                 <label class="text-sm font-semibold text-neutral-700">Note - Team Lead</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                    <span class="font-medium text-neutral-900">{{ $leave->note_1 ?? '-' }}</span>
+                                    <span class="text-neutral-900">{{ $leave->note_1 ?? '-' }}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Note - Manager</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                    <span class="font-medium text-neutral-900">{{ $leave->note_2 ?? '-' }}</span>
+                                    <span class="text-neutral-900">{{ $leave->note_2 ?? '-' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -181,7 +181,7 @@
                         <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                     </div>
                     <div class="p-6 space-y-3">
-                        @if(Auth::id() === $leave->employee_id && ($leave->status_1 === 'pending' || $leave->status_2 === 'pending'))
+                        @if(Auth::id() === $leave->employee_id && ($leave->status_1 === 'pending'))
                             <a href="{{ route('employee.leaves.edit', $leave->id) }}" class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
                                 <i class="mr-2 fas fa-edit"></i>
                                 Edit Request
