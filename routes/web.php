@@ -6,10 +6,6 @@ use App\Roles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-require __DIR__.'/admin.php';
-require __DIR__.'/approver.php';
-require __DIR__.'/employee.php';
-
 Route::get('/reset-password/{token}', [ResetPasswordController::class, 'create'])
     ->middleware('guest')
     ->name('password.reset');
@@ -52,3 +48,9 @@ Route::middleware('auth')->post('/logout', [AuthController::class, 'logout'])->n
 Route::get('/login', [AuthController::class, 'index'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+require __DIR__.'/admin.php';
+require __DIR__.'/approver.php';
+require __DIR__.'/employee.php';
+require __DIR__.'/manager.php';
+require __DIR__.'/finance.php';

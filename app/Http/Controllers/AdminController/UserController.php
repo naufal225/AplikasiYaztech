@@ -26,7 +26,7 @@ class UserController extends Controller
                     WHEN ? THEN 3
                 END
             ", [
-                Roles::HR->value,
+                Roles::Manager->value,
                 Roles::Approver->value,
                 Roles::Employee->value
             ])
@@ -49,7 +49,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email:dns|unique:users,email',
-            'role' => 'required|string|in:employee,approver,hr',
+            'role' => 'required|string|in:employee,approver,manager',
             'division_id' => 'required|exists:divisions,id'
 
         ], [
@@ -97,7 +97,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email:dns|unique:users,email,' . $user->id . ',id',
-            'role' => 'required|string|in:employee,approver,hr',
+            'role' => 'required|string|in:employee,approver,manager',
             'division_id' => 'required|exists:divisions,id'
         ], [
             'name.required' => 'The name field is required.',
