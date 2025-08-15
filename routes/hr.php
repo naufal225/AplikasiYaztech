@@ -1,8 +1,9 @@
 <?php
 
-use App\Http\Controllers\HrController\DashboardController;
+use App\Http\Controllers\ManagerController\DashboardController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:hr'])->prefix('hr')->name('hr.')->group(function () {
+Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 });
