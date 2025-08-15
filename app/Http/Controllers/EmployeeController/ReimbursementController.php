@@ -157,13 +157,11 @@ class ReimbursementController extends Controller
      */
     public function update(Request $request, Reimbursement $reimbursement)
     {
-        // Check if the user has permission to update this reimbursement
         $user = Auth::user();
         if ($user->id !== $reimbursement->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Only allow updating if the reimbursement is still pending
         if ($reimbursement->status_1 !== 'pending' || $reimbursement->status_2 !== 'pending') {
             return redirect()->route('employee.reimbursements.show', $reimbursement->id)
                 ->with('error', 'You cannot update a reimbursement request that has already been processed.');
@@ -183,7 +181,6 @@ class ReimbursementController extends Controller
         $reimbursement->status_2 = 'pending';
 
         if ($request->hasFile('invoice_path')) {
-            // Delete old invoice_path if exists
             if ($reimbursement->invoice_path) {
                 Storage::disk('public')->delete($reimbursement->invoice_path);
             }

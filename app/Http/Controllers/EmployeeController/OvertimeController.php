@@ -9,6 +9,7 @@ use App\Roles;
 use App\Models\Overtime;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class OvertimeController extends Controller
 {
@@ -80,7 +81,7 @@ class OvertimeController extends Controller
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
         }
 
-        Overtime::create([
+        $overtime = Overtime::create([
             'employee_id' => Auth::id(),
             'date_start'  => $start,
             'date_end'    => $end,
@@ -89,8 +90,30 @@ class OvertimeController extends Controller
             'status_2'    => 'pending',
         ]);
 
+        // Send notification email to the approver
+        if ($overtime->approver) {
+            $linkTanggapan = route('employee.overtimes.show', $overtime->id);
+
+            $hours = floor($overtimeMinutes / 60);
+            $minutes = $overtimeMinutes % 60;
+            $pesan = "Pengajuan lembur milik " . Auth::user()->name . " telah dilakukan perubahan data.
+                <br> Tanggal/Waktu Mulai: " . $request->date_start . "
+                <br> Tanggal/Waktu Akhir: " . $request->date_end . "
+                <br> Total Waktu: " . $hours . " hours " . $minutes . " minutes";
+
+            Mail::to($overtime->approver->email)->send(
+                new \App\Mail\SendMessage(
+                    namaPengaju: Auth::user()->name,
+                    pesan: $pesan,
+                    namaApprover: $overtime->approver->name,
+                    linkTanggapan: $linkTanggapan,
+                    emailPengaju: Auth::user()->email,
+                )
+            );
+        }
+
         return redirect()->route('employee.overtimes.index')
-            ->with('success', 'Overtime submitted. Total: '. number_format($overtimeHours, 2) .' hours');
+            ->with('success', 'Overtime submitted. Total: '. $hours . ' hours ' . $minutes . ' minutes');
     }
 
     /**
@@ -134,34 +157,27 @@ class OvertimeController extends Controller
     {
         $user = Auth::user();
 
-        // Pastikan user adalah pemilik pengajuan
         if ($user->id !== $overtime->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Pastikan status masih pending
         if ($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') {
             return redirect()->route('employee.overtimes.show', $overtime->id)
                 ->with('error', 'You cannot update an overtime request that has already been processed.');
         }
 
-        // Validasi input
         $request->validate([
             'date_start' => 'required|date_format:Y-m-d\TH:i',
             'date_end'   => 'required|date_format:Y-m-d\TH:i|after:date_start',
         ]);
 
-        // Parsing waktu dari input request
         $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
         $end   = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
 
-        // Hitung durasi lembur dalam menit
         $overtimeMinutes = $start->diffInMinutes($end);
 
-        // Konversi ke jam (desimal)
         $overtimeHours = $overtimeMinutes / 60;
 
-        // Minimal lembur 0.5 jam
         if ($overtimeHours < 0.5) {
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
         }
@@ -170,10 +186,34 @@ class OvertimeController extends Controller
         $overtime->date_start = $request->date_start;
         $overtime->date_end   = $request->date_end;
         $overtime->total      = $overtimeMinutes; // Disimpan dalam menit
+        $overtime->status_1   = 'pending';
+        $overtime->status_2   = 'pending';
         $overtime->save();
 
+        // Send notification email to the approver
+        if ($overtime->approver) {
+            $linkTanggapan = route('employee.overtimes.show', $overtime->id);
+
+            $hours = floor($overtimeMinutes / 60);
+            $minutes = $overtimeMinutes % 60;
+            $pesan = "Pengajuan lembur milik " . Auth::user()->name . " telah dilakukan perubahan data.
+                <br> Tanggal/Waktu Mulai: " . $request->date_start . "
+                <br> Tanggal/Waktu Akhir: " . $request->date_end . "
+                <br> Total Waktu: " . $hours . " hours " . $minutes . " minutes";
+
+            Mail::to($overtime->approver->email)->send(
+                new \App\Mail\SendMessage(
+                    namaPengaju: Auth::user()->name,
+                    pesan: $pesan,
+                    namaApprover: $overtime->approver->name,
+                    linkTanggapan: $linkTanggapan,
+                    emailPengaju: Auth::user()->email,
+                )
+            );
+        }
+
         return redirect()->route('employee.overtimes.show', $overtime->id)
-            ->with('success', 'Overtime request updated successfully. Total overtime: ' . number_format($overtimeHours, 2) . ' hours');
+            ->with('success', 'Overtime request updated successfully. Total overtime: ' . $hours . ' hours ' . $minutes . ' minutes');
     }
 
     /**
