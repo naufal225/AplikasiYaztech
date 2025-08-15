@@ -90,14 +90,17 @@ class LeaveController extends Controller
         $validated = $request->validate([
             'status_1' => 'string|in:approved,rejected',
             'status_2' => 'string|in:approved,rejected',
-            'note_1' => 'string',
-            'note_2' => 'string',
+            'note_1' => 'nullable|string',
+            'note_2' => 'nullable|string',
         ], [
             'status_1.string' => 'Status must be a valid string.',
             'status_1.in' => 'Status must approved or rejected.',
 
             'status_2.string' => 'Status must be a valid string.',
             'status_2.in' => 'Status must approved or rejected.',
+
+            'note_1.string' => 'Note must be a valid string.',
+            'note_2.string' => 'Note must be a valid string.',
         ]);
 
         $status = '';

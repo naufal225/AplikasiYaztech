@@ -148,10 +148,10 @@
                                 Date</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status</th>
+                                Status 1</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Approver</th> {{-- Added Approver --}}
+                                Status 2</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Customer</th> {{-- Added Customer --}}
@@ -182,26 +182,40 @@
                                     \Carbon\Carbon::parse($reimbursement->date)->format('M d, Y') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($reimbursement->status === 'pending')
-                                <span class="badge-pending">
+                                @if($reimbursement->status_1 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
                                     <i class="mr-1 fas fa-clock"></i>
                                     Pending
                                 </span>
-                                @elseif($reimbursement->status === 'approved')
-                                <span class="badge-approved">
+                                @elseif($reimbursement->status_1 === 'approved')
+                                <span class="text-green-500 badge-approved">
                                     <i class="mr-1 fas fa-check-circle"></i>
                                     Approved
                                 </span>
-                                @elseif($reimbursement->status === 'rejected')
-                                <span class="badge-rejected">
+                                @elseif($reimbursement->status_1 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
                                     <i class="mr-1 fas fa-times-circle"></i>
                                     Rejected
                                 </span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $reimbursement->approver->name ?? 'N/A' }}
-                                </div> {{-- Added Approver --}}
+                                @if($reimbursement->status_2 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
+                                    <i class="mr-1 fas fa-clock"></i>
+                                    Pending
+                                </span>
+                                @elseif($reimbursement->status_2 === 'approved')
+                                <span class="text-green-500 badge-approved">
+                                    <i class="mr-1 fas fa-check-circle"></i>
+                                    Approved
+                                </span>
+                                @elseif($reimbursement->status_2 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
+                                    <i class="mr-1 fas fa-times-circle"></i>
+                                    Rejected
+                                </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-900">{{ $reimbursement->customer->name ?? 'N/A' }}

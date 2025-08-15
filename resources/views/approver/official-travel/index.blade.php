@@ -90,7 +90,7 @@
     </div>
 
     <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
-        <form id="filterForm" method="GET" action="{{ route('approver.leaves.index') }}"
+        <form id="filterForm" method="GET" action="{{ route('approver.official-travels.index') }}"
             class="grid grid-cols-1 gap-4 md:grid-cols-4">
             <div>
                 <label class="block mb-2 text-sm font-medium text-neutral-700">Status</label>
@@ -134,84 +134,127 @@
                 <table class="min-w-full divide-y divide-neutral-200">
                     <thead class="bg-neutral-50">
                         <tr>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Request ID</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Employee</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Duration</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Days</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Status</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Approver</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Actions</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Request ID</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Employee</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Duration</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Days</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Status 1</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Status 2</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Approver</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-neutral-200">
                         @forelse($officialTravels as $officialTravel)
-                            <tr class="transition-colors duration-200 hover:bg-neutral-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                        <tr class="transition-colors duration-200 hover:bg-neutral-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-neutral-900">#{{ $officialTravel->id }}</div>
+                                    <div class="text-sm text-neutral-500">{{ $officialTravel->created_at->format('M d,
+                                        Y') }}</div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div
+                                        class="flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-success-100">
+                                        <span class="text-xs font-semibold text-success-600">{{
+                                            substr($officialTravel->employee->name, 0, 1) }}</span>
+                                    </div>
                                     <div>
-                                        <div class="text-sm font-medium text-neutral-900">#{{ $officialTravel->id }}</div>
-                                        <div class="text-sm text-neutral-500">{{ $officialTravel->created_at->format('M d, Y') }}</div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-success-100">
-                                            <span class="text-xs font-semibold text-success-600">{{ substr($officialTravel->employee->name, 0, 1) }}</span>
-                                        </div>
-                                        <div>
-                                            <div class="text-sm font-medium text-neutral-900">{{ $officialTravel->employee->name }}</div>
-                                            <div class="text-sm text-neutral-500">{{ $officialTravel->employee->email }}</div>
+                                        <div class="text-sm font-medium text-neutral-900">{{
+                                            $officialTravel->employee->name }}</div>
+                                        <div class="text-sm text-neutral-500">{{ $officialTravel->employee->email }}
                                         </div>
                                     </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">
-                                        {{ $officialTravel->date_start->format('M d') }}
-                                    </div>
-                                    <div class="text-sm text-neutral-500">
-                                        to {{ $officialTravel->date_end->format('M d') }}
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-bold text-neutral-900">{{ $officialTravel->total }} day{{ $officialTravel->total > 1 ? 's' : '' }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($officialTravel->status === 'pending')
-                                        <span class="badge-pending">
-                                            <i class="mr-1 fas fa-clock"></i>
-                                            Pending
-                                        </span>
-                                    @elseif($officialTravel->status === 'approved')
-                                        <span class="badge-approved">
-                                            <i class="mr-1 fas fa-check-circle"></i>
-                                            Approved
-                                        </span>
-                                    @elseif($officialTravel->status === 'rejected')
-                                        <span class="badge-rejected">
-                                            <i class="mr-1 fas fa-times-circle"></i>
-                                            Rejected
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A' }}</div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                                    <div class="flex items-center space-x-2">
-                                        <a href="{{ route('admin.official-travels.show', $officialTravel->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-900">
+                                    {{ $officialTravel->date_start->format('M d') }}
+                                </div>
+                                <div class="text-sm text-neutral-500">
+                                    to {{ $officialTravel->date_end->format('M d') }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-bold text-neutral-900">{{ $officialTravel->total }} day{{
+                                    $officialTravel->total > 1 ? 's' : '' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($officialTravel->status_1 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
+                                    <i class="mr-1 fas fa-clock"></i>
+                                    Pending
+                                </span>
+                                @elseif($officialTravel->status_1 === 'approved')
+                                <span class="text-green-500 badge-approved">
+                                    <i class="mr-1 fas fa-check-circle"></i>
+                                    Approved
+                                </span>
+                                @elseif($officialTravel->status_1 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
+                                    <i class="mr-1 fas fa-times-circle"></i>
+                                    Rejected
+                                </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($officialTravel->status_2 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
+                                    <i class="mr-1 fas fa-clock"></i>
+                                    Pending
+                                </span>
+                                @elseif($officialTravel->status_2 === 'approved')
+                                <span class="text-green-500 badge-approved">
+                                    <i class="mr-1 fas fa-check-circle"></i>
+                                    Approved
+                                </span>
+                                @elseif($officialTravel->status_2 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
+                                    <i class="mr-1 fas fa-times-circle"></i>
+                                    Rejected
+                                </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A' }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                                <div class="flex items-center space-x-2">
+                                    <a href="{{ route('approver.official-travels.show', $officialTravel->id) }}"
+                                        class="text-primary-600 hover:text-primary-900" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
                         @empty
-                            <tr>
-                                <td colspan="7" class="px-6 py-12 text-center">
-                                    <div class="text-neutral-400">
-                                        <i class="mb-4 text-4xl fas fa-plane"></i>
-                                        <p class="text-lg font-medium">No official travel requests found</p>
-                                    </div>
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center">
+                                <div class="text-neutral-400">
+                                    <i class="mb-4 text-4xl fas fa-plane"></i>
+                                    <p class="text-lg font-medium">No official travel requests found</p>
+                                </div>
+                            </td>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>

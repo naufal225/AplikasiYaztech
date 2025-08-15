@@ -147,7 +147,10 @@
                                 Hours</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status</th>
+                                Status 1</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Status 2</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Actions</th>
@@ -195,18 +198,36 @@
                                 <div class="text-sm font-bold text-neutral-900">{{ $hours }}h {{ $minutes }}m</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($overtime->status === 'pending')
-                                <span class="badge-pending">
+                                @if($overtime->status_1 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
                                     <i class="mr-1 fas fa-clock"></i>
                                     Pending
                                 </span>
-                                @elseif($overtime->status === 'approved')
-                                <span class="badge-approved">
+                                @elseif($overtime->status_1 === 'approved')
+                                <span class="text-green-500 badge-approved">
                                     <i class="mr-1 fas fa-check-circle"></i>
                                     Approved
                                 </span>
-                                @elseif($overtime->status === 'rejected')
-                                <span class="badge-rejected">
+                                @elseif($overtime->status_1 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
+                                    <i class="mr-1 fas fa-times-circle"></i>
+                                    Rejected
+                                </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($overtime->status_2 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
+                                    <i class="mr-1 fas fa-clock"></i>
+                                    Pending
+                                </span>
+                                @elseif($overtime->status_2 === 'approved')
+                                <span class="text-green-500 badge-approved">
+                                    <i class="mr-1 fas fa-check-circle"></i>
+                                    Approved
+                                </span>
+                                @elseif($overtime->status_2 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
                                     <i class="mr-1 fas fa-times-circle"></i>
                                     Rejected
                                 </span>
