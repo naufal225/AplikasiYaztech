@@ -28,6 +28,10 @@ Route::get('/', function () {
                 return redirect()->route('approver.dashboard');
             case (Roles::Employee->value) :
                 return redirect()->route('employee.dashboard');
+            case (Roles::Manager->value) :
+                return redirect()->route('manager.dashboard');
+            case (Roles::Finance->value) :
+                return redirect()->route('finance.dashboard');
             default:
                 return abort(403);
 

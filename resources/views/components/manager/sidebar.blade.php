@@ -18,25 +18,25 @@
             <span class="font-medium">Dashboard</span>
         </a>
 
-        <a href=""
+        <a href="{{ route('manager.leaves.index') }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
             <span class="font-medium">Leave Requests</span>
         </a>
 
-        <a href=""
+        <a href="{{ route('manager.reimbursements.index') }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-file-invoice-dollar"></i>
             <span class="font-medium">Reimbursement Requests</span>
         </a>
 
-        <a href=""
+        <a href="{{ route('manager.overtimes.index') }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-clock"></i>
             <span class="font-medium">Overtime Requests</span>
         </a>
 
-        <a href=""
+        <a href="{{ route('manager.official-travels.index') }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-briefcase"></i>
             <span class="font-medium">Official Travel Requests</span>
