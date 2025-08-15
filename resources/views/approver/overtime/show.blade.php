@@ -1,5 +1,5 @@
 @extends('components.approver.layout.layout-approver')
-@section('header', 'Leave Detail')
+@section('header', 'Overtime Detail')
 @section('subtitle', '')
 
 @section('content')
@@ -32,24 +32,24 @@
 
                     <div class="flex items-center justify-between">
                         <div>
-                            <h1 class="text-xl font-bold text-white">Leave Request #{{ $leave->id }}</h1>
+                            <h1 class="text-xl font-bold text-white">Overtime Request #{{ $overtime->id }}</h1>
                             <p class="text-sm text-primary-100">Submitted on {{
-                                Carbon\Carbon::parse($leave->created_at)->format('M d, Y \a\t H:i') }}</p>
+                                Carbon\Carbon::parse($overtime->created_at)->format('M d, Y \a\t H:i') }}</p>
                         </div>
                         <div class="text-right">
-                            @if($leave->final_status === 'pending')
+                            @if($overtime->final_status === 'pending')
                             <span
                                 class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
                                 <i class="mr-1 fas fa-clock"></i>
                                 Pending Review
                             </span>
-                            @elseif($leave->final_status === 'approved')
+                            @elseif($overtime->final_status === 'approved')
                             <span
                                 class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
                                 <i class="mr-1 fas fa-check-circle"></i>
                                 Approved
                             </span>
-                            @elseif($leave->final_status === 'rejected')
+                            @elseif($overtime->final_status === 'rejected')
                             <span
                                 class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
                                 <i class="mr-1 fas fa-times-circle"></i>
@@ -60,10 +60,10 @@
                     </div>
                 </div>
             </div>
-            <!-- Leave Details -->
+            <!-- overtime Details -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
-                    <h2 class="text-lg font-bold text-neutral-900">Leave Details</h2>
+                    <h2 class="text-lg font-bold text-neutral-900">Overtime Details</h2>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -72,7 +72,7 @@
                             <label class="text-sm font-semibold text-neutral-700">Email</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $leave->employee->email ?? 'N/A' }}</span>
+                                <span class="font-medium text-neutral-900">{{ $overtime->employee->email ?? 'N/A' }}</span>
                             </div>
                         </div>
                         <!-- Approver -->
@@ -80,7 +80,7 @@
                             <label class="text-sm font-semibold text-neutral-700">Approver</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-user-check text-info-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $leave->approver->name ?? 'N/A' }}</span>
+                                <span class="font-medium text-neutral-900">{{ $overtime->approver->name ?? 'N/A' }}</span>
                             </div>
                         </div>
                         <!-- Start Date -->
@@ -89,7 +89,7 @@
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-calendar-alt text-primary-600"></i>
                                 <span class="font-medium text-neutral-900">{{
-                                    \Carbon\Carbon::parse($leave->date_start)->format('l, M d, Y') }}</span>
+                                    \Carbon\Carbon::parse($overtime->date_start)->format('l, M d, Y') }}</span>
                             </div>
                         </div>
                         <!-- End Date -->
@@ -98,7 +98,7 @@
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-calendar-alt text-primary-600"></i>
                                 <span class="font-medium text-neutral-900">{{
-                                    \Carbon\Carbon::parse($leave->date_end)->format('l, M d, Y') }}</span>
+                                    \Carbon\Carbon::parse($overtime->date_end)->format('l, M d, Y') }}</span>
                             </div>
                         </div>
                         <!-- Duration -->
@@ -108,10 +108,10 @@
                                 <i class="mr-3 fas fa-clock text-secondary-600"></i>
                                 <span class="font-medium text-neutral-900">
                                     {{ (int)
-                                    \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end,
+                                    \Carbon\Carbon::parse($overtime->date_start)->diffInDays(\Carbon\Carbon::parse($overtime->date_end,
                                     ), false) + 1 }}
                                     {{ (int)
-                                    \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end,
+                                    \Carbon\Carbon::parse($overtime->date_start)->diffInDays(\Carbon\Carbon::parse($overtime->date_end,
                                     ), false) + 1 === 1 ? 'day' : 'days' }}
                                 </span>
                             </div>
@@ -120,34 +120,34 @@
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Status 1 - Team Lead</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                @if($leave->status_1 === 'pending')
+                                @if($overtime->status_1 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
                                 <span class="font-medium text-warning-800">Pending Review</span>
-                                @elseif($leave->status_1 === 'approved')
+                                @elseif($overtime->status_1 === 'approved')
                                 <i class="mr-3 fas fa-check-circle text-success-600"></i>
                                 <span class="font-medium text-success-800">Approved</span>
-                                @elseif($leave->status_1 === 'rejected')
+                                @elseif($overtime->status_1 === 'rejected')
                                 <i class="mr-3 fas fa-times-circle text-error-600"></i>
                                 <span class="font-medium text-error-800">Rejected</span>
                                 @endif
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Reason for leave</label>
+                            <label class="text-sm font-semibold text-neutral-700">Reason for overtime</label>
                             <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <p class="leading-relaxed text-neutral-900">{{ $leave->reason }}</p>
+                                <p class="leading-relaxed text-neutral-900">{{ $overtime->reason }}</p>
                             </div>
                         </div>
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Status 2 - Manager</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                @if($leave->status_2 === 'pending')
+                                @if($overtime->status_2 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
                                 <span class="font-medium text-warning-800">Pending Review</span>
-                                @elseif($leave->status_2 === 'approved')
+                                @elseif($overtime->status_2 === 'approved')
                                 <i class="mr-3 fas fa-check-circle text-success-600"></i>
                                 <span class="font-medium text-success-800">Approved</span>
-                                @elseif($leave->status_2 === 'rejected')
+                                @elseif($overtime->status_2 === 'rejected')
                                 <i class="mr-3 fas fa-times-circle text-error-600"></i>
                                 <span class="font-medium text-error-800">Rejected</span>
                                 @endif
@@ -158,27 +158,27 @@
 
 
                     <!-- Added approval/rejection notes section if final_status is not pending -->
-                    @if($leave->final_status !== 'pending' && !empty($leave->approval_notes))
+                    @if($overtime->final_status !== 'pending' && !empty($overtime->approval_notes))
                     <div class="mt-6 space-y-2">
                         <label class="text-sm font-semibold text-neutral-700">
-                            @if($leave->final_status === 'approved')
+                            @if($overtime->final_status === 'approved')
                             Approval Notes
                             @else
                             Rejection Notes
                             @endif
                         </label>
                         <div class="p-4 border rounded-lg
-                            @if($leave->final_status === 'approved')
+                            @if($overtime->final_status === 'approved')
                                 bg-success-50 border-success-200
                             @else
                                 bg-error-50 border-error-200
                             @endif">
                             <p class="leading-relaxed
-                                @if($leave->final_status === 'approved')
+                                @if($overtime->final_status === 'approved')
                                     text-success-900
                                 @else
                                     text-error-900
-                                @endif">{{ $leave->approval_notes }}</p>
+                                @endif">{{ $overtime->approval_notes }}</p>
                         </div>
                     </div>
                     @endif
@@ -192,7 +192,7 @@
                     <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                 </div>
                 <div class="p-6 space-y-3">
-                    <a href="{{ route('approver.leaves.index') }}"
+                    <a href="{{ route('approver.overtimes.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                         <i class="mr-2 fas fa-arrow-left"></i>
                         Back to List
@@ -206,13 +206,13 @@
             </div>
 
             <!-- Added approval/rejection form for pending requests -->
-            @if($leave->final_status === 'pending' && $leave->status_1 == 'pending')
+            @if($overtime->final_status === 'pending' && $overtime->status_1 == 'pending')
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
                     <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
                 </div>
                 <div class="p-6">
-                    <form id="approvalForm" method="POST" action="{{ route('approver.leaves.update', $leave) }}">
+                    <form id="approvalForm" method="POST" action="{{ route('approver.overtimes.update', $overtime) }}">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="status_1" id="status_1" value="">
@@ -264,7 +264,7 @@
 <script>
     function submitApproval(action) {
         const actionText = action === 'approved' ? 'approved' : 'rejected';
-        // const confirmMessage = `Are you sure you want to ${actionText} this leave request?`;
+        // const confirmMessage = `Are you sure you want to ${actionText} this overtime request?`;
 
         // if (confirm(confirmMessage)) {
         document.getElementById('status_1').value = action;

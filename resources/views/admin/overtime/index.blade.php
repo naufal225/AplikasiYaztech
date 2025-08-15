@@ -24,6 +24,23 @@
             </div>
         </div>
     </div>
+
+    <div class="">
+        <!-- Success Message -->
+        @if(session('success'))
+        <div class="flex items-center p-4 my-6 border border-green-200 bg-green-50 rounded-xl">
+            <div class="flex-shrink-0">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+            </div>
+        </div>
+        @endif
+    </div>
+
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
         <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">

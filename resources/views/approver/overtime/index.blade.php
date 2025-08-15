@@ -9,24 +9,10 @@
             <h1 class="text-2xl font-bold text-neutral-900">Overtime Requests</h1>
             <p class="text-neutral-600">Manage and track your overtime requests</p>
         </div>
-        <div class="mt-4 sm:mt-0">
-            <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:flex-row">
-                <button id="exportOvertimeRequests"
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
-                    <i class="mr-2 fa-solid fa-file-export"></i>
-                    <span id="exportButtonText">Export Data</span>
-                    <svg id="exportSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                </button>
-            </div>
-        </div>
 
+    </div>
+
+    <div>
         @if(session('success'))
         <div class="flex items-center p-4 my-6 border border-green-200 bg-green-50 rounded-xl">
             <div class="flex-shrink-0">
@@ -40,6 +26,7 @@
         </div>
         @endif
     </div>
+
 
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
@@ -147,10 +134,10 @@
                                 Hours</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 1</th>
+                                Status 1 - Team Lead</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 2</th>
+                                Status 2 - Manager</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Actions</th>
@@ -235,30 +222,16 @@
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
-                                    <a href="{{ route('admin.overtimes.show', $overtime->id) }}"
+                                    <a href="{{ route('approver.overtimes.show', $overtime->id) }}"
                                         class="text-primary-600 hover:text-primary-900">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @if(Auth::id() === $overtime->employee_id && $overtime->status === 'pending')
-                                    <a href="{{ route('admin.overtimes.edit', $overtime->id) }}"
-                                        class="text-secondary-600 hover:text-secondary-900">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ route('admin.overtimes.destroy', $overtime->id) }}" method="POST"
-                                        class="inline" onsubmit="return confirm('Are you sure?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-error-600 hover:text-error-900">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                    @endif
                                 </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="7" class="px-6 py-12 text-center">
                                 <div class="text-neutral-400">
                                     <i class="mb-4 text-4xl fas fa-clock"></i>
                                     <p class="text-lg font-medium">No overtime requests found</p>
