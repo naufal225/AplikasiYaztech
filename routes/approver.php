@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:approver'])->prefix('approver')->name('approver.')->group(function () {
     Route::get('/', function() {
-        redirect()->route('approver.dashboard');
+        return redirect()->route('approver.dashboard');
     });
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
