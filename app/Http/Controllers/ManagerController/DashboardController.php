@@ -3,11 +3,87 @@
 namespace App\Http\Controllers\ManagerController;
 
 use App\Http\Controllers\Controller;
+use App\Models\Leave;
+use App\Models\OfficialTravel;
+use App\Models\Overtime;
+use App\Models\Reimbursement;
+use App\Models\User;
+use App\Roles;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Role;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request) {
+    public function index()
+    {
+        $models = [
+            "reimbursements" => Reimbursement::class,
+            "overtimes" => Overtime::class,
+            "leaves" => Leave::class,
+            "official_travels" => OfficialTravel::class
+        ];
 
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $pendings = $approveds = $rejecteds = [];
+
+        foreach ($models as $key => $model) {
+            $pendings[$key] = $model::where('created_at', '>=', $startOfMonth)
+                ->where('status_1', 'pending')
+                ->orWhere('status_2', 'pending')
+                ->where('status_1', '!=', 'rejected')
+                ->where('status_2', '!=', 'rejected')
+                ->count();
+            $rejecteds[$key] = $model::where('created_at', '>=', $startOfMonth)
+                ->where('status_1', 'rejected')
+                ->orWhere('status_2', 'rejected')->count();
+            $approveds[$key] = $model::where('created_at', '>=', $startOfMonth)
+                ->where('status_1', 'approved')
+                ->where('status_2', 'approved')
+                ->where('status_1', '!=', 'rejected')
+                ->where('status_2', '!=', 'rejected')
+                ->count();
+        }
+
+        $total_pending = array_sum($pendings);
+        $total_rejected = array_sum($rejecteds);
+        $total_approved = array_sum($approveds);
+        $total_employees = User::where('role', Roles::Employee->value)->count();
+
+        // Generate chart data per bulan
+        $reimbursementsChartData = $overtimesChartData = $leavesChartData = $officialTravelsChartData = $reimbursementsRupiahChartData = [];
+        $months = [];
+
+        $year = now()->year;
+
+        for ($i = 1; $i <= 12; $i++) {
+            $date = Carbon::create($year, $i, 1);
+            $monthName = $date->translatedFormat('F');
+            $start = $date->copy()->startOfMonth();
+            $end = $date->copy()->endOfMonth();
+
+            $months[] = $monthName;
+            $reimbursementsChartData[] = Reimbursement::whereBetween('created_at', [$start, $end])->count();
+            $reimbursementsRupiahChartData[] = Reimbursement::whereBetween('created_at', [$start, $end])->sum('total');
+            $overtimesChartData[] = Overtime::whereBetween('created_at', [$start, $end])->count();
+            $leavesChartData[] = Leave::whereBetween('created_at', [$start, $end])->count();
+            $officialTravelsChartData[] = OfficialTravel::whereBetween('created_at', [$start, $end])->count();
+        }
+
+
+        return view('manager.dashboard.index', compact([
+            'total_employees',
+            'total_pending',
+            'total_approved',
+            'total_rejected',
+            'reimbursementsChartData',
+            'overtimesChartData',
+            'leavesChartData',
+            'officialTravelsChartData',
+            'months',
+            'reimbursementsRupiahChartData'
+        ]));
     }
+
 }
