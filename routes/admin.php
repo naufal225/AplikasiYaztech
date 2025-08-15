@@ -12,6 +12,10 @@ use App\Http\Controllers\AdminController\ReimbursementController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', function() {
+        redirect()->route('admin.dashboard');
+    });
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('divisions', DivisionController::class);

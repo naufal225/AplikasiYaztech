@@ -9,6 +9,10 @@ use App\Http\Controllers\EmployeeController\OfficialTravelController;
 
 
 Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee.')->group(function () {
+    Route::get('/', function() {
+        redirect()->route('employee.dashboard');
+    });
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
