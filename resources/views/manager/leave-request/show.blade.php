@@ -1,4 +1,4 @@
-@extends('components.admin.layout.layout-admin')
+@extends('components.manager.layout.layout-manager')
 @section('header', 'Leave Detail')
 @section('subtitle', '')
 
@@ -130,7 +130,7 @@
                     <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                 </div>
                 <div class="p-6 space-y-3">
-                    <a href="{{ route('admin.leaves.index') }}"
+                    <a href="{{ route('manager.leaves.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                         <i class="mr-2 fas fa-arrow-left"></i>
                         Back to List

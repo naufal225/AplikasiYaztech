@@ -1,11 +1,11 @@
-@extends('components.admin.layout.layout-admin')
+@extends('components.manager.layout.layout-manager')
 
 @section('header', 'Official Travel Detail')
 @section('subtitle', '')
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-        
+
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
             <div class="space-y-6 lg:col-span-2">
                 <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
@@ -122,7 +122,7 @@
                     </div>
                     <div class="p-6 space-y-3">
 
-                        <a href="{{ route('admin.official-travels.index') }}" class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
+                        <a href="{{ route('manager.official-travels.index') }}" class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                             <i class="mr-2 fas fa-arrow-left"></i>
                             Back to List
                         </a>

@@ -212,7 +212,7 @@
                                     @endif
                                 </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $leave->employee->division->leader->name ??
+                                <div class="text-sm text-neutral-900">{{ $leave->approver->name ??
                                     "N/A" }}</div>
                                 <div class="text-sm text-neutral-500">{{
                                     ucfirst($leave->employee->division->leader->role ?? "N/A" ) }}</div>
