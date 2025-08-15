@@ -9,7 +9,7 @@ enum Roles : String
     case Admin = "admin";
     case Approver = "approver"; // ini team lead
     case Employee = "employee";
-    case HR = "hr";
+    case Manager = "manager";
     case Finance = "finance";
 
     public static function values() {

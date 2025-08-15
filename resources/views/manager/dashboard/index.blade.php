@@ -1,4 +1,4 @@
-@extends('components.admin.layout.layout-admin')
+@extends('components.hr.layout.layout-hr')
 
 @section('header', 'Dashboard')
 @section('subtitle', 'Welcome Back!')
@@ -155,6 +155,6 @@
     };
 </script>
 @push('scripts')
-@vite("resources/js/admin/dashboard/script.js")
+@vite("resources/js/hr/dashboard/script.js")
 @endpush
 @endsection

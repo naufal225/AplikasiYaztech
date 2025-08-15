@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HR Dashboard</title>
+    <title>Manager Dashboard</title>
     @vite('resources/css/app.css')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,12 +14,12 @@
 <body class="bg-gray-50">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar - Primary Blue (35%) -->
-        @include('components.hr.sidebar')
+        @include('components.manager.sidebar')
 
         <!-- Main Content -->
         <div class="relative z-10 flex flex-col flex-1 overflow-hidden lg:ml-0">
             <!-- Header - Secondary Sky Blue (20%) -->
-            @include('components.hr.header')
+            @include('components.manager.header')
 
             <!-- Dashboard Content -->
             <main class="relative z-10 flex-1 p-6 overflow-x-hidden overflow-y-auto bg-gray-50">
