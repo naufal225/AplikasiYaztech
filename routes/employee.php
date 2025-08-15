@@ -21,7 +21,8 @@ Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee
         ->parameters([
             "leaves" => "leave"
         ]);
-    ;
+
+    Route::get('leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
 
     // Reimbursements
     Route::resource('reimbursements', ReimbursementController::class);
