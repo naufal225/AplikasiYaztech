@@ -42,12 +42,16 @@ class LeaveController extends Controller
         }
 
         $leaves = $query->paginate(10);
-        $totalRequests = Leave::where('employee_id', $user->id)->count();
-        $pendingRequests = Leave::where('employee_id', $user->id)->where('status_1', 'pending')->orWhere('status_2', 'pending')->count();
-        $approvedRequests = Leave::where('employee_id', $user->id)->where('status_1', 'approved')->orWhere('status_2', 'approved')->count();
-        $rejectedRequests = Leave::where('employee_id', $user->id)->where('status_1', 'rejected')->orWhere('status_2', 'rejected')->count();
+        $counts = $query->withFinalStatusCount()->first();
 
-        return view('Employee.leaves.leave-show', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $totalRequests = (clone $query)->count();
+        $pendingRequests = (int) $counts->pending;
+        $approvedRequests = (int) $counts->approved;
+        $rejectedRequests = (int) $counts->rejected;
+
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+        return view('Employee.leaves.leave-show', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
     /**
@@ -71,6 +75,10 @@ class LeaveController extends Controller
             'date_end' => 'required|date|after_or_equal:date_start',
             'reason' => 'required|string|max:1000',
         ]);
+
+        if(Auth::user()->division_id === null || trim(Auth::user()->division_id) === '') {
+            return redirect()->back()->with('error', 'You are not in a division. Please contact your administrator.');
+        }
 
         $leave = new Leave();
         $leave->employee_id = Auth::id();

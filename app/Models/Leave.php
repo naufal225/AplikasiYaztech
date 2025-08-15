@@ -38,7 +38,4 @@ class Leave extends Model
             'leader_id'        // FK di divisions → users.id (leader)
         );
     }
-
-
-
 }
