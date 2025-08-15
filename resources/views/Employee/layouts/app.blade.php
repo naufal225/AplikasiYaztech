@@ -16,76 +16,76 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @stack('styles')
 </head>
-<body class="bg-neutral-50 font-sans antialiased h-screen overflow-hidden">
-    <div class="h-full flex">
+<body class="h-screen overflow-hidden font-sans antialiased bg-neutral-50">
+    <div class="flex h-full">
         <!-- Sidebar -->
-        <div class="bg-primary-800 fixed inset-y-0 left-0 z-50 text-white w-64 flex flex-col shadow-medium lg:relative lg:translate-x-0 transform -translate-x-full transition-transform duration-300 ease-in-out" id="sidebar">
-            <div class="bg-primary-900 px-6 py-4 flex items-center justify-between">
+        <div class="fixed inset-y-0 left-0 z-50 flex flex-col w-64 text-white transition-transform duration-300 ease-in-out transform -translate-x-full bg-primary-800 shadow-medium lg:relative lg:translate-x-0" id="sidebar">
+            <div class="flex items-center justify-between px-6 py-4 bg-primary-900">
                 <div class="w-full">
-                    <img src="{{ asset('yaztech-logo-web.png') }}" alt="Yaztech Logo" class="h-12 w-auto mx-auto">
+                    <img src="{{ asset('yaztech-logo-web.png') }}" alt="Yaztech Logo" class="w-auto h-12 mx-auto">
                 </div>
-                <button class="lg:hidden text-white hover:text-primary-200" onclick="toggleSidebar()">
-                    <i class="fas fa-times text-lg"></i>
+                <button class="z-30 text-white lg:hidden hover:text-primary-200" id="btnNav">
+                    <i class="text-lg fas fa-times"></i>
                 </button>
             </div>
 
             <!-- Navigation -->
             <nav class="flex-1 px-4 py-6 space-y-2">
-                <a href="{{ route('employee.dashboard') }}" 
+                <a href="{{ route('employee.dashboard') }}"
                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('employee.dashboard') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-                    <i class="fas fa-home w-5 text-center mr-3"></i>
+                    <i class="w-5 mr-3 text-center fas fa-home"></i>
                     <span class="font-medium">Dashboard</span>
                 </a>
 
-                <a href="{{ route('employee.leaves.index') }}" 
+                <a href="{{ route('employee.leaves.index') }}"
                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('employee.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-                    <i class="fas fa-calendar-alt w-5 text-center mr-3"></i>
+                    <i class="w-5 mr-3 text-center fas fa-calendar-alt"></i>
                     <span class="font-medium">Pengajuan Cuti</span>
                 </a>
 
-                <a href="{{ route('employee.reimbursements.index') }}" 
+                <a href="{{ route('employee.reimbursements.index') }}"
                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('employee.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-                    <i class="fas fa-receipt w-5 text-center mr-3"></i>
+                    <i class="w-5 mr-3 text-center fas fa-receipt"></i>
                     <span class="font-medium">Reimbursement</span>
                 </a>
 
-                <a href="{{ route('employee.overtimes.index') }}" 
+                <a href="{{ route('employee.overtimes.index') }}"
                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('employee.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-                    <i class="fas fa-clock w-5 text-center mr-3"></i>
+                    <i class="w-5 mr-3 text-center fas fa-clock"></i>
                     <span class="font-medium">Overtime</span>
                 </a>
 
-                <a href="{{ route('employee.official-travels.index') }}" 
+                <a href="{{ route('employee.official-travels.index') }}"
                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('employee.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-                    <i class="fas fa-plane w-5 text-center mr-3"></i>
+                    <i class="w-5 mr-3 text-center fas fa-plane"></i>
                     <span class="font-medium">Perjalanan Dinas</span>
                 </a>
 
                 @if(Auth::user()->role === App\Roles::Approver->value || Auth::user()->role === App\Roles::Admin->value)
-                    <div class="border-t border-primary-700 my-4 pt-4">
-                        <p class="text-primary-300 text-xs font-semibold uppercase tracking-wider px-4 mb-2">Approver</p>
-                        <a href="#" class="flex items-center px-4 py-3 rounded-lg text-primary-100 hover:bg-primary-700 hover:text-white transition-all duration-200">
-                            <i class="fas fa-user-check w-5 text-center mr-3"></i>
-                            <span class="font-medium">Approver</span>   
+                    <div class="pt-4 my-4 border-t border-primary-700">
+                        <p class="px-4 mb-2 text-xs font-semibold tracking-wider uppercase text-primary-300">Approver</p>
+                        <a href="#" class="flex items-center px-4 py-3 transition-all duration-200 rounded-lg text-primary-100 hover:bg-primary-700 hover:text-white">
+                            <i class="w-5 mr-3 text-center fas fa-user-check"></i>
+                            <span class="font-medium">Approver</span>
                         </a>
                     </div>
                 @endif
             </nav>
 
-            <div class="border-t border-primary-700 p-4">
+            <div class="p-4 border-t border-primary-700">
                 <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center mr-3">
-                        <span class="text-white font-semibold text-sm">{{ substr(Auth::user()->name, 0, 1) }}</span>
+                    <div class="flex items-center justify-center w-10 h-10 mr-3 rounded-full bg-primary-600">
+                        <span class="text-sm font-semibold text-white">{{ substr(Auth::user()->name, 0, 1) }}</span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-white font-medium text-sm truncate">{{ Auth::user()->name }}</p>
-                        <p class="text-primary-200 text-xs">{{ Auth::user()->email }}</p>
+                        <p class="text-sm font-medium text-white truncate">{{ Auth::user()->name }}</p>
+                        <p class="text-xs text-primary-200">{{ Auth::user()->email }}</p>
                     </div>
                 </div>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="w-full flex items-center px-4 py-2 rounded-lg text-primary-100 hover:bg-primary-700 hover:text-white transition-all duration-200">
-                        <i class="fas fa-sign-out-alt w-5 text-center mr-3"></i>
+                    <button type="submit" class="flex items-center w-full px-4 py-2 transition-all duration-200 rounded-lg text-primary-100 hover:bg-primary-700 hover:text-white">
+                        <i class="w-5 mr-3 text-center fas fa-sign-out-alt"></i>
                         <span class="font-medium">Logout</span>
                     </button>
                 </form>
@@ -93,27 +93,27 @@
         </div>
 
         <!-- Overlay for mobile -->
-        <div class="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden hidden" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+        <div class="fixed inset-0 hidden bg-opacity-50 bg-black/20 lg:hidden" id="sidebar-overlay"></div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col min-w-0">
+        <div class="flex flex-col flex-1 min-w-0">
             <header class="bg-secondary-500 shadow-soft">
                 <div class="flex items-center justify-between px-6 py-4">
                     <div class="flex items-center">
-                        <button class="lg:hidden text-white hover:text-secondary-100 mr-4" onclick="toggleSidebar()">
-                            <i class="fas fa-bars text-lg"></i>
+                        <button class="mr-4 text-white lg:hidden hover:text-secondary-100" onclick="toggleSidebar()">
+                            <i class="text-lg fas fa-bars"></i>
                         </button>
                         <div>
                             <h2 class="text-xl font-bold text-white">@yield('header', 'Dashboard')</h2>
-                            <p class="text-secondary-100 text-sm">@yield('subtitle', 'Welcome back!')</p>
+                            <p class="text-sm text-secondary-100">@yield('subtitle', 'Welcome back!')</p>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <div class="flex items-center bg-secondary-600 rounded-full px-3 py-2">
-                            <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center lg:mr-2">
-                                <span class="text-secondary-600 font-semibold text-sm">{{ strtoupper(substr(trim(explode(' ', Auth::user()->name)[0]), 0, 1)) }}</span>
+                        <div class="flex items-center px-3 py-2 rounded-full bg-secondary-600">
+                            <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full lg:mr-2">
+                                <span class="text-sm font-semibold text-secondary-600">{{ strtoupper(substr(trim(explode(' ', Auth::user()->name)[0]), 0, 1)) }}</span>
                             </div>
-                            <span class="text-white font-medium text-sm hidden lg:block">{{ Auth::user()->name }}</span>
+                            <span class="hidden text-sm font-medium text-white lg:block">{{ Auth::user()->name }}</span>
                         </div>
                     </div>
                 </div>
@@ -121,18 +121,18 @@
 
             <main class="flex-1 p-6 overflow-y-auto">
                 @if(session('success'))
-                    <div class="mb-6 bg-success-50 border border-success-200 text-success-800 px-4 py-3 rounded-lg shadow-soft">
+                    <div class="px-4 py-3 mb-6 border rounded-lg bg-success-50 border-success-200 text-success-800 shadow-soft">
                         <div class="flex items-center">
-                            <i class="fas fa-check-circle mr-2"></i>
+                            <i class="mr-2 fas fa-check-circle"></i>
                             <span>{{ session('success') }}</span>
                         </div>
                     </div>
                 @endif
 
                 @if(session('error'))
-                    <div class="mb-6 bg-error-50 border border-error-200 text-error-800 px-4 py-3 rounded-lg shadow-soft">
+                    <div class="px-4 py-3 mb-6 border rounded-lg bg-error-50 border-error-200 text-error-800 shadow-soft">
                         <div class="flex items-center">
-                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            <i class="mr-2 fas fa-exclamation-circle"></i>
                             <span>{{ session('error') }}</span>
                         </div>
                     </div>
@@ -144,10 +144,16 @@
     </div>
 
     <script>
+        const btnNav = document.getElementById("btnNav");
+
+
+
+        btnNav.addEventListener('click', toggleSidebar);
+
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebar-overlay');
-            
+
             sidebar.classList.toggle('-translate-x-full');
             overlay.classList.toggle('hidden');
         }
@@ -156,9 +162,9 @@
         document.addEventListener('click', function(event) {
             const sidebar = document.getElementById('sidebar');
             const sidebarToggle = document.querySelector('[onclick="toggleSidebar()"]');
-            
-            if (window.innerWidth < 1024 && 
-                !sidebar.contains(event.target) && 
+
+            if (window.innerWidth < 1024 &&
+                !sidebar.contains(event.target) &&
                 !sidebarToggle.contains(event.target) &&
                 !sidebar.classList.contains('-translate-x-full')) {
                 toggleSidebar();
