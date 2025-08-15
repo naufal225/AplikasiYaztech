@@ -10,20 +10,21 @@ use function PHPUnit\Framework\returnSelf;
 
 class AuthController extends Controller
 {
-    public function index() {
-        if(Auth::check()) {
+    public function index()
+    {
+        if (Auth::check()) {
             $user = Auth::user();
 
-            switch($user->role) {
-                case (Roles::Admin->value) :
+            switch ($user->role) {
+                case (Roles::Admin->value):
                     return redirect()->route('admin.dashboard');
-                case (Roles::Approver->value) :
+                case (Roles::Approver->value):
                     return redirect()->route('approver.dashboard');
-                case (Roles::Employee->value) :
+                case (Roles::Employee->value):
                     return redirect()->route('employee.dashboard');
-                case (Roles::Manager->value) :
+                case (Roles::Manager->value):
                     return redirect()->route('manager.dashboard');
-                case (Roles::Finance->value) :
+                case (Roles::Finance->value):
                     return redirect()->route('finance.dashboard');
                 default:
                     return abort(403);
@@ -40,7 +41,7 @@ class AuthController extends Controller
         $credentials = $request->validate([
             "email" => "required|email:dns",
             "password" => "required|string"
-        ],[
+        ], [
             "email.required" => "Email tidak boleh kosong",
             "email.email" => "Format email tidak valid",
             "password.required" => "Password tidak boleh kosong"
@@ -54,13 +55,17 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        switch($user->role) {
-            case (Roles::Admin->value) :
+        switch ($user->role) {
+            case (Roles::Admin->value):
                 return redirect()->route('admin.dashboard');
-            case (Roles::Approver->value) :
+            case (Roles::Approver->value):
                 return redirect()->route('approver.dashboard');
-            case (Roles::Employee->value) :
+            case (Roles::Employee->value):
                 return redirect()->route('employee.dashboard');
+            case (Roles::Manager->value):
+                return redirect()->route('manager.dashboard');
+            case (Roles::Finance->value):
+                return redirect()->route('finance.dashboard');
             default:
                 return abort(403);
 
