@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\ApproverController;
 
+use App\Exports\OvertimesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Reimbursement;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReimbursementController extends Controller
 {
@@ -64,5 +67,71 @@ class ReimbursementController extends Controller
 
         $reimbursement->load(['employee', 'approver']);
         return view('approver.reimbursement.show', compact('reimbursement'));
+    }
+
+    public function update(Request $request, Reimbursement $reimbursement)
+    {
+        $validated = $request->validate([
+            'status_1' => 'string|in:approved,rejected',
+            'status_2' => 'string|in:approved,rejected',
+            'note_1' => 'string',
+            'note_2' => 'string',
+        ], [
+            'status_1.string' => 'Status must be a valid string.',
+            'status_1.in' => 'Status must approved or rejected.',
+
+            'status_2.string' => 'Status must be a valid string.',
+            'status_2.in' => 'Status must approved or rejected.',
+        ]);
+
+        $status = '';
+
+        if($request->has('status_1')) {
+            $reimbursement->update([
+                'status_1' => $validated['status_1'],
+                'note_1' => $validated['note_1'] ?? ""
+            ]);
+            $status = $validated['status_1'];
+        } else if($request->has('status_2')) {
+            $reimbursement->update([
+                'status_2' => $validated['status_2'],
+                'note_2' => $validated['note_2'] ?? ""
+            ]);
+            $status = $validated['status_1'];
+        }
+
+        return redirect()->route('approver.reimbursements.index')->with('success', 'Reimbursement request ' . $status . ' successfully.');
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            // (opsional) disable debugbar yang suka nyisipin output
+            if (app()->bound('debugbar')) {
+                app('debugbar')->disable();
+            }
+
+            // bersihkan buffer agar XLSX tidak ketimpa
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            $filters = [
+                'status' => $request->status,
+                'from_date' => $request->from_date,
+                'to_date' => $request->to_date,
+            ];
+
+            $filename = 'reimbursement-requests-' . now()->format('Y-m-d-H-i-s') . '.xlsx';
+
+            return Excel::download(new OvertimesExport($filters), $filename);
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            Log::error('Export error: ' . $e->getMessage());
+
+            // Return JSON error response
+            return response()->json([
+                'error' => 'Export failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

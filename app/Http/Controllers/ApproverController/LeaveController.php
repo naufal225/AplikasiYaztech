@@ -45,7 +45,7 @@ class LeaveController extends Controller
         // Satu query untuk 3 angka
         $counts = (clone $baseForCounts)->withFinalStatusCount()->first();
 
-        $totalRequests = (clone $baseForCounts)->count();
+        $totalRequests = (int) ($counts->total);
         $approvedRequests = (int) ($counts->approved ?? 0);
         $rejectedRequests = (int) ($counts->rejected ?? 0);
         $pendingRequests = (int) ($counts->pending ?? 0);
@@ -154,23 +154,6 @@ class LeaveController extends Controller
                 'error' => 'Export failed: ' . $e->getMessage()
             ], 500);
         }
-    }
-
-
-    public function approver(Leave $leave) {
-        $leave->update([
-            'status_1' => 'approved'
-        ]);
-
-        return redirect()->route('approver.leaves.index')->with('success', 'Leave request approved.');
-    }
-
-    public function reject(Leave $leave) {
-        $leave->update([
-            'status_1' => 'rejected'
-        ]);
-
-        return redirect()->route('approver.leaves.index')->with('success', 'Leave request rejected.');
     }
 
 }
