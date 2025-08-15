@@ -75,6 +75,7 @@
                                     <span class="font-medium text-neutral-900">{{ Auth::user()->email }}</span>
                                 </div>
                             </div>
+
                             <!-- Approver -->
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Approver</label>
@@ -83,6 +84,7 @@
                                     <span class="font-medium text-neutral-900">{{ $leave->approver->name ?? 'N/A' }}</span>
                                 </div>
                             </div>
+
                             <!-- Start Date -->
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Start Date</label>
@@ -91,6 +93,7 @@
                                     <span class="font-medium text-neutral-900">{{ \Carbon\Carbon::parse($leave->date_start)->format('l, M d, Y') }}</span>
                                 </div>
                             </div>
+
                             <!-- End Date -->
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">End Date</label>
@@ -99,6 +102,7 @@
                                     <span class="font-medium text-neutral-900">{{ \Carbon\Carbon::parse($leave->date_end)->format('l, M d, Y') }}</span>
                                 </div>
                             </div>
+
                             <!-- Duration -->
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Duration</label>
@@ -110,28 +114,61 @@
                                     </span>
                                 </div>
                             </div>
+
+                            <!-- Reason -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Reason for Leave</label>
+                                <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <p class="leading-relaxed text-neutral-900">{{ $leave->reason }}</p>
+                                </div>
+                            </div>
+
                             <!-- Status -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status - Team Lead</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                    @if($leave->status_1 === 'pending' || $leave->status_2 === 'pending')
+                                    @if($leave->status_1 === 'pending')
                                         <i class="mr-3 fas fa-clock text-warning-600"></i>
                                         <span class="font-medium text-warning-800">Pending Review</span>
-                                    @elseif($leave->status_1 === 'approved' || $leave->status_2 === 'approved')
+                                    @elseif($leave->status_1 === 'approved')
                                         <i class="mr-3 fas fa-check-circle text-success-600"></i>
                                         <span class="font-medium text-success-800">Approved</span>
-                                    @elseif($leave->status_1 === 'rejected' || $leave->status_2 === 'rejected')
+                                    @elseif($leave->status_1 === 'rejected')
                                         <i class="mr-3 fas fa-times-circle text-error-600"></i>
                                         <span class="font-medium text-error-800">Rejected</span>
                                     @endif
                                 </div>
                             </div>
-                        </div>
-                        <!-- Reason -->
-                        <div class="mt-6 space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Reason for Leave</label>
-                            <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <p class="leading-relaxed text-neutral-900">{{ $leave->reason }}</p>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Status - Manager</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    @if($leave->status_2 === 'pending')
+                                        <i class="mr-3 fas fa-clock text-warning-600"></i>
+                                        <span class="font-medium text-warning-800">Pending Review</span>
+                                    @elseif($leave->status_2 === 'approved')
+                                        <i class="mr-3 fas fa-check-circle text-success-600"></i>
+                                        <span class="font-medium text-success-800">Approved</span>
+                                    @elseif($leave->status_2 === 'rejected')
+                                        <i class="mr-3 fas fa-times-circle text-error-600"></i>
+                                        <span class="font-medium text-error-800">Rejected</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- Note -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Note - Team Lead</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                    <span class="font-medium text-neutral-900">{{ $leave->note_1 ?? '-' }}</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Note - Manager</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                    <span class="font-medium text-neutral-900">{{ $leave->note_2 ?? '-' }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
