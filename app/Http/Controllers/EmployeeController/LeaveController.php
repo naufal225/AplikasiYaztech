@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\Division;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class LeaveController extends Controller
 {
@@ -132,8 +133,8 @@ class LeaveController extends Controller
      */
     public function exportPdf(Leave $leave)
     {
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('Employee.leaves.pdf', compact('leave'))->setPaper('A4', 'portrait');
-        return $pdf->download("Leave_Request_{$leave->id}.pdf");
+        $pdf = Pdf::loadView('Employee.leaves.pdf', compact('leave'));
+        return $pdf->download('leave-details.pdf');
     }
 
     /**
