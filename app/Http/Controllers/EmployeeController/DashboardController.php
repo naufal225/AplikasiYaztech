@@ -23,23 +23,39 @@ class DashboardController extends Controller
 
         $employeeCount = User::where('role', Roles::Employee->value)->count();
 
+        $queryLeave = Leave::where('employee_id', $user->id)
+            ->with(['employee', 'approver'])
+            ->orderBy('created_at', 'desc');
+
+        $queryReimbursement = Reimbursement::where('employee_id', $user->id)
+            ->with(['employee', 'approver'])
+            ->orderBy('created_at', 'desc');
+
+        $queryOvertime = Overtime::where('employee_id', $user->id)
+            ->with(['employee', 'approver'])
+            ->orderBy('created_at', 'desc');
+
+        $queryTravel = OfficialTravel::where('employee_id', $user->id)
+            ->with(['employee', 'approver'])
+            ->orderBy('created_at', 'desc');
+
         // Get counts for pending requests
-        $pendingLeaves = $this->getUserRequestCounts($userId, "pending", TypeRequest::Leaves->value);
-        $pendingReimbursements = $this->getUserRequestCounts($userId, "pending", TypeRequest::Reimbursements->value);
-        $pendingOvertimes = $this->getUserRequestCounts($userId, "pending", TypeRequest::Overtimes->value);
-        $pendingTravels = $this->getUserRequestCounts($userId, "pending", TypeRequest::Travels->value);
+        $pendingLeaves = $queryLeave->withFinalStatusCount()->first()->pending;
+        $pendingReimbursements = $queryReimbursement->withFinalStatusCount()->first()->pending;
+        $pendingOvertimes = $queryOvertime->withFinalStatusCount()->first()->pending;
+        $pendingTravels = $queryTravel->withFinalStatusCount()->first()->pending;
 
         // Get counts for approve requests
-        $approvedLeaves = $this->getUserRequestCounts($userId, "approved", TypeRequest::Leaves->value, true);
-        $approvedReimbursements = $this->getUserRequestCounts($userId, "approved", TypeRequest::Reimbursements->value, true);
-        $approvedOvertimes = $this->getUserRequestCounts($userId, "approved", TypeRequest::Overtimes->value, true);
-        $approvedTravels = $this->getUserRequestCounts($userId, "approved", TypeRequest::Travels->value, true);
+        $approvedLeaves = $queryLeave->withFinalStatusCount()->first()->approved;
+        $approvedReimbursements = $queryReimbursement->withFinalStatusCount()->first()->approved;
+        $approvedOvertimes = $queryOvertime->withFinalStatusCount()->first()->approved;
+        $approvedTravels = $queryTravel->withFinalStatusCount()->first()->approved;
 
         // Get counts for rejected requests
-        $rejectedLeaves = $this->getUserRequestCounts($userId, "rejected", TypeRequest::Leaves->value, true);
-        $rejectedReimbursements = $this->getUserRequestCounts($userId, "rejected", TypeRequest::Reimbursements->value, true);
-        $rejectedOvertimes = $this->getUserRequestCounts($userId, "rejected", TypeRequest::Overtimes->value, true);
-        $rejectedTravels = $this->getUserRequestCounts($userId, "rejected", TypeRequest::Travels->value, true);
+        $rejectedLeaves = $queryLeave->withFinalStatusCount()->first()->rejected;
+        $rejectedReimbursements = $queryReimbursement->withFinalStatusCount()->first()->rejected;
+        $rejectedOvertimes = $queryOvertime->withFinalStatusCount()->first()->rejected;
+        $rejectedTravels = $queryTravel->withFinalStatusCount()->first()->rejected;
 
         // Get recent requests (combined from all types)
         $recentRequests = $this->getRecentRequests($userId);
@@ -50,25 +66,6 @@ class DashboardController extends Controller
             'approvedOvertimes', 'approvedTravels', 'rejectedLeaves', 'rejectedReimbursements',
             'rejectedOvertimes', 'rejectedTravels'
         ));
-    }
-
-    private function getUserRequestCounts($userId, $status = 'pending', $type = "cuti", $thisMonth = false): String {
-        switch ($type) {
-            case TypeRequest::Leaves->value:
-                return $thisMonth ? Leave::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->whereMonth('created_at', Carbon::now()->month)->count() : Leave::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->count();
-                break;
-            case TypeRequest::Reimbursements->value:
-                return $thisMonth ? Reimbursement::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->whereMonth('created_at', Carbon::now()->month)->count() : Reimbursement::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->count();
-                break;
-            case TypeRequest::Overtimes->value:
-                return $thisMonth ? Overtime::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->whereMonth('created_at', Carbon::now()->month)->count() : Overtime::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->count();
-                break;
-            case TypeRequest::Travels->value:
-                return $thisMonth ? OfficialTravel::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->whereMonth('created_at', Carbon::now()->month)->count() : OfficialTravel::where('employee_id', $userId)->where('status_1', $status)->orWhere('status_2', $status)->count();
-                break;
-            default:
-                return 0;
-        }
     }
 
     private function getRecentRequests($userId)
