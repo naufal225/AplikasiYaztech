@@ -64,14 +64,25 @@ trait HasDualStatus
         // Jika ingin NULL dianggap 'pending', ganti $s1/$s2 dengan "COALESCE($table.$s1,'pending')" di ekspresi.
         $sql = "
             COUNT(*) as total,
-            SUM(CASE WHEN {$table}.{$s1} = 'approved' AND {$table}.{$s2} = 'approved' THEN 1 ELSE 0 END) AS approved,
-            SUM(CASE WHEN {$table}.{$s1} = 'rejected' OR  {$table}.{$s2} = 'rejected' THEN 1 ELSE 0 END) AS rejected,
-            SUM(CASE
-                WHEN ({$table}.{$s1} = 'approved' AND {$table}.{$s2} = 'approved') THEN 0
-                WHEN ({$table}.{$s1} = 'rejected' OR  {$table}.{$s2} = 'rejected') THEN 0
-                WHEN ({$table}.{$s1} = 'pending'  OR  {$table}.{$s2} = 'pending')  THEN 1
-                ELSE 0
-            END) AS pending
+            SUM(
+                CASE 
+                    WHEN {$table}.{$s1} = 'approved' AND {$table}.{$s2} = 'approved' THEN 1
+                    ELSE 0
+                END
+            ) AS approved,
+            SUM(
+                CASE 
+                    WHEN {$table}.{$s1} = 'rejected' OR {$table}.{$s2} = 'rejected' THEN 1
+                    ELSE 0
+                END
+            ) AS rejected,
+            SUM(
+                CASE 
+                    WHEN {$table}.{$s1} = 'rejected' OR {$table}.{$s2} = 'rejected' THEN 0
+                    WHEN {$table}.{$s1} = 'approved' AND {$table}.{$s2} = 'approved' THEN 0
+                    ELSE 1
+                END
+            ) AS pending
         ";
 
         return $query->selectRaw($sql);
