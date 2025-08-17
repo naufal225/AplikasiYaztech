@@ -194,12 +194,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-12 text-center">
-                                    <div class="text-neutral-400">
+                                <td colspan="6" class="h-64 text-center align-middle">
+                                    <div class="flex flex-col items-center justify-center h-full text-neutral-400">
                                         <i class="fas fa-inbox text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No leave requests found</p>
                                         <p class="text-sm">Create your first leave request to get started</p>
-                                        <a href="{{ route('employee.leaves.create') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">
+                                        <a href="{{ route('employee.leaves.create') }}" 
+                                        class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">
                                             <i class="fas fa-plus mr-2"></i>
                                             New Leave Request
                                         </a>

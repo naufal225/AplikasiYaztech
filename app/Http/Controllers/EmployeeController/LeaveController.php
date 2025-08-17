@@ -24,28 +24,53 @@ class LeaveController extends Controller
         $query = Leave::where('employee_id', $user->id)
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
+        $queryClone = (clone $query);
 
         if ($request->filled('status')) {
-            $query->where('status_1', $request->status)
-            ->orWhere('status_2', $request->status);
+            $status = $request->status;
+
+            $query->where(function ($q) use ($status) {
+                if ($status === 'rejected') {
+                    $q->where('status_1', 'rejected')
+                    ->orWhere('status_2', 'rejected');
+                } elseif ($status === 'approved') {
+                    $q->where('status_1', 'approved')
+                    ->where('status_2', 'approved');
+                } elseif ($status === 'pending') {
+                    $q->where(function ($sub) {
+                        $sub->where('status_1', 'pending')
+                            ->orWhere('status_2', 'pending');
+                    })
+                    ->where('status_1', '!=', 'rejected')
+                    ->where('status_2', '!=', 'rejected')
+                    ->where(function ($sub) {
+                        $sub->where('status_1', '!=', 'approved')
+                            ->orWhere('status_2', '!=', 'approved');
+                    });
+                }
+            });
         }
 
         if ($request->filled('from_date')) {
             $query->where('date_start', '>=',
-                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+                Carbon::parse($request->from_date)
+                    ->startOfDay()
+                    ->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
             $query->where('date_start', '<=',
-                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+                Carbon::parse($request->to_date)
+                    ->endOfDay()
+                    ->timezone('Asia/Jakarta')
             );
         }
 
         $leaves = $query->paginate(10);
-        $counts = $query->withFinalStatusCount()->first();
+        $counts = $queryClone->withFinalStatusCount()->first();
 
-        $totalRequests = (clone $query)->count();
+        $totalRequests = (int) $queryClone->count();
         $pendingRequests = (int) $counts->pending;
         $approvedRequests = (int) $counts->approved;
         $rejectedRequests = (int) $counts->rejected;
