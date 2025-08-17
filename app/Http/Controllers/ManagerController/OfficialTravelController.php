@@ -84,4 +84,48 @@ class OfficialTravelController extends Controller
         return view('manager.official-travel.index', compact('officialTravels', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
+    public function show(OfficialTravel $officialTravel)
+    {
+
+        $officialTravel->load(['employee', 'approver']);
+        return view('manager.official-travel.show', compact('officialTravel'));
+    }
+
+    public function update(Request $request, OfficialTravel $officialTravel)
+    {
+        $validated = $request->validate([
+            'status_1' => 'string|in:approved,rejected',
+            'status_2' => 'string|in:approved,rejected',
+            'note_1' => 'nullable|string',
+            'note_2' => 'nullable|string',
+        ], [
+            'status_1.string' => 'Status must be a valid string.',
+            'status_1.in' => 'Status must approved or rejected.',
+
+            'status_2.string' => 'Status must be a valid string.',
+            'status_2.in' => 'Status must approved or rejected.',
+
+            'note_1.string' => 'Note must be a valid string.',
+            'note_2.string' => 'Note must be a valid string.',
+        ]);
+
+        $status = '';
+
+        if($request->has('status_1')) {
+            $officialTravel->update([
+                'status_1' => $validated['status_1'],
+                'note_1' => $validated['note_1'] ?? ""
+            ]);
+            $status = $validated['status_1'];
+        } else if($request->has('status_2')) {
+            $officialTravel->update([
+                'status_2' => $validated['status_2'],
+                'note_2' => $validated['note_2'] ?? ""
+            ]);
+            $status = $validated['status_2'];
+        }
+
+        return redirect()->route('manager.official-travels.index')->with('success', 'Official travel request ' . $status . ' successfully.');
+    }
+
 }

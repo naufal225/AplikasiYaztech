@@ -77,10 +77,10 @@
                         </div>
                         <!-- manager -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">manager</label>
+                            <label class="text-sm font-semibold text-neutral-700">Approver</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-user-check text-info-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $reimbursement->manager->name ?? 'N/A' }}</span>
+                                <span class="font-medium text-neutral-900">{{ $reimbursement->approver->name ?? 'N/A' }}</span>
                             </div>
                         </div>
                         <!-- Start Date -->

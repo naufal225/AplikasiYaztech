@@ -239,7 +239,7 @@
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
-                                    <a href="{{ route('approver.official-travels.show', $officialTravel->id) }}"
+                                    <a href="{{ route('manager.official-travels.show', $officialTravel->id) }}"
                                         class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
