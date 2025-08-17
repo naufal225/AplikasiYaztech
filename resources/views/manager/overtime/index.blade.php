@@ -242,16 +242,16 @@
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
-                                    <a href="{{ route('admin.overtimes.show', $overtime->id) }}"
+                                    <a href="{{ route('manager.overtimes.show', $overtime->id) }}"
                                         class="text-primary-600 hover:text-primary-900">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     @if(Auth::id() === $overtime->employee_id && $overtime->status === 'pending')
-                                    <a href="{{ route('admin.overtimes.edit', $overtime->id) }}"
+                                    <a href="{{ route('manager.overtimes.edit', $overtime->id) }}"
                                         class="text-secondary-600 hover:text-secondary-900">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('admin.overtimes.destroy', $overtime->id) }}" method="POST"
+                                    <form action="{{ route('manager.overtimes.destroy', $overtime->id) }}" method="POST"
                                         class="inline" onsubmit="return confirm('Are you sure?')">
                                         @csrf
                                         @method('DELETE')
