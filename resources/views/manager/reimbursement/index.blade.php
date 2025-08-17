@@ -214,13 +214,9 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer->name ?? 'N/A' }}
-                                    </div> {{-- Added Customer --}}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
                                     <div>
                                         <div class="text-sm font-medium text-neutral-900">{{
-                                            $overtime->approver->name ?? "N/A" }}</div>
+                                            $reimbursement->approver->name ?? "N/A" }}</div>
 
                                     </div>
                                 </td>
@@ -232,28 +228,16 @@
                                     </div>
                                 </td>
 
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer->name ?? 'N/A' }}
+                                    </div> {{-- Added Customer --}}
+                                </td>
                                 <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                     <div class="flex items-center space-x-2">
-                                        <a href="{{ route('admin.reimbursements.show', $reimbursement->id) }}"
+                                        <a href="{{ route('manager.reimbursements.show', $reimbursement->id) }}"
                                             class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if(Auth::id() === $reimbursement->employee_id && $reimbursement->status ===
-                                        'pending')
-                                        <a href="{{ route('admin.reimbursements.edit', $reimbursement->id) }}"
-                                            class="text-secondary-600 hover:text-secondary-900" title="Edit">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form action="{{ route('admin.reimbursements.destroy', $reimbursement->id) }}"
-                                            method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-error-600 hover:text-error-900"
-                                                title="Delete">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                        @endif
                                     </div>
                                 </td>
                             </tr>

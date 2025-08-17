@@ -9,23 +9,6 @@
             <h1 class="text-2xl font-bold text-neutral-900">Leave Requests</h1>
             <p class="text-neutral-600">Manage and track your leave requests</p>
         </div>
-        <div class="mt-4 sm:mt-0">
-            <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:flex-row">
-                <button id="exportLeaveRequests"
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
-                    <i class="mr-2 fa-solid fa-file-export"></i>
-                    <span id="exportButtonText">Export Data</span>
-                    <svg id="exportSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                </button>
-            </div>
-        </div>
     </div>
 
     Statistics Cards
@@ -135,6 +118,12 @@
                                 Status 2 - Manager</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Team Lead</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Manager</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Actions</th>
                         </tr>
                     </thead>
@@ -151,12 +140,12 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-900">
                                     {{ \Carbon\Carbon::parse($leave->date_start)->format('M d') }} - {{
-                                        \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
+                                    \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
                                 </div>
                                 <div class="text-sm text-neutral-500">
                                     {{
-                                        \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
-                                        + 1 }} days
+                                    \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
+                                    + 1 }} days
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -195,25 +184,27 @@
                                 </span>
                                 @endif
                             </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-neutral-900">{{ $leave->approver->name ?? "N/A"
+                                        }}</div>
+
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-neutral-900">{{ $manager->name ?? "N/A" }}
+                                    </div>
+
+                                </div>
+                            </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
-                                    <a href="{{ route('approver.leaves.show', $leave->id) }}"
+                                    <a href="{{ route('manager.leaves.show', $leave->id) }}"
                                         class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
 
-
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                    <div class="text-sm font-medium text-neutral-900">{{ $leave->approver->name ?? "N/A" }}</div>
-
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                    <div class="text-sm font-medium text-neutral-900">{{ $manager->name ?? "N/A" }}</div>
 
                                 </div>
                             </td>
@@ -252,100 +243,3 @@
 </main>
 @endsection
 
-@push('scripts')
-<script>
-    function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    const toastContent = document.getElementById('toastContent');
-    const toastMessage = document.getElementById('toastMessage');
-
-    toastMessage.textContent = message;
-
-    if (type === 'success') {
-        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-green-500 text-white';
-    } else {
-        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-red-500 text-white';
-    }
-
-    toast.classList.remove('hidden');
-
-    setTimeout(() => {
-        hideToast();
-    }, 5000);
-}
-
-function hideToast() {
-    document.getElementById('toast').classList.add('hidden');
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const exportButton = document.getElementById('exportLeaveRequests');
-    const exportButtonText = document.getElementById('exportButtonText');
-    const exportSpinner = document.getElementById('exportSpinner');
-
-    exportButton.addEventListener('click', async function() {
-        // Show loading state
-        exportButtonText.textContent = 'Exporting...';
-        exportSpinner.classList.remove('hidden');
-        exportButton.disabled = true;
-
-        try {
-            // Get current filter values
-            const status = document.getElementById('statusFilter').value;
-            const fromDate = document.getElementById('fromDateFilter').value;
-            const toDate = document.getElementById('toDateFilter').value;
-
-            // Build export URL with filters
-            const params = new URLSearchParams();
-            if (status) params.append('status', status);
-            if (fromDate) params.append('from_date', fromDate);
-            if (toDate) params.append('to_date', toDate);
-
-            const exportUrl = `{{ route('manager.leaves.export') }}?${params.toString()}`;
-
-            // Use fetch to get the file
-            const response = await fetch(exportUrl, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                }
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Export failed');
-            }
-
-            // Get the blob from response
-            const blob = await response.blob();
-
-            // Create download link
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `leave-requests-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.xlsx`;
-
-            // Trigger download
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            // Clean up
-            window.URL.revokeObjectURL(url);
-
-            showToast('Export completed successfully!', 'success');
-
-        } catch (error) {
-            console.error('Export error:', error);
-            showToast('Export failed: ' + error.message, 'error');
-        } finally {
-            // Reset button state
-            exportButtonText.textContent = 'Export Data';
-            exportSpinner.classList.add('hidden');
-            exportButton.disabled = false;
-        }
-    });
-});
-</script>
-@endpush

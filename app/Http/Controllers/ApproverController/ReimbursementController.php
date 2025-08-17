@@ -100,7 +100,7 @@ class ReimbursementController extends Controller
                 'status_2' => $validated['status_2'],
                 'note_2' => $validated['note_2'] ?? ""
             ]);
-            $status = $validated['status_1'];
+            $status = $validated['status_2'];
         }
 
         return redirect()->route('approver.reimbursements.index')->with('success', 'Reimbursement request ' . $status . ' successfully.');
