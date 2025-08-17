@@ -24,29 +24,56 @@ class ReimbursementController extends Controller
         $query = Reimbursement::where('employee_id', $user->id)
             ->with(['approver', 'customer'])
             ->orderBy('created_at', 'desc');
+        $queryClone = (clone $query);
 
         if ($request->filled('status')) {
-            $query->where('status_1', $request->status)
-            ->orWhere('status_2', $request->status);
+            $status = $request->status;
+
+            $query->where(function ($q) use ($status) {
+                if ($status === 'rejected') {
+                    $q->where('status_1', 'rejected')
+                    ->orWhere('status_2', 'rejected');
+                } elseif ($status === 'approved') {
+                    $q->where('status_1', 'approved')
+                    ->where('status_2', 'approved');
+                } elseif ($status === 'pending') {
+                    $q->where(function ($sub) {
+                        $sub->where('status_1', 'pending')
+                            ->orWhere('status_2', 'pending');
+                    })
+                    ->where('status_1', '!=', 'rejected')
+                    ->where('status_2', '!=', 'rejected')
+                    ->where(function ($sub) {
+                        $sub->where('status_1', '!=', 'approved')
+                            ->orWhere('status_2', '!=', 'approved');
+                    });
+                }
+            });
         }
 
         if ($request->filled('from_date')) {
-            $query->where('date', '>=',
-                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+            $query->where('date_start', '>=',
+                Carbon::parse($request->from_date)
+                    ->startOfDay()
+                    ->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $query->where('date', '<=',
-                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+            $query->where('date_start', '<=',
+                Carbon::parse($request->to_date)
+                    ->endOfDay()
+                    ->timezone('Asia/Jakarta')
             );
         }
 
         $reimbursements = $query->paginate(10);
-        $totalRequests = Reimbursement::where('employee_id', $user->id)->count();
-        $pendingRequests = Reimbursement::where('employee_id', $user->id)->where('status_1', 'pending')->orWhere('status_2', 'pending')->count();
-        $approvedRequests = Reimbursement::where('employee_id', $user->id)->where('status_1', 'approved')->orWhere('status_2', 'approved')->count();
-        $rejectedRequests = Reimbursement::where('employee_id', $user->id)->where('status_1', 'rejected')->orWhere('status_2', 'rejected')->count();
+        $counts = $queryClone->withFinalStatusCount()->first();
+
+        $totalRequests = (int) $queryClone->count();
+        $pendingRequests = (int) $counts->pending;
+        $approvedRequests = (int) $counts->approved;
+        $rejectedRequests = (int) $counts->rejected;
 
         return view('Employee.reimbursements.reimbursement-show', compact('reimbursements', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }

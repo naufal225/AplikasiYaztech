@@ -40,20 +40,20 @@
                                 <p class="text-sm text-primary-100">Submitted on {{ Carbon\Carbon::parse($leave->created_at)->format('M d, Y \a\t H:i') }}</p>
                             </div>
                             <div class="text-right">
-                                @if($leave->status_1 === 'pending' || $leave->status_2 === 'pending')
-                                    <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
-                                        <i class="mr-1 fas fa-clock"></i>
-                                        {{ $leave->status_1 === 'pending' ? 'Pending' : 'In Progress' }} Review
+                                @if($leave->status_1 === 'rejected' || $leave->status_2 === 'rejected')
+                                    <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
+                                        <i class="mr-1 fas fa-times-circle"></i>
+                                        Rejected
                                     </span>
-                                @elseif($leave->status_1 === 'approved' || $leave->status_2 === 'approved')
+                                @elseif($leave->status_1 === 'approved' && $leave->status_2 === 'approved')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
                                         <i class="mr-1 fas fa-check-circle"></i>
                                         Approved
                                     </span>
-                                @elseif($leave->status_1 === 'rejected' || $leave->status_2 === 'rejected')
-                                    <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
-                                        <i class="mr-1 fas fa-times-circle"></i>
-                                        Rejected
+                                @elseif($leave->status_1 === 'pending' || $leave->status_2 === 'pending')
+                                    <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
+                                        <i class="mr-1 fas fa-clock"></i>
+                                        {{ $leave->status_1 === 'pending' ? 'Pending' : 'In Progress' }} Review
                                     </span>
                                 @endif
                             </div>
@@ -78,7 +78,7 @@
 
                             <!-- Approver -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Approver</label>
+                                <label class="text-sm font-semibold text-neutral-700">Team Lead</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-user-check text-info-600"></i>
                                     <span class="font-medium text-neutral-900">{{ $leave->approver->name ?? 'N/A' }}</span>

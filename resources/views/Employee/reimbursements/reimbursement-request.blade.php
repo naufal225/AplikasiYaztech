@@ -67,13 +67,43 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label for="total" class="block text-sm font-semibold text-neutral-700 mb-2"> {{-- Changed from amount --}}
+                        <label for="total_display" class="block text-sm font-semibold text-neutral-700 mb-2">
                             <i class="fas fa-dollar-sign mr-2 text-primary-600"></i>
-                            Total Amount (Rp) {{-- Changed from Amount --}}
+                            Total Amount (Rp)
                         </label>
-                        <input type="number" id="total" name="total" class="form-input" {{-- Changed from amount --}}
-                               value="{{ old('total') }}" min="0" step="0.01" placeholder="e.g., 150000.00" required>
+
+                        <!-- Input tampilan -->
+                        <input type="text" id="total_display" class="form-input"
+                            value="{{ old('total') }}" placeholder="e.g., 150000" required>
+
+                        <!-- Input hidden untuk nilai asli -->
+                        <input type="hidden" id="total" name="total" value="{{ old('total') }}">
                     </div>
+
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function () {
+                            const displayInput = document.getElementById("total_display");
+                            const hiddenInput = document.getElementById("total");
+
+                            function formatRupiah(angka) {
+                                return angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            }
+
+                            displayInput.addEventListener("input", function (e) {
+                                // ambil angka asli (tanpa titik)
+                                let raw = this.value.replace(/\D/g, "");
+                                // simpan ke hidden input
+                                hiddenInput.value = raw;
+                                // tampilkan kembali dalam format rupiah
+                                this.value = formatRupiah(raw);
+                            });
+
+                            // kalau ada value lama dari old()
+                            if (hiddenInput.value) {
+                                displayInput.value = formatRupiah(hiddenInput.value);
+                            }
+                        });
+                    </script>
                     
                     <div>
                         <label for="date" class="block text-sm font-semibold text-neutral-700 mb-2">

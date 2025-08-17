@@ -94,9 +94,9 @@
                             </div>
                             <!-- Status -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status - Team Lead</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                                    @if($reimbursement->status_1 === 'pending' || $reimbursement->status_2 === 'pending')
+                                    @if($reimbursement->status_1 === 'pending')
                                         <i class="fas fa-clock text-warning-600 mr-3"></i>
                                         <span class="text-warning-800 font-medium">Pending Review</span>
                                     @elseif($reimbursement->status_1 === 'approved' && $reimbursement->status_2 === 'approved')
@@ -110,7 +110,7 @@
                             </div>
                             <!-- Approver -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Approver</label>
+                                <label class="text-sm font-semibold text-neutral-700">Team Lead</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     <i class="fas fa-user-check text-info-600 mr-3"></i>
                                     <span class="text-neutral-900 font-medium">{{ $reimbursement->approver->name ?? 'N/A' }}</span>
