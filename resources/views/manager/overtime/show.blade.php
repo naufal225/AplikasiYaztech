@@ -1,7 +1,7 @@
 @extends('components.manager.layout.layout-manager')
 
-@section('header', 'Manage Reimbursements')
-@section('subtitle', 'Manage Reimbursements data')
+@section('header', 'Manage Overtime')
+@section('subtitle', 'Manage overtime data')
 
 @php
 $totalMinutes = $overtime->total;
