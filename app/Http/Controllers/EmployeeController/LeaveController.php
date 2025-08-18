@@ -145,7 +145,7 @@ class LeaveController extends Controller
     {
         // Check if the user has permission to view this leave
         $user = Auth::user();
-        if ($user->id !== $leave->employee_id && ($user->role == Roles::Admin->value || $user->role == Roles::HR->value || $user->role == Roles::Approver->value)) {
+        if ($user->id !== $leave->employee_id && ($user->role == Roles::Admin->value || $user->role == Roles::Manager->value || $user->role == Roles::Approver->value)) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -231,7 +231,7 @@ class LeaveController extends Controller
                 )
             );
         }
-        
+
         return redirect()->route('employee.leaves.show', $leave->id)
             ->with('success', 'Leave request updated successfully.');
     }
