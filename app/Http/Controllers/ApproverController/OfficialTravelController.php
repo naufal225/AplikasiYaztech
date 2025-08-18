@@ -115,15 +115,15 @@ class OfficialTravelController extends Controller
             if ($validated['status_1'] === 'rejected') {
                 $officialTravel->update([
                     'status_1' => 'rejected',
-                    'note_1' => $validated['note_1'] ?? '',
-                    'status_2' => 'rejected',
-                    'note_2' => $validated['note_2'] ?? '',
+                    'note_1' => $validated['note_1'] ?? NULL,
+                    'status_2' => 'rejected', // ikut rejected juga
+                    'note_2' => $validated['note_2'] ?? NULL,
                 ]);
             } else {
                 // approved → kirim notifikasi ke manager
                 $officialTravel->update([
                     'status_1' => 'approved',
-                    'note_1' => $validated['note_1'] ?? '',
+                    'note_1' => $validated['note_1'] ?? NULL,
                 ]);
 
                 $manager = User::where('role', Roles::Manager->value)->first();

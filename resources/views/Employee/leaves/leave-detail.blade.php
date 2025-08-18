@@ -42,17 +42,17 @@
                             <div class="text-right">
                                 @if($leave->status_1 === 'rejected' || $leave->status_2 === 'rejected')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
-                                        <i class="mr-1 fas fa-times-circle"></i>
+                                        <i class="mr-1 mt-1 fas fa-times-circle"></i>
                                         Rejected
                                     </span>
                                 @elseif($leave->status_1 === 'approved' && $leave->status_2 === 'approved')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
-                                        <i class="mr-1 fas fa-check-circle"></i>
+                                        <i class="mr-1 mt-1 fas fa-check-circle"></i>
                                         Approved
                                     </span>
                                 @elseif($leave->status_1 === 'pending' || $leave->status_2 === 'pending')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
-                                        <i class="mr-1 fas fa-clock"></i>
+                                        <i class="mr-1 mt-1 fas fa-clock"></i>
                                         {{ $leave->status_1 === 'pending' ? 'Pending' : 'In Progress' }} Review
                                     </span>
                                 @endif

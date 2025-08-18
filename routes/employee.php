@@ -21,15 +21,17 @@ Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee
         ->parameters([
             "leaves" => "leave"
         ]);
-
     Route::get('leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
 
     // Reimbursements
     Route::resource('reimbursements', ReimbursementController::class);
+    Route::get('reimbursements/{reimbursement}/export-pdf', [ReimbursementController::class, 'exportPdf'])->name('reimbursements.exportPdf');
 
     // Overtimes
     Route::resource('overtimes', OvertimeController::class);
+    Route::get('overtimes/{overtime}/export-pdf', [OvertimeController::class, 'exportPdf'])->name('overtimes.exportPdf');
 
     // Official Travels
     Route::resource('official-travels', OfficialTravelController::class);
+    Route::get('official-travels/{official_travel}/export-pdf', [OfficialTravelController::class, 'exportPdf'])->name('official-travels.exportPdf');
 });

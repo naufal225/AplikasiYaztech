@@ -9,6 +9,8 @@ use App\Roles;
 use App\Models\OfficialTravel;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class OfficialTravelController extends Controller
 {
@@ -21,11 +23,32 @@ class OfficialTravelController extends Controller
         $query = OfficialTravel::where('employee_id', $user->id)
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
+        $queryClone = (clone $query);
 
         // Apply filters
         if ($request->filled('status')) {
-            $query->where('status', $request->status)
-            ->orWhere('status_2', $request->status);
+            $status = $request->status;
+
+            $query->where(function ($q) use ($status) {
+                if ($status === 'rejected') {
+                    $q->where('status_1', 'rejected')
+                    ->orWhere('status_2', 'rejected');
+                } elseif ($status === 'approved') {
+                    $q->where('status_1', 'approved')
+                    ->where('status_2', 'approved');
+                } elseif ($status === 'pending') {
+                    $q->where(function ($sub) {
+                        $sub->where('status_1', 'pending')
+                            ->orWhere('status_2', 'pending');
+                    })
+                    ->where('status_1', '!=', 'rejected')
+                    ->where('status_2', '!=', 'rejected')
+                    ->where(function ($sub) {
+                        $sub->where('status_1', '!=', 'approved')
+                            ->orWhere('status_2', '!=', 'approved');
+                    });
+                }
+            });
         }
 
         if ($request->filled('from_date')) {
@@ -41,12 +64,16 @@ class OfficialTravelController extends Controller
         }
 
         $officialTravels = $query->paginate(10);
-        $totalRequests = OfficialTravel::where('employee_id', $user->id)->count();
-        $pendingRequests = OfficialTravel::where('employee_id', $user->id)->where('status_1', 'pending')->orWhere('status_2', 'pending')->count();
-        $approvedRequests = OfficialTravel::where('employee_id', $user->id)->where('status_1', 'approved')->orWhere('status_2', 'approved')->count();
-        $rejectedRequests = OfficialTravel::where('employee_id', $user->id)->where('status_1', 'rejected')->orWhere('status_2', 'rejected')->count();
+        $counts = $queryClone->withFinalStatusCount()->first();
 
-        return view('Employee.travels.travel-show', compact('officialTravels', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $totalRequests = (int) $queryClone->count();
+        $pendingRequests = (int) $counts->pending;
+        $approvedRequests = (int) $counts->approved;
+        $rejectedRequests = (int) $counts->rejected;
+
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+        return view('Employee.travels.travel-show', compact('officialTravels', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
     /**
@@ -65,7 +92,6 @@ class OfficialTravelController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'approver_id' => 'required|exists:users,id',
             'date_start' => 'required|date|after_or_equal:today',
             'date_end' => 'required|date|after_or_equal:date_start',
         ]);
@@ -84,6 +110,26 @@ class OfficialTravelController extends Controller
         $officialTravel->status_2 = 'pending';
         $officialTravel->save();
 
+        // Send notification email to the approver
+        if ($officialTravel->approver) {
+            $linkTanggapan = route('approver.official-travels.show', $officialTravel->id);
+
+            $pesan = "Terdapat pengajuan perjalanan dinas baru atas nama " . Auth::user()->name . ".
+                <br> Tanggal Mulai: " . $officialTravel->date_start->format('l, d/m/Y') . "
+                <br> Tanggal/Waktu Akhir: " . $officialTravel->date_end->format('l, d/m/Y') . "
+                <br> Total Waktu: " . $totalDays . " days";
+
+            Mail::to($officialTravel->approver->email)->send(
+                new \App\Mail\SendMessage(
+                    namaPengaju: Auth::user()->name,
+                    pesan: $pesan,
+                    namaApprover: $officialTravel->approver->name,
+                    linkTanggapan: $linkTanggapan,
+                    emailPengaju: Auth::user()->email,
+                )
+            );
+        }
+
         return redirect()->route('employee.official-travels.index')
             ->with('success', 'Official travel request submitted successfully. Total days: ' . $totalDays);
     }
@@ -100,6 +146,15 @@ class OfficialTravelController extends Controller
 
         $officialTravel->load(['employee', 'approver']);
         return view('Employee.travels.travel-detail', compact('officialTravel'));
+    }
+
+    /**
+     * Export the specified resource as a PDF.
+     */
+    public function exportPdf(OfficialTravel $officialTravel)
+    {
+        $pdf = Pdf::loadView('Employee.travels.pdf', compact('officialTravel'));
+        return $pdf->download('official-travel-details.pdf');
     }
 
     /**
@@ -150,8 +205,32 @@ class OfficialTravelController extends Controller
 
         $officialTravel->date_start = $request->date_start;
         $officialTravel->date_end = $request->date_end;
+        $officialTravel->status_1 = 'pending';
+        $officialTravel->status_2 = 'pending';
+        $officialTravel->note_1 = NULL;
+        $officialTravel->note_2 = NULL;
         $officialTravel->total = $totalDays;
         $officialTravel->save();
+
+        // Send notification email to the approver
+        if ($officialTravel->approver) {
+            $linkTanggapan = route('approver.official-travels.show', $officialTravel->id);
+
+            $pesan = "Pengajuan perjalanan dinas milik " . Auth::user()->name . " telah dilakukan perubahan data.
+                <br> Tanggal Mulai: " . $officialTravel->date_start->format('l, d/m/Y') . "
+                <br> Tanggal/Waktu Akhir: " . $officialTravel->date_end->format('l, d/m/Y') . "
+                <br> Total Waktu: " . $totalDays . " days";
+
+            Mail::to($officialTravel->approver->email)->send(
+                new \App\Mail\SendMessage(
+                    namaPengaju: Auth::user()->name,
+                    pesan: $pesan,
+                    namaApprover: $officialTravel->approver->name,
+                    linkTanggapan: $linkTanggapan,
+                    emailPengaju: Auth::user()->email,
+                )
+            );
+        }
 
         return redirect()->route('employee.official-travels.show', $officialTravel->id)
             ->with('success', 'Official travel request updated successfully. Total days: ' . $totalDays);

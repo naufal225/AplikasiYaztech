@@ -48,22 +48,6 @@
             <form action="{{ route('employee.official-travels.store') }}" method="POST" class="p-6 space-y-6">
                 @csrf
 
-                <div>
-                    <label for="approver_id" class="block text-sm font-semibold text-neutral-700 mb-2">
-                        <i class="fas fa-user-check mr-2 text-primary-600"></i>
-                        Approver
-                    </label>
-                    <select id="approver_id" name="approver_id" class="form-select" required>
-                        <option value="">Select Approver</option>
-                        @foreach($approvers as $approver)
-                            <option value="{{ $approver->id }}" {{ old('approver_id') == $approver->id ? 'selected' : '' }}>
-                                {{ $approver->name }} ({{ ucfirst($approver->role) }})
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="text-xs text-neutral-500 mt-1">Choose who will review and approve your travel request</p>
-                </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="date_start" class="block text-sm font-semibold text-neutral-700 mb-2">
@@ -87,29 +71,12 @@
                 </div>
 
                  Travel Duration Display 
-                <div id="duration-calculation" class="bg-green-50 border border-green-200 rounded-lg p-4" style="display: none;">
+                <div id="duration-calculation" class="bg-green-50 border border-green-200 rounded-lg p-4">
                     <div class="flex items-start">
                         <i class="fas fa-calculator text-green-600 mr-3 mt-0.5"></i>
                         <div>
                             <h4 class="text-sm font-semibold text-green-800 mb-1">Travel Duration</h4>
-                            <p id="duration-total" class="text-sm font-bold text-green-800"></p>
-                        </div>
-                    </div>
-                </div>
-
-                 Travel Policy Reminder 
-                <div class="bg-primary-50 border border-primary-200 rounded-lg p-4">
-                    <div class="flex items-start">
-                        <i class="fas fa-info-circle text-primary-600 mr-3 mt-0.5"></i>
-                        <div>
-                            <h4 class="text-sm font-semibold text-primary-800 mb-2">Travel Policy Reminder</h4>
-                            <ul class="text-xs text-primary-700 space-y-1">
-                                <li>• Official travel must be pre-approved by your manager</li>
-                                <li>• Submit requests at least 7 days before travel date</li>
-                                <li>• Keep all receipts for reimbursement purposes</li>
-                                <li>• Follow company travel expense guidelines</li>
-                                <li>• Notify HR of any changes to approved travel plans</li>
-                            </ul>
+                            <p id="duration-total" class="text-sm font-bold text-green-800">Total Duration: 0 days</p>
                         </div>
                     </div>
                 </div>
@@ -135,27 +102,25 @@
             const calculationDiv = document.getElementById('duration-calculation');
             const totalP = document.getElementById('duration-total');
             
-            if (!startInput.value || !endInput.value) {
-                calculationDiv.style.display = 'none';
-                return;
-            }
-            
             const startDate = new Date(startInput.value);
             const endDate = new Date(endInput.value);
             
             if (endDate < startDate) {
-                calculationDiv.style.display = 'none';
+                totalP.textContent = `Total Duration: 0 days`;
                 return;
             }
-            
+
+            if (startInput.value === "" || endInput.value === "") {
+                totalP.textContent = `Total Duration: 0 days`;
+                return;
+            }
+
             const timeDiff = endDate.getTime() - startDate.getTime();
             const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
             
             if (daysDiff > 0) {
                 calculationDiv.style.display = 'block';
                 totalP.textContent = `Total Duration: ${daysDiff} day${daysDiff > 1 ? 's' : ''}`;
-            } else {
-                calculationDiv.style.display = 'none';
             }
         }
     @endpush

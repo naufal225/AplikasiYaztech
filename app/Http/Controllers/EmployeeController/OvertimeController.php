@@ -10,6 +10,7 @@ use App\Models\Overtime;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class OvertimeController extends Controller
 {
@@ -22,10 +23,31 @@ class OvertimeController extends Controller
         $query = Overtime::where('employee_id', $user->id)
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
+        $queryClone = (clone $query);
 
         if ($request->filled('status')) {
-            $query->where('status_1', $request->status)
-            ->orWhere('status_2', $request->status);
+            $status = $request->status;
+
+            $query->where(function ($q) use ($status) {
+                if ($status === 'rejected') {
+                    $q->where('status_1', 'rejected')
+                    ->orWhere('status_2', 'rejected');
+                } elseif ($status === 'approved') {
+                    $q->where('status_1', 'approved')
+                    ->where('status_2', 'approved');
+                } elseif ($status === 'pending') {
+                    $q->where(function ($sub) {
+                        $sub->where('status_1', 'pending')
+                            ->orWhere('status_2', 'pending');
+                    })
+                    ->where('status_1', '!=', 'rejected')
+                    ->where('status_2', '!=', 'rejected')
+                    ->where(function ($sub) {
+                        $sub->where('status_1', '!=', 'approved')
+                            ->orWhere('status_2', '!=', 'approved');
+                    });
+                }
+            });
         }
 
         if ($request->filled('from_date')) {
@@ -41,12 +63,16 @@ class OvertimeController extends Controller
         }
 
         $overtimes = $query->paginate(10);
-        $totalRequests = Overtime::where('employee_id', $user->id)->count();
-        $pendingRequests = Overtime::where('employee_id', $user->id)->where('status_1', 'pending')->orWhere('status_2', 'pending')->count();
-        $approvedRequests = Overtime::where('employee_id', $user->id)->where('status_1', 'approved')->orWhere('status_2', 'approved')->count();
-        $rejectedRequests = Overtime::where('employee_id', $user->id)->where('status_1', 'rejected')->orWhere('status_2', 'rejected')->count();
+        $counts = $queryClone->withFinalStatusCount()->first();
 
-        return view('Employee.overtimes.overtime-show', compact('overtimes', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $totalRequests = (int) $queryClone->count();
+        $pendingRequests = (int) $counts->pending;
+        $approvedRequests = (int) $counts->approved;
+        $rejectedRequests = (int) $counts->rejected;
+
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+        return view('Employee.overtimes.overtime-show', compact('overtimes', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
     /**
@@ -92,13 +118,13 @@ class OvertimeController extends Controller
 
         // Send notification email to the approver
         if ($overtime->approver) {
-            $linkTanggapan = route('employee.overtimes.show', $overtime->id);
+            $linkTanggapan = route('approver.overtimes.show', $overtime->id);
 
             $hours = floor($overtimeMinutes / 60);
             $minutes = $overtimeMinutes % 60;
-            $pesan = "Pengajuan lembur milik " . Auth::user()->name . " telah dilakukan perubahan data.
-                <br> Tanggal/Waktu Mulai: " . $request->date_start . "
-                <br> Tanggal/Waktu Akhir: " . $request->date_end . "
+            $pesan = "Terdapat pengajuan overtime baru atas nama " . Auth::user()->name . ".
+                <br> Tanggal/Waktu Mulai: " . $start->format('d/m/Y H:i') . "
+                <br> Tanggal/Waktu Akhir: " . $end->format('d/m/Y H:i') . "
                 <br> Total Waktu: " . $hours . " hours " . $minutes . " minutes";
 
             Mail::to($overtime->approver->email)->send(
@@ -128,6 +154,15 @@ class OvertimeController extends Controller
 
         $overtime->load(['employee', 'approver']);
         return view('Employee.overtimes.overtime-detail', compact('overtime'));
+    }
+
+    /**
+     * Export the specified resource as a PDF.
+     */
+    public function exportPdf(Overtime $overtime)
+    {
+        $pdf = Pdf::loadView('Employee.overtimes.pdf', compact('overtime'));
+        return $pdf->download('overtime-details.pdf');
     }
 
     /**
@@ -188,17 +223,19 @@ class OvertimeController extends Controller
         $overtime->total      = $overtimeMinutes; // Disimpan dalam menit
         $overtime->status_1   = 'pending';
         $overtime->status_2   = 'pending';
+        $overtime->note_1 = NULL;
+        $overtime->note_2 = NULL;
         $overtime->save();
 
         // Send notification email to the approver
         if ($overtime->approver) {
-            $linkTanggapan = route('employee.overtimes.show', $overtime->id);
+            $linkTanggapan = route('approver.overtimes.show', $overtime->id);
 
             $hours = floor($overtimeMinutes / 60);
             $minutes = $overtimeMinutes % 60;
             $pesan = "Pengajuan lembur milik " . Auth::user()->name . " telah dilakukan perubahan data.
-                <br> Tanggal/Waktu Mulai: " . $request->date_start . "
-                <br> Tanggal/Waktu Akhir: " . $request->date_end . "
+                <br> Tanggal/Waktu Mulai: " . $start->format('d/m/Y H:i') . "
+                <br> Tanggal/Waktu Akhir: " . $end->format('d/m/Y H:i') . "
                 <br> Total Waktu: " . $hours . " hours " . $minutes . " minutes";
 
             Mail::to($overtime->approver->email)->send(

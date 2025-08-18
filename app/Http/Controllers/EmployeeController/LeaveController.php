@@ -117,7 +117,7 @@ class LeaveController extends Controller
 
         // Send notification email to the approver
         if ($leave->approver) {
-            $linkTanggapan = route('employee.leaves.show', $leave->id);
+            $linkTanggapan = route('approver.leaves.show', $leave->id);
             $pesan = "Terdapat pengajuan cuti baru atas nama " . Auth::user()->name . ".
                 <br> Tanggal Mulai: {$request->date_start}
                 <br> Tanggal Selesai: {$request->date_end}
@@ -211,11 +211,13 @@ class LeaveController extends Controller
         $leave->reason = $request->reason;
         $leave->status_1 = 'pending';
         $leave->status_2 = 'pending';
+        $leave->note_1 = NULL;
+        $leave->note_2 = NULL;
         $leave->save();
 
         // Send notification email to the approver
         if ($leave->approver) {
-            $linkTanggapan = route('employee.leaves.show', $leave->id);
+            $linkTanggapan = route('approver.leaves.show', $leave->id);
             $pesan = "Pengajuan cuti milik " . Auth::user()->name . " telah dilakukan perubahan data.
                 <br> Tanggal Mulai: {$request->date_start}
                 <br> Tanggal Selesai: {$request->date_end}

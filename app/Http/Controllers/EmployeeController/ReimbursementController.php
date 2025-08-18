@@ -12,6 +12,7 @@ use App\Models\Customer;
 use App\Roles;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReimbursementController extends Controller
 {
@@ -121,7 +122,7 @@ class ReimbursementController extends Controller
 
         // Send notification email to the approver
         if ($reimbursement->approver) {
-            $linkTanggapan = route('employee.reimbursements.show', $reimbursement->id);
+            $linkTanggapan = route('approver.reimbursements.show', $reimbursement->id);
 
             $pesan = "Terdapat pengajuan reimbursement baru atas nama " . Auth::user()->name . ".
           <br> Total: Rp " . number_format($reimbursement->total, 0, ',', '.') . "
@@ -157,6 +158,15 @@ class ReimbursementController extends Controller
         $reimbursement->load(['approver', 'customer']);
 
         return view('Employee.reimbursements.reimbursement-detail', compact('reimbursement'));
+    }
+
+    /**
+     * Export the specified resource as a PDF.
+     */
+    public function exportPdf(Reimbursement $reimbursement)
+    {
+        $pdf = Pdf::loadView('Employee.reimbursements.pdf', compact('reimbursement'));
+        return $pdf->download('reimbursement-details.pdf');
     }
 
     /**
@@ -208,6 +218,8 @@ class ReimbursementController extends Controller
         $reimbursement->date = $request->date;
         $reimbursement->status_1 = 'pending';
         $reimbursement->status_2 = 'pending';
+        $reimbursement->note_1 = NULL;
+        $reimbursement->note_2 = NULL;
 
         if ($request->hasFile('invoice_path')) {
             if ($reimbursement->invoice_path) {
@@ -226,7 +238,7 @@ class ReimbursementController extends Controller
 
         // Send notification email to the approver
         if ($reimbursement->approver) {
-            $linkTanggapan = route('employee.reimbursements.show', $reimbursement->id);
+            $linkTanggapan = route('approver.reimbursements.show', $reimbursement->id);
 
             $pesan = "Pengajuan pengajuan reimbursement milik " . Auth::user()->name . " telah dilakukan perubahan data.
                 <br> Total: Rp " . number_format($request->total, 0, ',', '.') . "
