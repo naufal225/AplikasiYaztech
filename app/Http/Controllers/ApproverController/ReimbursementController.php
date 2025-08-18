@@ -5,10 +5,13 @@ namespace App\Http\Controllers\ApproverController;
 use App\Exports\OvertimesExport;
 use App\Http\Controllers\Controller;
 use App\Models\Reimbursement;
+use App\Models\User;
+use App\Roles;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReimbursementController extends Controller
@@ -72,49 +75,88 @@ class ReimbursementController extends Controller
     public function update(Request $request, Reimbursement $reimbursement)
     {
         $validated = $request->validate([
-            'status_1' => 'string|in:approved,rejected',
-            'status_2' => 'string|in:approved,rejected',
+            'status_1' => 'nullable|string|in:approved,rejected',
+            'status_2' => 'nullable|string|in:approved,rejected',
             'note_1' => 'nullable|string',
             'note_2' => 'nullable|string',
-        ], [
-            'status_1.string' => 'Status must be a valid string.',
-            'status_1.in' => 'Status must approved or rejected.',
-
-            'status_2.string' => 'Status must be a valid string.',
-            'status_2.in' => 'Status must approved or rejected.',
-
-            'note_1.string' => 'Note must be a valid string.',
-            'note_2.string' => 'Note must be a valid string.',
         ]);
 
-        $status = '';
-
-         if ($request->has('status_1')) {
-            if ($validated['status_1'] === 'rejected' && $reimbursement->status_1 === 'pending') {
-                $reimbursement->update([
-                    'status_1' => 'rejected',
-                    'note_1' => $validated['note_1'] ?? "",
-                    'status_2' => 'rejected', // ikut rejected juga
-                    'note_2' => $validated['note_2'] ?? "",
-                ]);
-            } else {
-                $reimbursement->update([
-                    'status_1' => $validated['status_1'],
-                    'note_1' => $validated['note_1'] ?? ""
-                ]);
-            }
-
-            $status = $validated['status_1'];
-        } else if ($request->has('status_2')) {
-            $reimbursement->update([
-                'status_2' => $validated['status_2'],
-                'note_2' => $validated['note_2'] ?? ""
-            ]);
-            $status = $validated['status_2'];
+        // Cegah update dua status sekaligus
+        if ($request->filled('status_1') && $request->filled('status_2')) {
+            return back()->withErrors(['status' => 'Hanya boleh mengubah salah satu status dalam satu waktu.']);
         }
 
-        return redirect()->route('approver.reimbursements.index')->with('success', 'Reimbursement request ' . $status . ' successfully.');
+        $statusMessage = '';
+
+        // === STATUS 1 ===
+        if ($request->filled('status_1')) {
+
+            if ($reimbursement->status_1 !== 'pending') {
+                return back()->withErrors(['status_1' => 'Status 1 sudah final dan tidak dapat diubah.']);
+            }
+
+            // Jika direject, cascade ke status_2 juga
+            if ($validated['status_1'] === 'rejected') {
+                $reimbursement->update([
+                    'status_1' => 'rejected',
+                    'note_1' => $validated['note_1'] ?? '',
+                    'status_2' => 'rejected',
+                    'note_2' => $validated['note_2'] ?? '',
+                ]);
+            } else {
+                // approved → kirim notifikasi ke manager
+                $reimbursement->update([
+                    'status_1' => 'approved',
+                    'note_1' => $validated['note_1'] ?? '',
+                ]);
+
+                $manager = User::where('role', Roles::Manager->value)->first();
+                if ($manager) {
+                    $link = route('manager.reimbursements.show', $reimbursement->id);
+                    $pesan = "Terdapat pengajuan cuti baru atas nama {$reimbursement->employee->name}.
+                          <br> Tanggal Mulai: {$reimbursement->date_start}
+                          <br> Tanggal Selesai: {$reimbursement->date_end}
+                          <br> Alasan: {$reimbursement->reason}";
+
+                    // Gunakan queue
+                    Mail::to($manager->email)->queue(
+                        new \App\Mail\SendMessage(
+                            namaPengaju: $reimbursement->employee->name,
+                            pesan: $pesan,
+                            namaApprover: $manager->name,
+                            linkTanggapan: $link,
+                            emailPengaju: $reimbursement->employee->email
+                        )
+                    );
+                }
+            }
+
+            $statusMessage = $validated['status_1'];
+        }
+
+        // === STATUS 2 ===
+        elseif ($request->filled('status_2')) {
+            if ($reimbursement->status_1 !== 'approved') {
+                return back()->withErrors(['status_2' => 'Status 2 hanya dapat diubah setelah status 1 disetujui.']);
+            }
+
+            if ($reimbursement->status_2 !== 'pending') {
+                return back()->withErrors(['status_2' => 'Status 2 sudah final dan tidak dapat diubah.']);
+            }
+
+            $reimbursement->update([
+                'status_2' => $validated['status_2'],
+                'note_2' => $validated['note_2'] ?? ''
+            ]);
+
+            $statusMessage = $validated['status_2'];
+        }
+
+        return redirect()
+            ->route('approver.reimbursements.index')
+            ->with('success', "Reimbursement request {$statusMessage} successfully.");
     }
+
 
     public function export(Request $request)
     {
