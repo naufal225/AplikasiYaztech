@@ -77,7 +77,7 @@ class UserController extends Controller
             'email' => $user->email, // dibaca di query oleh showResetForm
         ]);
 
-        Mail::to($user->email)->send(new ResetPasswordMail($user->name, $resetUrl));
+        Mail::to($user->email)->queue(new ResetPasswordMail($user->name, $resetUrl));
 
         return redirect()->route('admin.users.index')->with('success', 'Successfully create user.');
     }
