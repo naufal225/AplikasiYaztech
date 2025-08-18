@@ -14,6 +14,7 @@ class ReimbursementController extends Controller
     public function index(Request $request)
     {
         $query = Reimbursement::with(['approver', 'customer'])
+            ->where('status_1', '!=', 'pending')
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {

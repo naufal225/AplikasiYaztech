@@ -14,6 +14,7 @@ class OvertimeController extends Controller
     public function index(Request $request)
     {
         $query = Overtime::with(['employee', 'approver'])
+            ->where('status_1', '!=', 'pending')
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {
@@ -126,5 +127,5 @@ class OvertimeController extends Controller
 
         return redirect()->route('manager.overtimes.index')->with('success', 'Overtime request ' . $status . ' successfully.');
     }
-    
+
 }
