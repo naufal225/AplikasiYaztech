@@ -105,13 +105,23 @@ class OfficialTravelController extends Controller
 
         $status = '';
 
-        if($request->has('status_1')) {
-            $officialTravel->update([
-                'status_1' => $validated['status_1'],
-                'note_1' => $validated['note_1'] ?? ""
-            ]);
+        if ($request->has('status_1')) {
+            if ($validated['status_1'] === 'rejected' && $officialTravel->status_1 === 'pending') {
+                $officialTravel->update([
+                    'status_1' => 'rejected',
+                    'note_1' => $validated['note_1'] ?? "",
+                    'status_2' => 'rejected', // ikut rejected juga
+                    'note_2' => $validated['note_2'] ?? "",
+                ]);
+            } else {
+                $officialTravel->update([
+                    'status_1' => $validated['status_1'],
+                    'note_1' => $validated['note_1'] ?? ""
+                ]);
+            }
+
             $status = $validated['status_1'];
-        } else if($request->has('status_2')) {
+        } else if ($request->has('status_2')) {
             $officialTravel->update([
                 'status_2' => $validated['status_2'],
                 'note_2' => $validated['note_2'] ?? ""
@@ -119,7 +129,9 @@ class OfficialTravelController extends Controller
             $status = $validated['status_2'];
         }
 
-        return redirect()->route('approver.official-travels.index')->with('success', 'Official travel request ' . $status . ' successfully.');
+        return redirect()
+            ->route('approver.official-travels.index')
+            ->with('success', 'Official travel request ' . $status . ' successfully.');
     }
 
     public function export(Request $request)

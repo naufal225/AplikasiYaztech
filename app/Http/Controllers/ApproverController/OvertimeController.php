@@ -105,13 +105,23 @@ class OvertimeController extends Controller
 
         $status = '';
 
-        if($request->has('status_1')) {
-            $overtime->update([
-                'status_1' => $validated['status_1'],
-                'note_1' => $validated['note_1'] ?? ""
-            ]);
+        if ($request->has('status_1')) {
+            if ($validated['status_1'] === 'rejected' && $overtime->status_1 === 'pending') {
+                $overtime->update([
+                    'status_1' => 'rejected',
+                    'note_1' => $validated['note_1'] ?? "",
+                    'status_2' => 'rejected', // ikut rejected juga
+                    'note_2' => $validated['note_2'] ?? "",
+                ]);
+            } else {
+                $overtime->update([
+                    'status_1' => $validated['status_1'],
+                    'note_1' => $validated['note_1'] ?? ""
+                ]);
+            }
+
             $status = $validated['status_1'];
-        } else if($request->has('status_2')) {
+        } else if ($request->has('status_2')) {
             $overtime->update([
                 'status_2' => $validated['status_2'],
                 'note_2' => $validated['note_2'] ?? ""
