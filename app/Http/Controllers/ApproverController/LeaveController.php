@@ -106,10 +106,21 @@ class LeaveController extends Controller
         $status = '';
 
         if ($request->has('status_1')) {
-            $leave->update([
-                'status_1' => $validated['status_1'],
-                'note_1' => $validated['note_1'] ?? ""
-            ]);
+            // kalau status_1 diubah jadi rejected dan sebelumnya pending
+            if ($validated['status_1'] === 'rejected' && $leave->status_1 === 'pending') {
+                $leave->update([
+                    'status_1' => 'rejected',
+                    'note_1' => $validated['note_1'] ?? "",
+                    'status_2' => 'rejected', // ikut rejected juga
+                    'note_2' => $validated['note_2'] ?? "",
+                ]);
+            } else {
+                $leave->update([
+                    'status_1' => $validated['status_1'],
+                    'note_1' => $validated['note_1'] ?? ""
+                ]);
+            }
+
             $status = $validated['status_1'];
         } else if ($request->has('status_2')) {
             $leave->update([
@@ -119,7 +130,9 @@ class LeaveController extends Controller
             $status = $validated['status_2'];
         }
 
-        return redirect()->route('approver.leaves.index')->with('success', 'Leave request ' . $status . ' successfully.');
+        return redirect()
+            ->route('approver.leaves.index')
+            ->with('success', 'Leave request ' . $status . ' successfully.');
     }
 
     public function destroy(Leave $leave)

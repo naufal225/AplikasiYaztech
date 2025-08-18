@@ -75,7 +75,9 @@ class ReimbursementController extends Controller
         $approvedRequests = (int) $counts->approved;
         $rejectedRequests = (int) $counts->rejected;
 
-        return view('Employee.reimbursements.reimbursement-show', compact('reimbursements', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+        return view('Employee.reimbursements.reimbursement-show', compact('reimbursements', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
     /**
