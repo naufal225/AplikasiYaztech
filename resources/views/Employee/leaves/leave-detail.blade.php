@@ -118,7 +118,7 @@
                             <!-- Reason -->
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Reason for Leave</label>
-                                <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <div class="p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <p class="leading-relaxed font text-neutral-900">{{ $leave->reason }}</p>
                                 </div>
                             </div>
