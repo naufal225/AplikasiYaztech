@@ -14,6 +14,7 @@ class LeaveController extends Controller
     public function index(Request $request)
     {
         $query = Leave::with(['employee', 'approver'])
+            ->where('status_1', '!=', 'pending')
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {

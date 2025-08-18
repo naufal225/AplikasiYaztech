@@ -14,6 +14,7 @@ class OfficialTravelController extends Controller
     public function index(Request $request)
     {
         $query = OfficialTravel::with(['employee', 'approver'])
+            ->where('status_1', '!=', 'pending')
             ->orderBy('created_at', 'desc');
 
         // Apply filters
