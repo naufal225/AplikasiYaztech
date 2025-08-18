@@ -43,17 +43,17 @@
                             <div class="text-right">
                                 @if($reimbursement->status_1 === 'rejected' || $reimbursement->status_2 === 'rejected')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
-                                        <i class="mr-1 fas fa-times-circle"></i>
+                                        <i class="mr-1 mt-1 fas fa-times-circle"></i>
                                         Rejected
                                     </span>
                                 @elseif($reimbursement->status_1 === 'approved' && $reimbursement->status_2 === 'approved')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
-                                        <i class="mr-1 fas fa-check-circle"></i>
+                                        <i class="mr-1 mt-1 fas fa-check-circle"></i>
                                         Approved
                                     </span>
                                 @elseif($reimbursement->status_1 === 'pending' || $reimbursement->status_2 === 'pending')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
-                                        <i class="mr-1 fas fa-clock"></i>
+                                        <i class="mr-1 mt-1 fas fa-clock"></i>
                                         {{ $reimbursement->status_1 === 'pending' ? 'Pending' : 'In Progress' }} Review
                                     </span>
                                 @endif
@@ -180,7 +180,7 @@
                         <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                     </div>
                     <div class="p-6 space-y-3">
-                        @if(Auth::id() === $reimbursement->employee_id && ($reimbursement->status_1 === 'pending' || $reimbursement->status_2 === 'pending'))
+                        @if(Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending')
                             <a href="{{ route('employee.reimbursements.edit', $reimbursement->id) }}" class="w-full flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
                                 <i class="fas fa-edit mr-2"></i>
                                 Edit Request
@@ -198,7 +198,7 @@
                             <i class="fas fa-arrow-left mr-2"></i>
                             Back to List
                         </a>
-                        <button onclick="window.print()" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                        <button onclick="window.location.href='{{ route('employee.reimbursements.exportPdf', $reimbursement->id) }}'" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
                             <i class="fas fa-print mr-2"></i>
                             Print Request
                         </button>

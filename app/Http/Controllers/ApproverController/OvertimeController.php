@@ -113,17 +113,17 @@ class OvertimeController extends Controller
 
             // Jika direject, cascade ke status_2 juga
             if ($validated['status_1'] === 'rejected') {
-                $overtime->update([
+                $overtime-->update([
                     'status_1' => 'rejected',
-                    'note_1' => $validated['note_1'] ?? '',
-                    'status_2' => 'rejected',
-                    'note_2' => $validated['note_2'] ?? '',
+                    'note_1' => $validated['note_1'] ?? NULL,
+                    'status_2' => 'rejected', // ikut rejected juga
+                    'note_2' => $validated['note_2'] ?? NULL,
                 ]);
             } else {
                 // approved → kirim notifikasi ke manager
                 $overtime->update([
                     'status_1' => 'approved',
-                    'note_1' => $validated['note_1'] ?? '',
+                    'note_1' => $validated['note_1'] ?? NULL,
                 ]);
 
                 $manager = User::where('role', Roles::Manager->value)->first();

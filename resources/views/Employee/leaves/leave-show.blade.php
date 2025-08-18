@@ -177,7 +177,7 @@
                                         <a href="{{ route('employee.leaves.show', $leave->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if(Auth::id() === $leave->employee_id && ($leave->status_1 === 'pending'))
+                                        @if(Auth::id() === $leave->employee_id && $leave->status_1 === 'pending')
                                             <a href="{{ route('employee.leaves.edit', $leave->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>

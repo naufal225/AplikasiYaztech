@@ -55,21 +55,6 @@
                 @csrf
                 @method('PUT')
 
-                <div>
-                    <label for="approver_id" class="block text-sm font-semibold text-neutral-700 mb-2">
-                        <i class="fas fa-user-check mr-2 text-primary-600"></i>
-                        Approver
-                    </label>
-                    <select id="approver_id" name="approver_id" class="form-select" required>
-                        <option value="">Select Approver</option>
-                        @foreach($approvers as $approver)
-                            <option value="{{ $approver->id }}" {{ $officialTravel->approver_id == $approver->id ? 'selected' : '' }}>
-                                {{ $approver->name }} ({{ ucfirst($approver->role) }})
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="date_start" class="block text-sm font-semibold text-neutral-700 mb-2">
@@ -98,19 +83,6 @@
                         <div>
                             <h4 class="text-sm font-semibold text-green-800 mb-1">Travel Duration</h4>
                             <p id="duration-total" class="text-sm font-bold text-green-800"></p>
-                        </div>
-                    </div>
-                </div>
-
-                 Warning Notice 
-                <div class="bg-warning-50 border border-warning-200 rounded-lg p-4">
-                    <div class="flex items-start">
-                        <i class="fas fa-exclamation-triangle text-warning-600 mr-3 mt-0.5"></i>
-                        <div>
-                            <h4 class="text-sm font-semibold text-warning-800 mb-1">Important Notice</h4>
-                            <p class="text-xs text-warning-700">
-                                Editing this request will reset its status to pending and require re-approval from your manager.
-                            </p>
                         </div>
                     </div>
                 </div>

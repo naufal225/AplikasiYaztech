@@ -63,7 +63,12 @@
                             <h4 class="text-sm font-semibold text-blue-800 mb-1">Normal Work Hours</h4>
                             <p class="text-xs text-blue-700">
                                 Regular working hours: 09:00 - 17:00 (8 hours)<br>
-                                Current overtime: {{ $overtime->total }} hours
+                                @php
+                                    $totalMinutes = $overtime->total;
+                                    $hours = floor($totalMinutes / 60);
+                                    $minutes = $totalMinutes % 60;
+                                @endphp
+                                Current overtime: {{ $hours }} hours {{ $minutes }} minutes
                             </p>
                         </div>
                     </div>
@@ -102,7 +107,7 @@
                         <div>
                             <h4 class="text-sm font-semibold text-warning-800 mb-1">Important Notice</h4>
                             <p class="text-xs text-warning-700">
-                                Editing this request will reset its status to pending and require re-approval from your manager.
+                                Editing this request will reset its status to pending and require re-approval from your team lead.
                             </p>
                         </div>
                     </div>

@@ -37,20 +37,20 @@
                                 <p class="text-primary-100 text-sm">Submitted on {{ $officialTravel->created_at->format('M d, Y \a\t H:i') }}</p>
                             </div>
                             <div class="text-right">
-                                @if($officialTravel->status === 'pending')
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-warning-100 text-warning-800">
-                                        <i class="fas fa-clock mr-1"></i>
-                                        Pending Review
+                                @if($officialTravel->status_1 === 'rejected' || $officialTravel->status_2 === 'rejected')
+                                    <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
+                                        <i class="mr-1 mt-1 fas fa-times-circle"></i>
+                                        Rejected
                                     </span>
-                                @elseif($officialTravel->status === 'approved')
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-success-100 text-success-800">
-                                        <i class="fas fa-check-circle mr-1"></i>
+                                @elseif($officialTravel->status_1 === 'approved' && $officialTravel->status_2 === 'approved')
+                                    <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
+                                        <i class="mr-1 mt-1 fas fa-check-circle"></i>
                                         Approved
                                     </span>
-                                @elseif($officialTravel->status === 'rejected')
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-error-100 text-error-800">
-                                        <i class="fas fa-times-circle mr-1"></i>
-                                        Rejected
+                                @elseif($officialTravel->status_1 === 'pending' || $officialTravel->status_2 === 'pending')
+                                    <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
+                                        <i class="mr-1 mt-1 fas fa-clock"></i>
+                                        {{ $officialTravel->status_1 === 'pending' ? 'Pending' : 'In Progress' }} Review
                                     </span>
                                 @endif
                             </div>
@@ -71,10 +71,10 @@
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Total Days</label>
+                                <label class="text-sm font-semibold text-neutral-700">Team Lead</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                                    <i class="fas fa-calendar-day text-primary-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ $officialTravel->total }} day{{ $officialTravel->total > 1 ? 's' : '' }}</span>
+                                    <i class="fas fa-user-check text-info-600 mr-3"></i>
+                                    <span class="text-neutral-900 font-medium">{{ $officialTravel->approver->name ?? 'N/A' }}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
@@ -92,45 +92,55 @@
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status 1 - Team Lead</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                                    @if($officialTravel->status === 'pending')
+                                    @if($officialTravel->status_1 === 'pending')
                                         <i class="fas fa-clock text-warning-600 mr-3"></i>
                                         <span class="text-warning-800 font-medium">Pending Review</span>
-                                    @elseif($officialTravel->status === 'approved')
+                                    @elseif($officialTravel->status_1 === 'approved')
                                         <i class="fas fa-check-circle text-success-600 mr-3"></i>
                                         <span class="text-success-800 font-medium">Approved</span>
-                                    @elseif($officialTravel->status === 'rejected')
+                                    @elseif($officialTravel->status_1 === 'rejected')
                                         <i class="fas fa-times-circle text-error-600 mr-3"></i>
                                         <span class="text-error-800 font-medium">Rejected</span>
                                     @endif
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Approver</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status 1 - Manager</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                                    <i class="fas fa-user-check text-info-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ $officialTravel->approver->name ?? 'N/A' }}</span>
+                                    @if($officialTravel->status_2 === 'pending')
+                                        <i class="fas fa-clock text-warning-600 mr-3"></i>
+                                        <span class="text-warning-800 font-medium">Pending Review</span>
+                                    @elseif($officialTravel->status_2 === 'approved')
+                                        <i class="fas fa-check-circle text-success-600 mr-3"></i>
+                                        <span class="text-success-800 font-medium">Approved</span>
+                                    @elseif($officialTravel->status_2 === 'rejected')
+                                        <i class="fas fa-times-circle text-error-600 mr-3"></i>
+                                        <span class="text-error-800 font-medium">Rejected</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Note - Team Lead</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                    <span class="text-neutral-900">{{ $overtime->note_1 ?? '-' }}</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Note - Manager</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                    <span class="text-neutral-900">{{ $overtime->note_2 ?? '-' }}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="mt-6 space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Travel Duration Breakdown</label>
-                            <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                    <div>
-                                        <span class="font-medium text-blue-800">Start Date:</span>
-                                        <span class="text-blue-700">{{ $officialTravel->date_start->format('M d, Y') }}</span>
-                                    </div>
-                                    <div>
-                                        <span class="font-medium text-blue-800">End Date:</span>
-                                        <span class="text-blue-700">{{ $officialTravel->date_end->format('M d, Y') }}</span>
-                                    </div>
-                                    <div>
-                                        <span class="font-medium text-blue-800">Duration:</span>
-                                        <span class="text-blue-700 font-bold">{{ $officialTravel->total }} day{{ $officialTravel->total > 1 ? 's' : '' }}</span>
-                                    </div>
-                                </div>
+                            <label class="text-sm font-semibold text-neutral-700">Total Days</label>
+                            <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                                <i class="fas fa-calendar-day text-primary-600 mr-3"></i>
+                                <span class="text-neutral-900 font-medium">{{ $officialTravel->total }} day{{ $officialTravel->total > 1 ? 's' : '' }}</span>
                             </div>
                         </div>
                     </div>
@@ -142,7 +152,7 @@
                         <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                     </div>
                     <div class="p-6 space-y-3">
-                        @if(Auth::id() === $officialTravel->employee_id && $officialTravel->status === 'pending')
+                        @if(Auth::id() === $officialTravel->employee_id && $officialTravel->status_1 === 'pending')
                             <a href="{{ route('employee.official-travels.edit', $officialTravel->id) }}" class="w-full flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
                                 <i class="fas fa-edit mr-2"></i>
                                 Edit Request
@@ -160,7 +170,7 @@
                             <i class="fas fa-arrow-left mr-2"></i>
                             Back to List
                         </a>
-                        <button onclick="window.print()" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                        <button onclick="window.location.href='{{ route('employee.official-travels.exportPdf', $officialTravel->id) }}'" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
                             <i class="fas fa-print mr-2"></i>
                             Print Request
                         </button>
