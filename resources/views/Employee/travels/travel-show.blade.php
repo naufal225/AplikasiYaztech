@@ -197,7 +197,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-12 text-center">
+                                <td colspan="8" class="px-6 py-12 text-center">
                                     <div class="text-neutral-400">
                                         <i class="fas fa-plane text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No official travel requests found</p>

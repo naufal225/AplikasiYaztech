@@ -95,6 +95,12 @@ class OvertimeController extends Controller
         $validated = $request->validate([
             'date_start' => 'required|date_format:Y-m-d\TH:i',
             'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
+        ],[
+            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
+            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
+            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
+            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
         ]);
 
         // Parsing waktu input
@@ -216,6 +222,12 @@ class OvertimeController extends Controller
         $request->validate([
             'date_start' => 'required|date_format:Y-m-d\TH:i',
             'date_end'   => 'required|date_format:Y-m-d\TH:i|after:date_start',
+        ],[
+            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
+            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
+            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
+            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
         ]);
 
         $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');

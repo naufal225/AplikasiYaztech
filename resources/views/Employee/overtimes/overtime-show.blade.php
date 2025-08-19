@@ -215,11 +215,15 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center">
+                                <td colspan="8" class="px-6 py-12 text-center">
                                     <div class="text-neutral-400">
                                         <i class="fas fa-clock text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No overtime requests found</p>
                                         <p class="text-sm">Submit your first overtime request to get started</p>
+                                        <a href="{{ route('employee.overtimes.create') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">
+                                            <i class="fas fa-plus mr-2"></i>
+                                            New Overtime Request
+                                        </a>
                                     </div>
                                 </td>
                             </tr>

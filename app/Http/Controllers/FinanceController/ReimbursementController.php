@@ -21,35 +21,17 @@ class ReimbursementController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = Reimbursement::where('employee_id', $user->id)
-            ->with(['approver', 'customer'])
-            ->orderBy('created_at', 'desc');
-        $queryClone = (clone $query);
-
-        if ($request->filled('status')) {
-            $status = $request->status;
-
-            $query->where(function ($q) use ($status) {
-                if ($status === 'rejected') {
-                    $q->where('status_1', 'rejected')
-                    ->orWhere('status_2', 'rejected');
-                } elseif ($status === 'approved') {
-                    $q->where('status_1', 'approved')
-                    ->where('status_2', 'approved');
-                } elseif ($status === 'pending') {
-                    $q->where(function ($sub) {
-                        $sub->where('status_1', 'pending')
-                            ->orWhere('status_2', 'pending');
-                    })
-                    ->where('status_1', '!=', 'rejected')
-                    ->where('status_2', '!=', 'rejected')
-                    ->where(function ($sub) {
-                        $sub->where('status_1', '!=', 'approved')
-                            ->orWhere('status_2', '!=', 'approved');
-                    });
-                }
+        $queryReal = Reimbursement::whereHas('employee', function ($q) {
+                $q->where('role', Roles::Employee->value);
             });
-        }
+
+        $query = (clone $queryReal)
+            ->where('status_1', 'approved')
+            ->where('status_2', 'approved')
+            ->with(['employee', 'approver'])
+            ->orderBy('created_at', 'desc');
+
+        $queryClone = (clone $query);
 
         if ($request->filled('from_date')) {
             $query->where('date_start', '>=',
@@ -71,12 +53,28 @@ class ReimbursementController extends Controller
         $counts = $queryClone->withFinalStatusCount()->first();
 
         $totalRequests = (int) $queryClone->count();
-        $pendingRequests = (int) $counts->pending;
         $approvedRequests = (int) $counts->approved;
-        $rejectedRequests = (int) $counts->rejected;
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
-        return view('Finance.reimbursements.reimbursement-show', compact('reimbursements', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
+        return view('Finance.reimbursements.reimbursement-show', compact('reimbursements', 'totalRequests', 'approvedRequests', 'manager'));
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(Reimbursement $reimbursement)
+    {
+        $reimbursement->load(['approver', 'customer']);
+        return view('Finance.reimbursements.reimbursement-detail', compact('reimbursement'));
+    }
+
+    /**
+     * Export the specified resource as a PDF.
+     */
+    public function exportPdf(Reimbursement $reimbursement)
+    {
+        $pdf = Pdf::loadView('Finance.reimbursements.pdf', compact('reimbursement'));
+        return $pdf->download('reimbursement-details-finance.pdf');
     }
 }
