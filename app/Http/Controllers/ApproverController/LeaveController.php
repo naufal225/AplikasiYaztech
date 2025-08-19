@@ -112,6 +112,7 @@ class LeaveController extends Controller
             }
 
             // Jika direject, cascade ke status_2 juga
+            // Jika direject, cascade ke status_2 juga
             if ($validated['status_1'] === 'rejected') {
                 $leave->update([
                     'status_1' => 'rejected',
@@ -122,9 +123,29 @@ class LeaveController extends Controller
             } else {
                 // approved → kirim notifikasi ke manager
                 $leave->update([
-                    'status_1' => $validated['status_1'],
-                    'note_1' => $validated['note_1'] ?? NULL
+                    'status_1' => 'approved',
+                    'note_1' => $validated['note_1'] ?? NULL,
                 ]);
+
+                $manager = User::where('role', Roles::Manager->value)->first();
+                if ($manager) {
+                    $link = route('manager.official-travels.show', $leave->id);
+                    $pesan = "Terdapat pengajuan perjalanan dinas baru atas nama {$leave->employee->name}.
+                          <br> Tanggal Mulai: {$leave->date_start}
+                          <br> Tanggal Selesai: {$leave->date_end}
+                          <br> Alasan: {$leave->reason}";
+
+                    // Gunakan queue
+                    Mail::to($manager->email)->queue(
+                        new \App\Mail\SendMessage(
+                            namaPengaju: $leave->employee->name,
+                            pesan: $pesan,
+                            namaApprover: $manager->name,
+                            linkTanggapan: $link,
+                            emailPengaju: $leave->employee->email
+                        )
+                    );
+                }
             }
 
             $statusMessage = $validated['status_1'];
