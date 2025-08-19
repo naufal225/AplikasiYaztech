@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Laravel App</title>
+    <title>Login - YES</title>
     @vite('resources/css/app.css')
+    <link rel="icon" type="image/x-icon" href="{{ asset('yaztech-icon.jpg') }}">
 </head>
 <body class="flex items-center justify-center min-h-screen p-4 bg-gradient-to-br from-blue-50 to-sky-50">
     <!-- Main Container - Light Neutral Background (15%) -->

@@ -1,15 +1,16 @@
 @extends('Finance.layouts.app')
 
-@section('title', 'Leave Requests')
-@section('header', 'Leave Requests')
-@section('subtitle', 'Manage employee leave requests')
+@section('title', 'Reimbursement Requests')
+@section('header', 'Reimbursement Requests')
+@section('subtitle', 'Manage employee reimbursement claims')
 
 @section('content')
     <div class="space-y-6">
+        <!-- Header Actions -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-neutral-900">Leave Requests</h1>
-                <p class="text-neutral-600">Manage and track your leave requests</p>
+                <h1 class="text-2xl font-bold text-neutral-900">Reimbursement Requests</h1>
+                <p class="text-neutral-600">Manage and track employee reimbursement claims</p>
             </div>
         </div>
         <!-- Statistics Cards -->
@@ -17,7 +18,7 @@
             <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-primary-100 text-primary-500">
-                        <i class="fas fa-calendar-alt text-xl"></i>
+                        <i class="fas fa-receipt text-xl"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm text-neutral-500">Total Requests</p>
@@ -39,7 +40,7 @@
         </div>
 
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 p-6">
-            <form method="GET" action="{{ route('finance.leaves.index') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <form method="GET" action="{{ route('finance.reimbursements.index') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-neutral-700 mb-2">From Date</label>
                     <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-input">
@@ -53,7 +54,7 @@
                         <i class="fas fa-search mr-2"></i>
                         Filter
                     </button>
-                    <a href="{{ route('finance.leaves.index') }}" class="btn-secondary">
+                    <a href="{{ route('finance.reimbursements.index') }}" class="btn-secondary">
                         <i class="fas fa-refresh mr-2"></i>
                         Reset
                     </a>
@@ -61,62 +62,62 @@
             </form>
         </div>
 
-        <!-- Leaves Table -->
+        <!-- Reimbursements Table -->
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-neutral-200">
                     <thead class="bg-neutral-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Employee</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Duration</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Total</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Team Lead</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Manager</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Team Lead</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Customer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-neutral-200">
-                        @forelse($leaves as $leave)
+                        @forelse($reimbursements as $reimbursement)
                             <tr class="hover:bg-neutral-50 transition-colors duration-200">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div>
-                                        <div class="text-sm font-medium text-neutral-900">#{{ $leave->id }}</div>
-                                        <div class="text-sm text-neutral-500">{{ $leave->created_at->format('M d, Y') }}</div>
+                                        <div class="text-sm font-medium text-neutral-900">#{{ $reimbursement->id }}</div>
+                                        <div class="text-sm text-neutral-500">{{ $reimbursement->created_at->format('M d, Y') }}</div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 bg-success-100 rounded-full flex items-center justify-center mr-3">
-                                            <span class="text-success-600 font-semibold text-xs">{{ substr($leave->employee->name, 0, 1) }}</span>
+                                            <span class="text-success-600 font-semibold text-xs">{{ substr($reimbursement->employee->name, 0, 1) }}</span>
                                         </div>
                                         <div>
-                                            <div class="text-sm font-medium text-neutral-900">{{ $leave->employee->name }}</div>
-                                            <div class="text-sm text-neutral-500">{{ $leave->employee->email }}</div>
+                                            <div class="text-sm font-medium text-neutral-900">{{ $reimbursement->employee->name }}</div>
+                                            <div class="text-sm text-neutral-500">{{ $reimbursement->employee->email }}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">
-                                        {{ \Carbon\Carbon::parse($leave->date_start)->format('M d') }} - {{ \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
-                                    </div>
-                                    <div class="text-sm text-neutral-500">
-                                        {{ \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end)) + 1 }} days
-                                    </div>
+                                    <div class="text-sm text-neutral-900">Rp {{ number_format($reimbursement->total, 0, ',', '.') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($leave->status_1 === 'pending')
+                                    <div class="text-sm text-neutral-900">{{ \Carbon\Carbon::parse($reimbursement->date)->format('M d, Y') }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($reimbursement->status_1 === 'pending')
                                         <span class="badge-pending">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
-                                    @elseif($leave->status_1 === 'approved')
+                                    @elseif($reimbursement->status_1 === 'approved')
                                         <span class="badge-approved">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
-                                    @elseif($leave->status_1 === 'rejected')
+                                    @elseif($reimbursement->status_1 === 'rejected')
                                         <span class="badge-rejected">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
@@ -124,17 +125,17 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($leave->status_2 === 'pending')
+                                    @if($reimbursement->status_2 === 'pending')
                                         <span class="badge-pending">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
-                                    @elseif($leave->status_2 === 'approved')
+                                    @elseif($reimbursement->status_2 === 'approved')
                                         <span class="badge-approved">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
-                                    @elseif($leave->status_2 === 'rejected')
+                                    @elseif($reimbursement->status_2 === 'rejected')
                                         <span class="badge-rejected">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
@@ -142,25 +143,40 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $leave->approver->name ?? 'N/A' }}</div>
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->approver->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer->name ?? 'N/A' }}</div>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
-                                        <a href="{{ route('finance.leaves.show', $leave->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
+                                        <a href="{{ route('finance.reimbursements.show', $reimbursement->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @if(Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending')
+                                            <a href="{{ route('finance.reimbursements.edit', $reimbursement->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('finance.reimbursements.destroy', $reimbursement->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-error-600 hover:text-error-900" title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
                         @empty
-                            <tr class="w-full">
-                                <td colspan="8" class="h-64 text-center align-middle">
-                                    <div class="flex flex-col items-center justify-center h-full text-neutral-400">
+                            <tr>
+                                <td colspan="10" class="px-6 py-12 text-center">
+                                    <div class="text-neutral-400">
                                         <i class="fas fa-inbox text-4xl mb-4"></i>
-                                        <p class="text-lg font-medium">No leave requests found</p>
+                                        <p class="text-lg font-medium">No reimbursement requests found</p>
                                     </div>
                                 </td>
                             </tr>
@@ -169,9 +185,9 @@
                 </table>
             </div>
             
-            @if($leaves->hasPages())
+            @if($reimbursements->hasPages())
                 <div class="px-6 py-4 border-t border-neutral-200">
-                    {{ $leaves->links() }}
+                    {{ $reimbursements->links() }}
                 </div>
             @endif
         </div>

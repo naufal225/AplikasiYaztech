@@ -41,7 +41,7 @@
                 <a href="{{ route('employee.leaves.index') }}"
                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('employee.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
                     <i class="w-5 mr-3 text-center fas fa-calendar-alt"></i>
-                    <span class="font-medium">Pengajuan Cuti</span>
+                    <span class="font-medium">Leave</span>
                 </a>
 
                 <a href="{{ route('employee.reimbursements.index') }}"
@@ -59,18 +59,8 @@
                 <a href="{{ route('employee.official-travels.index') }}"
                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('employee.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
                     <i class="w-5 mr-3 text-center fas fa-plane"></i>
-                    <span class="font-medium">Perjalanan Dinas</span>
+                    <span class="font-medium">Official Travel</span>
                 </a>
-
-                @if(Auth::user()->role === App\Roles::Approver->value || Auth::user()->role === App\Roles::Admin->value)
-                    <div class="pt-4 my-4 border-t border-primary-700">
-                        <p class="px-4 mb-2 text-xs font-semibold tracking-wider uppercase text-primary-300">Approver</p>
-                        <a href="#" class="flex items-center px-4 py-3 transition-all duration-200 rounded-lg text-primary-100 hover:bg-primary-700 hover:text-white">
-                            <i class="w-5 mr-3 text-center fas fa-user-check"></i>
-                            <span class="font-medium">Approver</span>
-                        </a>
-                    </div>
-                @endif
             </nav>
 
             <div class="p-4 border-t border-primary-700">
@@ -146,8 +136,6 @@
 
     <script>
         const btnNav = document.getElementById("btnNav");
-
-
 
         btnNav.addEventListener('click', toggleSidebar);
 
