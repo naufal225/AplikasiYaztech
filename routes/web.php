@@ -1,10 +1,21 @@
 <?php
 
+use App\Events\SendMessage;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Roles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/_test-bc', function () {
+    $leave = \App\Models\Leave::latest()->first() ?? \App\Models\Leave::factory()->create();
+    event(new \App\Events\LeaveSubmitted($leave, 1)); // 👈 harus 1
+    return 'sent';
+})->middleware('auth');
+
+Route::get('/send-message-test', function() {
+    event(new SendMessage(['apa' => 1212121]));
+});
 
 
 Route::middleware('throttle:30,1')->group(function () {

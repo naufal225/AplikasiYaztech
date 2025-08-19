@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\EmployeeController;
 
+use App\Events\LeaveSubmitted;
 use App\Roles;
 use App\Http\Controllers\Controller;
 use App\Models\ApprovalLink;
@@ -13,6 +14,7 @@ use App\Models\Division;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class LeaveController extends Controller
@@ -108,51 +110,63 @@ class LeaveController extends Controller
             'reason' => 'required|string|max:1000',
         ]);
 
-        if (Auth::user()->division_id === null || trim(Auth::user()->division_id) === '') {
-            return redirect()->back()->with('error', 'You are not in a division. Please contact your administrator.');
+        if (!Auth::user()->division_id) {
+            return back()->with('error', 'You are not in a division. Please contact your administrator.');
         }
 
-        $leave = new Leave();
-        $leave->employee_id = Auth::id();
-        $leave->date_start = $request->date_start;
-        $leave->date_end = $request->date_end;
-        $leave->reason = $request->reason;
-        $leave->status_1 = 'pending';
-        $leave->status_2 = 'pending';
-        $leave->save();
+        DB::transaction(function () use ($request) {
+            $leave = new Leave();
+            $leave->employee_id = Auth::id();
+            $leave->date_start = $request->date_start;
+            $leave->date_end = $request->date_end;
+            $leave->reason = $request->reason;
+            $leave->status_1 = 'pending';
+            $leave->status_2 = 'pending';
+            $leave->save();
 
-        // Send notification email to the approver
-        if ($leave->approver) {
-            $token = Str::random(48);
-            ApprovalLink::create([
-                'model_type' => get_class($leave),   // App\Models\Leave
-                'model_id' => $leave->id,
-                'approver_user_id' => $leave->approver->id,
-                'level' => 1, // level 1 berarti arahnya ke team lead
-                'scope' => 'both',             // boleh approve & reject
-                'token' => hash('sha256', $token), // simpan hash, kirim raw
-                'expires_at' => now()->addDays(3),  // masa berlaku
-            ]);
-            $linkTanggapan = route('public.approval.show', $token);
-            $pesan = "Terdapat pengajuan cuti baru atas nama " . Auth::user()->name . ".
+            // pastikan broadcast SETELAH commit
+            DB::afterCommit(function () use ($leave) {
+                $fresh = $leave->fresh(); // ambil ulang (punya created_at dll)
+                // dd("jalan");
+                event(new \App\Events\LeaveSubmitted($fresh, Auth::user()->division_id));
+                // LeaveSubmitted::dispatch($leave, Auth::user()->division_id);
+            });
+
+            // --- Email ke approver (opsional) ---
+            if ($leave->approver) {
+                $tokenRaw = Str::random(48);
+                \App\Models\ApprovalLink::create([
+                    'model_type' => get_class($leave),
+                    'model_id' => $leave->id,
+                    'approver_user_id' => $leave->approver->id,
+                    'level' => 1,
+                    'scope' => 'both',
+                    'token' => hash('sha256', $tokenRaw),
+                    'expires_at' => now()->addDays(3),
+                ]);
+
+                $linkTanggapan = route('public.approval.show', $tokenRaw); // pastikan route param sesuai
+                $pesan = "Terdapat pengajuan cuti baru atas nama " . Auth::user()->name . ".
                 <br> Tanggal Mulai: {$request->date_start}
                 <br> Tanggal Selesai: {$request->date_end}
                 <br> Alasan: {$request->reason}";
 
-            Mail::to($leave->approver->email)->queue(
-                new \App\Mail\SendMessage(
-                    namaPengaju: Auth::user()->name,
-                    pesan: $pesan,
-                    namaApprover: $leave->approver->name,
-                    linkTanggapan: $linkTanggapan,
-                    emailPengaju: Auth::user()->email
-                )
-            );
-        }
+                Mail::to($leave->approver->email)->queue(
+                    new \App\Mail\SendMessage(
+                        namaPengaju: Auth::user()->name,
+                        pesan: $pesan,
+                        namaApprover: $leave->approver->name,
+                        linkTanggapan: $linkTanggapan,
+                        emailPengaju: Auth::user()->email
+                    )
+                );
+            }
+        });
 
         return redirect()->route('employee.leaves.index')
             ->with('success', 'Leave request submitted successfully.');
     }
+
 
     /**
      * Display the specified resource.

@@ -65,19 +65,19 @@ trait HasDualStatus
         $sql = "
             COUNT(*) as total,
             SUM(
-                CASE 
+                CASE
                     WHEN {$table}.{$s1} = 'approved' AND {$table}.{$s2} = 'approved' THEN 1
                     ELSE 0
                 END
             ) AS approved,
             SUM(
-                CASE 
+                CASE
                     WHEN {$table}.{$s1} = 'rejected' OR {$table}.{$s2} = 'rejected' THEN 1
                     ELSE 0
                 END
             ) AS rejected,
             SUM(
-                CASE 
+                CASE
                     WHEN {$table}.{$s1} = 'rejected' OR {$table}.{$s2} = 'rejected' THEN 0
                     WHEN {$table}.{$s1} = 'approved' AND {$table}.{$s2} = 'approved' THEN 0
                     ELSE 1
@@ -121,6 +121,18 @@ trait HasDualStatus
 
         // default pending
         return 'pending';
+    }
+
+    public function scopeUnseenForApprover($q)
+    {
+        return $q->whereNull('seen_by_approver_at')
+            ->where('status_1', 'pending');
+    }
+    public function scopeUnseenForManager($q)
+    {
+        return $q->whereNull('seen_by_manager_at')
+            ->where('status_1', 'approved') // sudah lolos approver
+            ->where('status_2', 'pending');
     }
 
 }
