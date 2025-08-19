@@ -12,6 +12,7 @@
         "laravel/octane": "^2.12",
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "^3.1",
+        "pusher/pusher-php-server": "^7.2",
         "spatie/browsershot": "^5.0",
         "spatie/laravel-permission": "^6.21",
         "spiral/roadrunner-cli": "2.6",

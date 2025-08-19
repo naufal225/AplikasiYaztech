@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Approver Dashboard</title>
-    @vite('resources/css/app.css')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @vite(['resources/js/app.js', 'resources/css/app.css'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+
 </head>
+
 <body class="bg-gray-50">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar - Primary Blue (35%) -->
@@ -31,9 +34,41 @@
 
     @yield('partial-modal')
 
-    @stack('scripts')
+
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+    const nav = document.getElementById('leave-nav');
+    const badgeEl = document.getElementById('leave-badge');
+    if (!nav || !badgeEl || !window.Echo) return;
+
+    const role = nav.dataset.role;
+    const divisionId = nav.dataset.divisionId;
+
+    function incrementBadge() {
+        let current = parseInt(badgeEl.textContent) || 0;
+        current++;
+        badgeEl.textContent = current;
+        badgeEl.style.display = 'inline-flex';
+    }
+
+    if (role === 'approver') {
+        window.Echo.private(`approver.division.${divisionId}`)
+            .listen('.leave.submitted', (e) => {
+                console.log('[Echo] leave.submitted received', e);
+                incrementBadge();
+                if (typeof loadLeaveTable === 'function') loadLeaveTable();
+            });
+    }
+
+    if (role === 'manager') {
+        window.Echo.private(`manager.division.${divisionId}`)
+            .listen('.leave.level-advanced', (e) => {
+                if (e.newLevel === 'manager') incrementBadge();
+            });
+    }
+});
+
         // Sidebar Toggle Functionality - Fixed
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebar = document.getElementById('sidebar');
@@ -92,6 +127,28 @@
                 document.body.classList.remove('overflow-hidden');
             }
         });
+
+function loadLeaveTable() {
+    fetch("{{ route('approver.leaves.index') }}", {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.text())
+    .then(html => {
+        // Ambil isi tabel dari response
+        let parser = new DOMParser();
+        let doc = parser.parseFromString(html, 'text/html');
+        let newTable = doc.querySelector('#leave-table-wrapper'); // kasih id di view index
+        if (newTable) {
+            document.querySelector('#leave-table-wrapper').innerHTML = newTable.innerHTML;
+        }
+    });
+}
     </script>
+
+    @stack('scripts')
+
 </body>
+
 </html>

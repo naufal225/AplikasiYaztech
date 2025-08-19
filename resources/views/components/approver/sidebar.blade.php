@@ -18,11 +18,33 @@
             <span class="font-medium">Dashboard</span>
         </a>
 
-        <a href="{{ route('approver.leaves.index') }}"
+        @php
+        $isApprover = Auth::user()->role === 'approver';
+        $isManager = Auth::user()->role === 'manager';
+        $divisionId = Auth::user()->division_id;
+        $unseenCount = 0;
+        $unseenCount = \App\Models\Leave::whereNull('seen_by_approver_at')
+        ->where('status_1','pending')
+        ->whereHas('employee', fn($q)=>$q->where('division_id', $divisionId))
+        ->count();
+
+        @endphp
+
+        <a href="{{ route('approver.leaves.index') }}" id="leave-nav" data-role="{{ Auth::user()->role }}"
+            data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
             <span class="font-medium">Leave Requests</span>
+
+            <span id="leave-badge"
+                class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-2 py-0.5 min-w-[1.25rem]"
+                style="{{ $unseenCount > 0 ? '' : 'display: none' }}">
+                {{ $unseenCount }}
+            </span>
         </a>
+
+
 
         <a href="{{ route('approver.reimbursements.index') }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
