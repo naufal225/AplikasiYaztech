@@ -120,7 +120,17 @@ class OvertimeController extends Controller
 
         // Send notification email to the approver
         if ($overtime->approver) {
-            $linkTanggapan = route('approver.overtimes.show', $overtime->id);
+            $token = \Illuminate\Support\Str::random(48);
+            ApprovalLink::create([
+                'model_type' => get_class($overtime),   // App\Models\overtime
+                'model_id' => $overtime->id,
+                'approver_user_id' => $overtime->approver->id,
+                'level' => 1, // level 1 berarti arahnya ke team lead
+                'scope' => 'both',             // boleh approve & reject
+                'token' => hash('sha256', $token), // simpan hash, kirim raw
+                'expires_at' => now()->addDays(3),  // masa berlaku
+            ]);
+             $linkTanggapan = route('public.approval.show', $token);
 
             $hours = floor($overtimeMinutes / 60);
             $minutes = $overtimeMinutes % 60;

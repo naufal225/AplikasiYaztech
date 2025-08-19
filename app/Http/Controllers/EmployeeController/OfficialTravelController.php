@@ -227,7 +227,18 @@ class OfficialTravelController extends Controller
 
         // Send notification email to the approver
         if ($officialTravel->approver) {
-            $linkTanggapan = route('approver.official-travels.show', $officialTravel->id);
+            $token = Str::random(48);
+            ApprovalLink::create([
+                'model_type' => get_class($officialTravel),   // App\Models\officialTravel
+                'model_id' => $officialTravel->id,
+                'approver_user_id' => $officialTravel->approver->id,
+                'level' => 1, // level 1 berarti arahnya ke team lead
+                'scope' => 'both',             // boleh approve & reject
+                'token' => hash('sha256', $token), // simpan hash, kirim raw
+                'expires_at' => now()->addDays(3),  // masa berlaku
+            ]);
+
+            $linkTanggapan = route('public.approval.show', $token);
 
             $pesan = "Pengajuan perjalanan dinas milik " . Auth::user()->name . " telah dilakukan perubahan data.
                 <br> Tanggal Mulai: " . $officialTravel->date_start->format('l, d/m/Y') . "

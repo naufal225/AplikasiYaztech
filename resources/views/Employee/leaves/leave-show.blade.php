@@ -194,7 +194,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="h-64 text-center align-middle">
+                                <td colspan="8" class="h-64 text-center align-middle">
                                     <div class="flex flex-col items-center justify-center h-full text-neutral-400">
                                         <i class="fas fa-inbox text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No leave requests found</p>

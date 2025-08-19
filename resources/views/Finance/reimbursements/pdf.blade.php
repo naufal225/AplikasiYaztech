@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Leave Request #{{ $leave->id }}</title>
+    <title>Reimbursement Request #{{ $reimbursement->id }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,35 +58,42 @@
     </div>
 
     <div class="section">
-        <div class="sub-title">Leave Request #{{ $leave->id }} | {{ \Carbon\Carbon::parse($leave->created_at)->format('F d, Y \a\t H:i') }}</div>
+        <div class="sub-title">Reimbursement Request #{{ $reimbursement->id }} | {{ \Carbon\Carbon::parse($reimbursement->created_at)->format('F d, Y \a\t H:i') }}</div>
         <h3>Employee Information</h3>
-        <div><span class="label">Email:</span> <span class="value">{{ $leave->employee->email }}</span></div>
-        <div><span class="label">Name:</span> <span class="value">{{ $leave->employee->name }}</span></div>
-        <div><span class="label">Team Lead:</span> <span class="value">{{ $leave->approver->name ?? 'N/A' }}</span></div>
-        <div><span class="label">Divisi:</span> <span class="value">{{ $leave->employee->division->name ?? 'N/A' }}</span></div>
+        <div><span class="label">Email:</span> <span class="value">{{ Auth::user()->email }}</span></div>
+        <div><span class="label">Name:</span> <span class="value">{{ Auth::user()->name }}</span></div>
+        <div><span class="label">Team Lead:</span> <span class="value">{{ $reimbursement->approver->name ?? 'N/A' }}</span></div>
+        <div><span class="label">Divisi:</span> <span class="value">{{ $reimbursement->employee->division->name ?? 'N/A' }}</span></div>
     </div>
 
     <div class="section">
-        <h3>Leave Details</h3>
+        <h3>Reimbursement Details</h3>
         <div class="grid-2">
             <div>
-                <div><span class="label">Start Date:</span></div>
-                <div class="box">{{ \Carbon\Carbon::parse($leave->date_start)->format('l, M d, Y') }}</div>
+                <div><span class="label">Date of Expanse:</span></div>
+                <div class="box">{{ \Carbon\Carbon::parse($reimbursement->date)->format('l, M d, Y') }}</div>
             </div>
             <div>
-                <div><span class="label">End Date:</span></div>
-                <div class="box">{{ \Carbon\Carbon::parse($leave->date_end)->format('l, M d, Y') }}</div>
+                <div><span class="label">Customer:</span></div>
+                <div class="box">{{ $reimbursement->customer->name ?? 'N/A' }}</div>
             </div>
             <div>
-                <div><span class="label">Duration:</span></div>
+                <div><span class="label">Total Amount:</span></div>
                 <div class="box">
-                    {{ (int) \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end, ), false) + 1 }}
-                    {{ (int) \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end, ), false) + 1 === 1 ? 'day' : 'days' }}
+                    Rp {{ number_format($reimbursement->total, 0, ',', '.') }}
                 </div>
             </div>
             <div>
-                <div><span class="label">Reason for Leave:</span></div>
-                <div class="box">{{ $leave->reason }}</div>
+                <div><span class="label">Invoice:</span></div>
+                <div class="box">
+                    @php
+                        $path = storage_path('app/public/' . $reimbursement->invoice_path);
+                        $type = pathinfo($path, PATHINFO_EXTENSION);
+                        $data = file_get_contents($path);
+                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                    @endphp
+                    <img src="{{ $base64 }}" alt="Invoice" width="300">
+                </div>
             </div>
         </div>
     </div>
@@ -96,35 +103,35 @@
         <div class="grid-2">
             <div>
                 <div><span class="label">Team Lead Status:</span></div>
-                <div class="box status-{{ $leave->status_1 }}">
-                    @if($leave->status_1 === 'pending')
+                <div class="box status-{{ $reimbursement->status_1 }}">
+                    @if($reimbursement->status_1 === 'pending')
                         Pending Review
-                    @elseif($leave->status_1 === 'approved')
+                    @elseif($reimbursement->status_1 === 'approved')
                         Approved
-                    @elseif($leave->status_1 === 'rejected')
+                    @elseif($reimbursement->status_1 === 'rejected')
                         Rejected
                     @endif
                 </div>
             </div>
             <div>
                 <div><span class="label">Manager Status:</span></div>
-                <div class="box status-{{ $leave->status_2 }}">
-                    @if($leave->status_2 === 'pending')
+                <div class="box status-{{ $reimbursement->status_2 }}">
+                    @if($reimbursement->status_2 === 'pending')
                         Pending Review
-                    @elseif($leave->status_2 === 'approved')
+                    @elseif($reimbursement->status_2 === 'approved')
                         Approved
-                    @elseif($leave->status_2 === 'rejected')
+                    @elseif($reimbursement->status_2 === 'rejected')
                         Rejected
                     @endif
                 </div>
             </div>
             <div>
                 <div><span class="label">Team Lead Note:</span></div>
-                <div class="box">{{ $leave->note_1 ?? '-' }}</div>
+                <div class="box">{{ $reimbursement->note_1 ?? '-' }}</div>
             </div>
             <div>
                 <div><span class="label">Manager Note:</span></div>
-                <div class="box">{{ $leave->note_2 ?? '-' }}</div>
+                <div class="box">{{ $reimbursement->note_2 ?? '-' }}</div>
             </div>
         </div>
     </div>

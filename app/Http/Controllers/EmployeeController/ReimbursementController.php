@@ -251,7 +251,17 @@ class ReimbursementController extends Controller
 
         // Send notification email to the approver
         if ($reimbursement->approver) {
-            $linkTanggapan = route('approver.reimbursements.show', $reimbursement->id);
+            $token = \Illuminate\Support\Str::random(48);
+            ApprovalLink::create([
+                'model_type' => get_class($reimbursement),   // App\Models\reim$reimbursement
+                'model_id' => $reimbursement->id,
+                'approver_user_id' => $reimbursement->approver->id,
+                'level' => 1, // level 1 berarti arahnya ke team lead
+                'scope' => 'both',             // boleh approve & reject
+                'token' => hash('sha256', $token), // simpan hash, kirim raw
+                'expires_at' => now()->addDays(3),  // masa berlaku
+            ]);
+             $linkTanggapan = route('public.approval.show', $token);
 
             $pesan = "Pengajuan pengajuan reimbursement milik " . Auth::user()->name . " telah dilakukan perubahan data.
                 <br> Total: Rp " . number_format($request->total, 0, ',', '.') . "
