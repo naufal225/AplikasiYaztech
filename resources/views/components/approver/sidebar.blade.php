@@ -37,11 +37,13 @@
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
             <span class="font-medium">Leave Requests</span>
 
+            @if($unseenCount > 0)
             <span id="leave-badge"
                 class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-2 py-0.5 min-w-[1.25rem]"
                 style="{{ $unseenCount > 0 ? '' : 'display: none' }}">
                 {{ $unseenCount }}
             </span>
+            @endif
         </a>
 
 
