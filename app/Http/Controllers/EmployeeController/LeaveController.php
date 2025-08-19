@@ -4,6 +4,7 @@ namespace App\Http\Controllers\EmployeeController;
 
 use App\Roles;
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalLink;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Leave;
@@ -12,6 +13,7 @@ use App\Models\Division;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class LeaveController extends Controller
 {
@@ -32,27 +34,29 @@ class LeaveController extends Controller
             $query->where(function ($q) use ($status) {
                 if ($status === 'rejected') {
                     $q->where('status_1', 'rejected')
-                    ->orWhere('status_2', 'rejected');
+                        ->orWhere('status_2', 'rejected');
                 } elseif ($status === 'approved') {
                     $q->where('status_1', 'approved')
-                    ->where('status_2', 'approved');
+                        ->where('status_2', 'approved');
                 } elseif ($status === 'pending') {
                     $q->where(function ($sub) {
                         $sub->where('status_1', 'pending')
                             ->orWhere('status_2', 'pending');
                     })
-                    ->where('status_1', '!=', 'rejected')
-                    ->where('status_2', '!=', 'rejected')
-                    ->where(function ($sub) {
-                        $sub->where('status_1', '!=', 'approved')
-                            ->orWhere('status_2', '!=', 'approved');
-                    });
+                        ->where('status_1', '!=', 'rejected')
+                        ->where('status_2', '!=', 'rejected')
+                        ->where(function ($sub) {
+                            $sub->where('status_1', '!=', 'approved')
+                                ->orWhere('status_2', '!=', 'approved');
+                        });
                 }
             });
         }
 
         if ($request->filled('from_date')) {
-            $query->where('date_start', '>=',
+            $query->where(
+                'date_start',
+                '>=',
                 Carbon::parse($request->from_date)
                     ->startOfDay()
                     ->timezone('Asia/Jakarta')
@@ -60,7 +64,9 @@ class LeaveController extends Controller
         }
 
         if ($request->filled('to_date')) {
-            $query->where('date_start', '<=',
+            $query->where(
+                'date_start',
+                '<=',
                 Carbon::parse($request->to_date)
                     ->endOfDay()
                     ->timezone('Asia/Jakarta')
@@ -102,7 +108,7 @@ class LeaveController extends Controller
             'reason' => 'required|string|max:1000',
         ]);
 
-        if(Auth::user()->division_id === null || trim(Auth::user()->division_id) === '') {
+        if (Auth::user()->division_id === null || trim(Auth::user()->division_id) === '') {
             return redirect()->back()->with('error', 'You are not in a division. Please contact your administrator.');
         }
 
@@ -117,7 +123,17 @@ class LeaveController extends Controller
 
         // Send notification email to the approver
         if ($leave->approver) {
-            $linkTanggapan = route('approver.leaves.show', $leave->id);
+            $token = Str::random(48);
+            ApprovalLink::create([
+                'model_type' => get_class($leave),   // App\Models\Leave
+                'model_id' => $leave->id,
+                'approver_user_id' => $leave->approver->id,
+                'level' => 2,
+                'scope' => 'both',             // boleh approve & reject
+                'token' => hash('sha256', $token), // simpan hash, kirim raw
+                'expires_at' => now()->addDays(3),  // masa berlaku
+            ]);
+            $linkTanggapan = route('public.approval.show', $token);
             $pesan = "Terdapat pengajuan cuti baru atas nama " . Auth::user()->name . ".
                 <br> Tanggal Mulai: {$request->date_start}
                 <br> Tanggal Selesai: {$request->date_end}
