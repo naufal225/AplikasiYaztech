@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ApproverController;
 
 use App\Exports\OvertimesExport;
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalLink;
 use App\Models\Overtime;
 use App\Models\User;
 use App\Roles;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class OvertimeController extends Controller
@@ -113,7 +115,7 @@ class OvertimeController extends Controller
 
             // Jika direject, cascade ke status_2 juga
             if ($validated['status_1'] === 'rejected') {
-                $overtime-->update([
+                $overtime->update([
                     'status_1' => 'rejected',
                     'note_1' => $validated['note_1'] ?? NULL,
                     'status_2' => 'rejected', // ikut rejected juga
@@ -128,8 +130,18 @@ class OvertimeController extends Controller
 
                 $manager = User::where('role', Roles::Manager->value)->first();
                 if ($manager) {
-                    $link = route('manager.overtimes.show', $overtime->id);
-                    $pesan = "Terdapat pengajuan cuti baru atas nama {$overtime->employee->name}.
+                    $token = Str::random(48);
+                    ApprovalLink::create([
+                        'model_type' => get_class($overtime),   // App\Models\Overtime
+                        'model_id' => $overtime->id,
+                        'approver_user_id' => $manager->id,
+                        'level' => 2,
+                        'scope' => 'both',             // boleh approve & reject
+                        'token' => hash('sha256', $token), // simpan hash, kirim raw
+                        'expires_at' => now()->addDays(3),  // masa berlaku
+                    ]);
+                    $link = route('public.approval.show', $token);
+                    $pesan = "Terdapat pengajuan perjalanan dinas baru atas nama {$overtime->employee->name}.
                           <br> Tanggal Mulai: {$overtime->date_start}
                           <br> Tanggal Selesai: {$overtime->date_end}
                           <br> Alasan: {$overtime->reason}";

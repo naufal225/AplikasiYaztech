@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\EmployeeController;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalLink;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Roles;
@@ -11,6 +12,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class OfficialTravelController extends Controller
 {
@@ -112,14 +114,25 @@ class OfficialTravelController extends Controller
 
         // Send notification email to the approver
         if ($officialTravel->approver) {
-            $linkTanggapan = route('approver.official-travels.show', $officialTravel->id);
+            $token = Str::random(48);
+            ApprovalLink::create([
+                'model_type' => get_class($officialTravel),   // App\Models\officialTravel
+                'model_id' => $officialTravel->id,
+                'approver_user_id' => $officialTravel->approver->id,
+                'level' => 1, // level 1 berarti arahnya ke team lead
+                'scope' => 'both',             // boleh approve & reject
+                'token' => hash('sha256', $token), // simpan hash, kirim raw
+                'expires_at' => now()->addDays(3),  // masa berlaku
+            ]);
+
+            $linkTanggapan = route('public.approval.show', $token);
 
             $pesan = "Terdapat pengajuan perjalanan dinas baru atas nama " . Auth::user()->name . ".
                 <br> Tanggal Mulai: " . $officialTravel->date_start->format('l, d/m/Y') . "
                 <br> Tanggal/Waktu Akhir: " . $officialTravel->date_end->format('l, d/m/Y') . "
                 <br> Total Waktu: " . $totalDays . " days";
 
-            Mail::to($officialTravel->approver->email)->send(
+            Mail::to($officialTravel->approver->email)->queue(
                 new \App\Mail\SendMessage(
                     namaPengaju: Auth::user()->name,
                     pesan: $pesan,

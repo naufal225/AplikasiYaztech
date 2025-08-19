@@ -128,7 +128,7 @@ class LeaveController extends Controller
                 'model_type' => get_class($leave),   // App\Models\Leave
                 'model_id' => $leave->id,
                 'approver_user_id' => $leave->approver->id,
-                'level' => 2,
+                'level' => 1, // level 1 berarti arahnya ke team lead
                 'scope' => 'both',             // boleh approve & reject
                 'token' => hash('sha256', $token), // simpan hash, kirim raw
                 'expires_at' => now()->addDays(3),  // masa berlaku
@@ -139,7 +139,7 @@ class LeaveController extends Controller
                 <br> Tanggal Selesai: {$request->date_end}
                 <br> Alasan: {$request->reason}";
 
-            Mail::to($leave->approver->email)->send(
+            Mail::to($leave->approver->email)->queue(
                 new \App\Mail\SendMessage(
                     namaPengaju: Auth::user()->name,
                     pesan: $pesan,

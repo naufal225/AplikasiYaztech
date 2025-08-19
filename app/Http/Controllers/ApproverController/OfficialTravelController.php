@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ApproverController;
 
 use App\Exports\OfficialTravelsExport;
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalLink;
 use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Roles;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class OfficialTravelController extends Controller
@@ -128,7 +130,17 @@ class OfficialTravelController extends Controller
 
                 $manager = User::where('role', Roles::Manager->value)->first();
                 if ($manager) {
-                    $link = route('manager.official-travels.show', $officialTravel->id);
+                    $token = Str::random(48);
+                    ApprovalLink::create([
+                        'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
+                        'model_id' => $officialTravel->id,
+                        'approver_user_id' => $manager->id,
+                        'level' => 2,
+                        'scope' => 'both',             // boleh approve & reject
+                        'token' => hash('sha256', $token), // simpan hash, kirim raw
+                        'expires_at' => now()->addDays(3),  // masa berlaku
+                    ]);
+                    $link = route('public.approval.show', $token);
                     $pesan = "Terdapat pengajuan perjalanan dinas baru atas nama {$officialTravel->employee->name}.
                           <br> Tanggal Mulai: {$officialTravel->date_start}
                           <br> Tanggal Selesai: {$officialTravel->date_end}

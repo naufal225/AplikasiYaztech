@@ -92,7 +92,7 @@
             <p class="mt-1 text-sm text-gray-600">Please review the request and provide your decision</p>
         </div>
 
-        <form method="POST" action="{{ route('public.approval.act', $link->token) }}" class="p-6">
+        <form method="POST" action="{{ route('public.approval.act', $rawToken) }}" class="p-6">
             @csrf
 
             <!-- Note Field -->

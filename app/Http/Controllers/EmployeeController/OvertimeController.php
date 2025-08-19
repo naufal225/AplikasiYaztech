@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\EmployeeController;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalLink;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Roles;
@@ -11,6 +12,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Str;
 
 class OvertimeController extends Controller
 {
@@ -51,13 +53,13 @@ class OvertimeController extends Controller
         }
 
         if ($request->filled('from_date')) {
-            $query->where('date_start', '>=', 
+            $query->where('date_start', '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $query->where('date_end', '<=', 
+            $query->where('date_end', '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -229,7 +231,17 @@ class OvertimeController extends Controller
 
         // Send notification email to the approver
         if ($overtime->approver) {
-            $linkTanggapan = route('approver.overtimes.show', $overtime->id);
+            $token = \Illuminate\Support\Str::random(48);
+            ApprovalLink::create([
+                'model_type' => get_class($overtime),   // App\Models\overtime
+                'model_id' => $overtime->id,
+                'approver_user_id' => $overtime->approver->id,
+                'level' => 1, // level 1 berarti arahnya ke team lead
+                'scope' => 'both',             // boleh approve & reject
+                'token' => hash('sha256', $token), // simpan hash, kirim raw
+                'expires_at' => now()->addDays(3),  // masa berlaku
+            ]);
+             $linkTanggapan = route('public.approval.show', $token);
 
             $hours = floor($overtimeMinutes / 60);
             $minutes = $overtimeMinutes % 60;
@@ -238,7 +250,7 @@ class OvertimeController extends Controller
                 <br> Tanggal/Waktu Akhir: " . $end->format('d/m/Y H:i') . "
                 <br> Total Waktu: " . $hours . " hours " . $minutes . " minutes";
 
-            Mail::to($overtime->approver->email)->send(
+            Mail::to($overtime->approver->email)->queue(
                 new \App\Mail\SendMessage(
                     namaPengaju: Auth::user()->name,
                     pesan: $pesan,
