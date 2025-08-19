@@ -20,7 +20,6 @@ class OfficialTravelController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
         $queryReal = OfficialTravel::whereHas('employee', function ($q) {
                 $q->where('role', Roles::Employee->value);
             });

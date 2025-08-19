@@ -20,7 +20,6 @@ class ReimbursementController extends Controller
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
         $queryReal = Reimbursement::whereHas('employee', function ($q) {
                 $q->where('role', Roles::Employee->value);
             });
