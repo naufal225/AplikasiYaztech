@@ -51,13 +51,13 @@
                     <span class="font-medium">Reimbursement</span>
                 </a>
 
-                <a href="{{ route('employee.overtimes.index') }}"
+                <a href="{{ route('finance.overtimes.index') }}"
                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('finance.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
                     <i class="w-5 mr-3 text-center fas fa-clock"></i>
                     <span class="font-medium">Overtime</span>
                 </a>
 
-                <a href="{{ route('employee.official-travels.index') }}"
+                <a href="{{ route('finance.official-travels.index') }}"
                    class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('finance.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
                     <i class="w-5 mr-3 text-center fas fa-plane"></i>
                     <span class="font-medium">Official Travel</span>
