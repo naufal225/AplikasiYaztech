@@ -4,7 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\ApprovalLink;
+use App\Models\User;
+use App\Roles;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class PublicApprovalController extends Controller
 {
@@ -18,7 +23,9 @@ class PublicApprovalController extends Controller
         $canApprove = in_array($link->scope, ['approve', 'both']);
         $canReject = in_array($link->scope, ['reject', 'both']);
 
-        return view('public-approval.show', compact('link', 'subject', 'canApprove', 'canReject'));
+        $rawToken = $token;
+
+        return view('public-approval.show', compact('link', 'subject', 'canApprove', 'canReject', 'rawToken'));
     }
 
     public function act(Request $request, string $token)
@@ -57,7 +64,58 @@ class PublicApprovalController extends Controller
                         'status_1' => 'approved',
                         'note_1' => $validated['note'] ?? null,
                     ]);
-                    // (Opsional) kirim email ke manager di sini, atau di listener event
+
+                    // Flag untuk mengirim email setelah commit
+                    $notifyManager = true;
+
+                    if ($notifyManager) {
+                        DB::afterCommit(function () use ($subject) {
+                            // 1) Tentukan manager penerima
+                            $manager = User::where('role', Roles::Manager->value)->first();
+                            if (!$manager) {
+                                // Tidak ada manager, ya sudah: fail-silent atau log
+                                Log::warning('No manager found for subject id ' . $subject->id . ' type ' . get_class($subject));
+                                return;
+                            }
+
+                            // 2) Buat token & simpan hash di DB untuk approval Level 2 (Manager)
+                            $rawToken = Str::random(48);
+                            ApprovalLink::create([
+                                'model_type' => get_class($subject),
+                                'model_id' => $subject->id,
+                                'approver_user_id' => $manager->id,
+                                'level' => 2,            // Manager
+                                'scope' => 'both',       // boleh approve/reject
+                                'token' => hash('sha256', $rawToken), // simpan HASH
+                                'expires_at' => now()->addDays(3),
+                            ]);
+
+                            // 3) Buat URL publik untuk manager (pakai RAW token!)
+                            $publicUrl = route('public.approval.show', $rawToken);
+
+                            // 4) Susun pesan email
+                            $employeeName = $subject->employee->name ?? 'Unknown';
+                            $start = $subject->date_start;
+                            $end = $subject->date_end;
+                            $reason = $subject->reason ?? '-';
+                            $pesan = "Terdapat pengajuan perjalanan dinas baru atas nama {$employeeName}.
+                                <br> Tanggal Mulai: {$start}
+                                <br> Tanggal Selesai: {$end}
+                                <br> Alasan: {$reason}";
+
+                            // 5) Kirim email via queue
+                            Mail::to($manager->email)->queue(
+                                new \App\Mail\SendMessage(
+                                    namaPengaju: $employeeName,
+                                    pesan: $pesan,
+                                    namaApprover: $manager->name,
+                                    linkTanggapan: $publicUrl,
+                                    emailPengaju: $subject->employee->email ?? null
+                                )
+                            );
+                        });
+                    }
+
                 }
             } elseif ($link->level === 2) {
                 if ($subject->status_1 !== 'approved')

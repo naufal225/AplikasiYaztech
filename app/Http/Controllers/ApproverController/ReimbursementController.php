@@ -4,6 +4,7 @@ namespace App\Http\Controllers\ApproverController;
 
 use App\Exports\OvertimesExport;
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalLink;
 use App\Models\Reimbursement;
 use App\Models\User;
 use App\Roles;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReimbursementController extends Controller
@@ -112,8 +114,18 @@ class ReimbursementController extends Controller
 
                 $manager = User::where('role', Roles::Manager->value)->first();
                 if ($manager) {
-                    $link = route('manager.reimbursements.show', $reimbursement->id);
-                    $pesan = "Terdapat pengajuan cuti baru atas nama {$reimbursement->employee->name}.
+                    $token = Str::random(48);
+                    ApprovalLink::create([
+                        'model_type' => get_class($reimbursement),   // App\Models\Reimbursement
+                        'model_id' => $reimbursement->id,
+                        'approver_user_id' => $manager->id,
+                        'level' => 2,
+                        'scope' => 'both',             // boleh approve & reject
+                        'token' => hash('sha256', $token), // simpan hash, kirim raw
+                        'expires_at' => now()->addDays(3),  // masa berlaku
+                    ]);
+                    $link = route('public.approval.show', $token);
+                    $pesan = "Terdapat pengajuan perjalanan dinas baru atas nama {$reimbursement->employee->name}.
                           <br> Tanggal Mulai: {$reimbursement->date_start}
                           <br> Tanggal Selesai: {$reimbursement->date_end}
                           <br> Alasan: {$reimbursement->reason}";

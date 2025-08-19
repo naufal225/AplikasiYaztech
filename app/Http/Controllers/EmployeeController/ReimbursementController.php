@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\EmployeeController;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalLink;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Reimbursement;
@@ -122,13 +123,25 @@ class ReimbursementController extends Controller
 
         // Send notification email to the approver
         if ($reimbursement->approver) {
+            $token = \Illuminate\Support\Str::random(48);
+            ApprovalLink::create([
+                'model_type' => get_class($reimbursement),   // App\Models\reim$reimbursement
+                'model_id' => $reimbursement->id,
+                'approver_user_id' => $reimbursement->approver->id,
+                'level' => 1, // level 1 berarti arahnya ke team lead
+                'scope' => 'both',             // boleh approve & reject
+                'token' => hash('sha256', $token), // simpan hash, kirim raw
+                'expires_at' => now()->addDays(3),  // masa berlaku
+            ]);
+             $linkTanggapan = route('public.approval.show', $token);
+
             $linkTanggapan = route('approver.reimbursements.show', $reimbursement->id);
 
             $pesan = "Terdapat pengajuan reimbursement baru atas nama " . Auth::user()->name . ".
-          <br> Total: Rp " . number_format($reimbursement->total, 0, ',', '.') . "
-          <br> Tanggal: {$request->date}";
+                <br> Total: Rp " . number_format($reimbursement->total, 0, ',', '.') . "
+                <br> Tanggal: {$request->date}";
 
-            Mail::to($reimbursement->approver->email)->send(
+            Mail::to($reimbursement->approver->email)->queue(
                 new \App\Mail\SendMessage(
                     namaPengaju: Auth::user()->name,
                     pesan: $pesan,
