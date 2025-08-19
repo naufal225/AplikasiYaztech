@@ -104,7 +104,7 @@
                 <table class="min-w-full divide-y divide-neutral-200">
                     <thead class="bg-neutral-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Duration</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Team Lead</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Manager</th>
@@ -194,7 +194,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="h-64 text-center align-middle">
+                                <td colspan="9" class="h-64 text-center align-middle">
                                     <div class="flex flex-col items-center justify-center h-full text-neutral-400">
                                         <i class="fas fa-inbox text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No leave requests found</p>

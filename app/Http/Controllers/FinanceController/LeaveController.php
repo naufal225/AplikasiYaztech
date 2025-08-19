@@ -17,9 +17,11 @@ class LeaveController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $query = $query = Leave::whereHas('employee', function ($q) {
+        $queryReal = Leave::whereHas('employee', function ($q) {
                 $q->where('role', Roles::Employee->value);
-            })
+            });
+
+        $query = (clone $queryReal)
             ->where('status_1', 'approved')
             ->where('status_2', 'approved')
             ->with(['employee', 'approver'])
@@ -46,7 +48,7 @@ class LeaveController extends Controller
         $leaves = $query->paginate(10);
         $counts = $queryClone->withFinalStatusCount()->first();
 
-        $totalRequests = (int) $queryClone->count();
+        $totalRequests = (int) $queryReal->count();
         $approvedRequests = (int) $counts->approved;
 
         $manager = User::where('role', Roles::Manager->value)->first();
@@ -59,12 +61,6 @@ class LeaveController extends Controller
      */
     public function show(Leave $leave)
     {
-        // Check if the user has permission to view this leave
-        $user = Auth::user();
-        if ($user->id !== $leave->employee_id && ($user->role == Roles::Admin->value || $user->role == Roles::Manager->value || $user->role == Roles::Approver->value)) {
-            abort(403, 'Unauthorized action.');
-        }
-
         $leave->load(['employee', 'approver']);
         return view('Finance.leaves.leave-detail', compact('leave'));
     }

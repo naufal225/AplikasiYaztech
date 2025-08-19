@@ -104,6 +104,17 @@ class ReimbursementController extends Controller
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
             'invoice_path' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ],[
+            'customer_id.required' => 'Customer harus dipilih.',
+            'customer_id.exists' => 'Customer tidak valid.',
+            'total.required' => 'Total harus diisi.',
+            'total.numeric' => 'Total harus berupa angka.',
+            'total.min' => 'Total tidak boleh kurang dari 0.',
+            'date.required' => 'Tanggal harus diisi.',
+            'date.date' => 'Format tanggal tidak valid.',
+            'invoice_path.file' => 'File yang diupload tidak valid.',
+            'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
+            'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
         ]);
 
         $reimbursement = new Reimbursement();
@@ -224,6 +235,17 @@ class ReimbursementController extends Controller
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
             'invoice_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ],[
+            'customer_id.required' => 'Customer harus dipilih.',
+            'customer_id.exists' => 'Customer tidak valid.',
+            'total.required' => 'Total harus diisi.',
+            'total.numeric' => 'Total harus berupa angka.',
+            'total.min' => 'Total tidak boleh kurang dari 0.',
+            'date.required' => 'Tanggal harus diisi.',
+            'date.date' => 'Format tanggal tidak valid.',
+            'invoice_path.file' => 'File yang diupload tidak valid.',
+            'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
+            'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
         ]);
 
         $reimbursement->customer_id = $request->customer_id;

@@ -198,7 +198,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="px-6 py-12 text-center"> {{-- Updated colspan --}}
+                                <td colspan="9" class="px-6 py-12 text-center"> {{-- Updated colspan --}}
                                     <div class="text-neutral-400">
                                         <i class="fas fa-inbox text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No reimbursement requests found</p>
