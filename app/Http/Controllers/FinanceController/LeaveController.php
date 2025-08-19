@@ -16,7 +16,6 @@ class LeaveController extends Controller
 {
     public function index(Request $request)
     {
-        $user = Auth::user();
         $queryReal = Leave::whereHas('employee', function ($q) {
                 $q->where('role', Roles::Employee->value);
             });
