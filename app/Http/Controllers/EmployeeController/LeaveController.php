@@ -108,6 +108,15 @@ class LeaveController extends Controller
             'date_start' => 'required|date',
             'date_end' => 'required|date|after_or_equal:date_start',
             'reason' => 'required|string|max:1000',
+        ],[
+            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
+            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
+            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
+            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
+            'reason.required' => 'Alasan harus diisi.',
+            'reason.string' => 'Alasan harus berupa teks.',
+            'reason.max' => 'Alasan tidak boleh lebih dari 1000 karakter.',
         ]);
 
         if (!Auth::user()->division_id) {
@@ -234,6 +243,15 @@ class LeaveController extends Controller
             'date_start' => 'required|date',
             'date_end' => 'required|date|after_or_equal:date_start',
             'reason' => 'required|string|max:1000',
+        ],[
+            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
+            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
+            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
+            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
+            'reason.required' => 'Alasan harus diisi.',
+            'reason.string' => 'Alasan harus berupa teks.',
+            'reason.max' => 'Alasan tidak boleh lebih dari 1000 karakter.',
         ]);
 
         $leave->date_start = $request->date_start;
