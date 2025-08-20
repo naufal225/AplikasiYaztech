@@ -108,7 +108,7 @@ class LeaveController extends Controller
             'date_start' => 'required|date',
             'date_end' => 'required|date|after_or_equal:date_start',
             'reason' => 'required|string|max:1000',
-        ],[
+        ], [
             'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
             'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
             'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
@@ -133,15 +133,8 @@ class LeaveController extends Controller
             $leave->status_2 = 'pending';
             $leave->save();
 
-            // pastikan broadcast SETELAH commit
-            DB::afterCommit(function () use ($leave) {
-                $fresh = $leave->fresh(); // ambil ulang (punya created_at dll)
-                // dd("jalan");
-                event(new \App\Events\LeaveSubmitted($fresh, Auth::user()->division_id));
-                // LeaveSubmitted::dispatch($leave, Auth::user()->division_id);
-            });
-
-            // --- Email ke approver (opsional) ---
+            $tokenRaw = null;
+            // --- Email ke approver ---
             if ($leave->approver) {
                 $tokenRaw = Str::random(48);
                 \App\Models\ApprovalLink::create([
@@ -154,10 +147,26 @@ class LeaveController extends Controller
                     'expires_at' => now()->addDays(3),
                 ]);
 
+            }
+
+            // pastikan broadcast SETELAH commit
+            DB::afterCommit(function () use ($leave, $request, $tokenRaw) {
+                $fresh = $leave->fresh(); // ambil ulang (punya created_at dll)
+
+                event(new \App\Events\LeaveSubmitted($fresh, Auth::user()->division_id));
+
+                if (!$fresh || !$fresh->approver || !$tokenRaw) {
+                    return;
+                }
+
                 $linkTanggapan = route('public.approval.show', $tokenRaw); // pastikan route param sesuai
+
+                $startFormatted = Carbon::parse($request->date_start)->translatedFormat('l, d/m/Y');
+                $endFormatted = Carbon::parse($request->date_end)->translatedFormat('l, d/m/Y');
+
                 $pesan = "Terdapat pengajuan cuti baru atas nama " . Auth::user()->name . ".
-                <br> Tanggal Mulai: {$request->date_start}
-                <br> Tanggal Selesai: {$request->date_end}
+                <br> Tanggal Mulai: {$startFormatted}
+                <br> Tanggal Selesai: {$endFormatted}
                 <br> Alasan: {$request->reason}";
 
                 Mail::to($leave->approver->email)->queue(
@@ -169,7 +178,8 @@ class LeaveController extends Controller
                         emailPengaju: Auth::user()->email
                     )
                 );
-            }
+            });
+
         });
 
         return redirect()->route('employee.leaves.index')
@@ -243,7 +253,7 @@ class LeaveController extends Controller
             'date_start' => 'required|date',
             'date_end' => 'required|date|after_or_equal:date_start',
             'reason' => 'required|string|max:1000',
-        ],[
+        ], [
             'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
             'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
             'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',

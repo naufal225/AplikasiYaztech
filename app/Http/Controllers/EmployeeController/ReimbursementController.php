@@ -14,6 +14,7 @@ use App\Roles;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 
 class ReimbursementController extends Controller
 {
@@ -34,27 +35,29 @@ class ReimbursementController extends Controller
             $query->where(function ($q) use ($status) {
                 if ($status === 'rejected') {
                     $q->where('status_1', 'rejected')
-                    ->orWhere('status_2', 'rejected');
+                        ->orWhere('status_2', 'rejected');
                 } elseif ($status === 'approved') {
                     $q->where('status_1', 'approved')
-                    ->where('status_2', 'approved');
+                        ->where('status_2', 'approved');
                 } elseif ($status === 'pending') {
                     $q->where(function ($sub) {
                         $sub->where('status_1', 'pending')
                             ->orWhere('status_2', 'pending');
                     })
-                    ->where('status_1', '!=', 'rejected')
-                    ->where('status_2', '!=', 'rejected')
-                    ->where(function ($sub) {
-                        $sub->where('status_1', '!=', 'approved')
-                            ->orWhere('status_2', '!=', 'approved');
-                    });
+                        ->where('status_1', '!=', 'rejected')
+                        ->where('status_2', '!=', 'rejected')
+                        ->where(function ($sub) {
+                            $sub->where('status_1', '!=', 'approved')
+                                ->orWhere('status_2', '!=', 'approved');
+                        });
                 }
             });
         }
 
         if ($request->filled('from_date')) {
-            $query->where('date_start', '>=',
+            $query->where(
+                'date_start',
+                '>=',
                 Carbon::parse($request->from_date)
                     ->startOfDay()
                     ->timezone('Asia/Jakarta')
@@ -62,7 +65,9 @@ class ReimbursementController extends Controller
         }
 
         if ($request->filled('to_date')) {
-            $query->where('date_start', '<=',
+            $query->where(
+                'date_start',
+                '<=',
                 Carbon::parse($request->to_date)
                     ->endOfDay()
                     ->timezone('Asia/Jakarta')
@@ -104,7 +109,7 @@ class ReimbursementController extends Controller
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
             'invoice_path' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ],[
+        ], [
             'customer_id.required' => 'Customer harus dipilih.',
             'customer_id.exists' => 'Customer tidak valid.',
             'total.required' => 'Total harus diisi.',
@@ -117,50 +122,67 @@ class ReimbursementController extends Controller
             'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
         ]);
 
-        $reimbursement = new Reimbursement();
-        $reimbursement->employee_id = Auth::id();
-        $reimbursement->customer_id = $request->customer_id;
-        $reimbursement->total = $request->total;
-        $reimbursement->date = $request->date;
-        $reimbursement->status_1 = 'pending';
-        $reimbursement->status_2 = 'pending';
+        DB::transaction(function () use ($request) {
+            $reimbursement = new Reimbursement();
+            $reimbursement->employee_id = Auth::id();
+            $reimbursement->customer_id = $request->customer_id;
+            $reimbursement->total = $request->total;
+            $reimbursement->date = $request->date;
+            $reimbursement->status_1 = 'pending';
+            $reimbursement->status_2 = 'pending';
 
-        if ($request->hasFile('invoice_path')) {
-            $path = $request->file('invoice_path')->store('reimbursement_invoices', 'public');
-            $reimbursement->invoice_path = $path;
-        }
+            if ($request->hasFile('invoice_path')) {
+                $path = $request->file('invoice_path')->store('reimbursement_invoices', 'public');
+                $reimbursement->invoice_path = $path;
+            }
 
-        $reimbursement->save();
+            $reimbursement->save();
 
-        // Send notification email to the approver
-        if ($reimbursement->approver) {
-            $token = \Illuminate\Support\Str::random(48);
-            ApprovalLink::create([
-                'model_type' => get_class($reimbursement),   // App\Models\reim$reimbursement
-                'model_id' => $reimbursement->id,
-                'approver_user_id' => $reimbursement->approver->id,
-                'level' => 1, // level 1 berarti arahnya ke team lead
-                'scope' => 'both',             // boleh approve & reject
-                'token' => hash('sha256', $token), // simpan hash, kirim raw
-                'expires_at' => now()->addDays(3),  // masa berlaku
-            ]);
-             $linkTanggapan = route('public.approval.show', $token);
+            $token = null;
+            // Send notification email to the approver
+            if ($reimbursement->approver) {
+                $token = \Illuminate\Support\Str::random(48);
+                ApprovalLink::create([
+                    'model_type' => get_class($reimbursement),   // App\Models\reim$reimbursement
+                    'model_id' => $reimbursement->id,
+                    'approver_user_id' => $reimbursement->approver->id,
+                    'level' => 1, // level 1 berarti arahnya ke team lead
+                    'scope' => 'both',             // boleh approve & reject
+                    'token' => hash('sha256', $token), // simpan hash, kirim raw
+                    'expires_at' => now()->addDays(3),  // masa berlaku
+                ]);
 
-            $pesan = "Terdapat pengajuan reimbursement baru atas nama " . Auth::user()->name . ".
+            }
+
+            DB::afterCommit(function () use ($reimbursement, $request, $token) {
+                $fresh = $reimbursement->fresh(); // ambil ulang (punya created_at dll)
+                // dd("jalan");
+                event(new \App\Events\ReimbursementSubmitted($fresh, Auth::user()->division_id));
+
+                // Kalau tidak ada approver atau token, jangan kirim email
+                if (!$fresh || !$fresh->approver || !$token) {
+                    return;
+                }
+
+                $linkTanggapan = route('public.approval.show', $token);
+
+                $pesan = "Terdapat pengajuan reimbursement baru atas nama " . Auth::user()->name . ".
                 <br> Total: Rp " . number_format($reimbursement->total, 0, ',', '.') . "
                 <br> Tanggal: {$request->date}";
 
-            Mail::to($reimbursement->approver->email)->queue(
-                new \App\Mail\SendMessage(
-                    namaPengaju: Auth::user()->name,
-                    pesan: $pesan,
-                    namaApprover: $reimbursement->approver->name,
-                    linkTanggapan: $linkTanggapan,
-                    emailPengaju: Auth::user()->email,
-                    attachmentPath: $reimbursement->invoice_path
-                )
-            );
-        }
+                Mail::to($reimbursement->approver->email)->queue(
+                    new \App\Mail\SendMessage(
+                        namaPengaju: Auth::user()->name,
+                        pesan: $pesan,
+                        namaApprover: $reimbursement->approver->name,
+                        linkTanggapan: $linkTanggapan,
+                        emailPengaju: Auth::user()->email,
+                        attachmentPath: $reimbursement->invoice_path
+                    )
+                );
+            });
+
+        });
 
         return redirect()->route('employee.reimbursements.index')
             ->with('success', 'Reimbursement request submitted successfully.');
@@ -233,7 +255,7 @@ class ReimbursementController extends Controller
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
             'invoice_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ],[
+        ], [
             'customer_id.required' => 'Customer harus dipilih.',
             'customer_id.exists' => 'Customer tidak valid.',
             'total.required' => 'Total harus diisi.',
@@ -281,7 +303,7 @@ class ReimbursementController extends Controller
                 'token' => hash('sha256', $token), // simpan hash, kirim raw
                 'expires_at' => now()->addDays(3),  // masa berlaku
             ]);
-             $linkTanggapan = route('public.approval.show', $token);
+            $linkTanggapan = route('public.approval.show', $token);
 
             $pesan = "Pengajuan pengajuan reimbursement milik " . Auth::user()->name . " telah dilakukan perubahan data.
                 <br> Total: Rp " . number_format($request->total, 0, ',', '.') . "
