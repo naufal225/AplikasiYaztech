@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\ApproverController;
 
+use App\Events\OvertimeLevelAdvanced;
 use App\Exports\OvertimesExport;
 use App\Http\Controllers\Controller;
 use App\Models\ApprovalLink;
@@ -54,6 +55,11 @@ class OvertimeController extends Controller
         $approvedRequests = (int) ($counts->approved ?? 0);
         $rejectedRequests = (int) ($counts->rejected ?? 0);
         $pendingRequests = (int) ($counts->pending ?? 0);
+
+         Overtime::whereNull('seen_by_approver_at')->where('status_1', 'pending')
+            ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
+            ->update(['seen_by_approver_at' => now()]);
+
 
         return view('approver.overtime.index', compact(
             'overtimes',
@@ -127,6 +133,8 @@ class OvertimeController extends Controller
                     'status_1' => 'approved',
                     'note_1' => $validated['note_1'] ?? NULL,
                 ]);
+
+                event(new OvertimeLevelAdvanced($overtime, Auth::user()->division_id, 'manager'));
 
                 $manager = User::where('role', Roles::Manager->value)->first();
                 if ($manager) {

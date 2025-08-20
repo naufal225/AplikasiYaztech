@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\ApproverController;
 
+use App\Events\OfficialTravelLevelAdvanced;
 use App\Exports\OfficialTravelsExport;
 use App\Http\Controllers\Controller;
 use App\Models\ApprovalLink;
@@ -54,6 +55,11 @@ class OfficialTravelController extends Controller
         $approvedRequests = (int) ($counts->approved ?? 0);
         $rejectedRequests = (int) ($counts->rejected ?? 0);
         $pendingRequests = (int) ($counts->pending ?? 0);
+
+         OfficialTravel::whereNull('seen_by_approver_at')->where('status_1', 'pending')
+            ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
+            ->update(['seen_by_approver_at' => now()]);
+
 
         return view('approver.official-travel.index', compact(
             'officialTravels',
@@ -127,6 +133,8 @@ class OfficialTravelController extends Controller
                     'status_1' => 'approved',
                     'note_1' => $validated['note_1'] ?? NULL,
                 ]);
+
+                 event(new OfficialTravelLevelAdvanced($officialTravel, Auth::user()->division_id, 'manager'));
 
                 $manager = User::where('role', Roles::Manager->value)->first();
                 if ($manager) {

@@ -192,7 +192,7 @@
                     <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                 </div>
                 <div class="p-6 space-y-3">
-                    <a href="{{ route('approver.official-travels.index') }}"
+                    <a href="{{ route('approver.reimbursements.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                         <i class="mr-2 fas fa-arrow-left"></i>
                         Back to List
@@ -212,7 +212,7 @@
                     <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
                 </div>
                 <div class="p-6">
-                    <form id="approvalForm" method="POST" action="{{ route('approver.official-travels.update', $reimbursement) }}">
+                    <form id="approvalForm" method="POST" action="{{ route('approver.reimbursements.update', $reimbursement) }}">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="status_1" id="status_1" value="">

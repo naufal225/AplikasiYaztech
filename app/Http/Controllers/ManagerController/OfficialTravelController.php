@@ -82,6 +82,9 @@ class OfficialTravelController extends Controller
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
+        OfficialTravel::whereNull('seen_by_manager_at')
+            ->update(['seen_by_manager_at' => now()]);
+
         return view('manager.official-travel.index', compact('officialTravels', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
