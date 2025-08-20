@@ -164,6 +164,7 @@ class OvertimeController extends Controller
                 event(new \App\Events\OvertimeSubmitted($fresh, Auth::user()->division_id));
 
                 // Kalau tidak ada approver atau token, jangan kirim email
+                
                 if (!$fresh || !$fresh->approver || !$token) {
                     return;
                 }
