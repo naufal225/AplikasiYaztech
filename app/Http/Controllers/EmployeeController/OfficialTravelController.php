@@ -12,6 +12,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class OfficialTravelController extends Controller
@@ -34,33 +35,37 @@ class OfficialTravelController extends Controller
             $query->where(function ($q) use ($status) {
                 if ($status === 'rejected') {
                     $q->where('status_1', 'rejected')
-                    ->orWhere('status_2', 'rejected');
+                        ->orWhere('status_2', 'rejected');
                 } elseif ($status === 'approved') {
                     $q->where('status_1', 'approved')
-                    ->where('status_2', 'approved');
+                        ->where('status_2', 'approved');
                 } elseif ($status === 'pending') {
                     $q->where(function ($sub) {
                         $sub->where('status_1', 'pending')
                             ->orWhere('status_2', 'pending');
                     })
-                    ->where('status_1', '!=', 'rejected')
-                    ->where('status_2', '!=', 'rejected')
-                    ->where(function ($sub) {
-                        $sub->where('status_1', '!=', 'approved')
-                            ->orWhere('status_2', '!=', 'approved');
-                    });
+                        ->where('status_1', '!=', 'rejected')
+                        ->where('status_2', '!=', 'rejected')
+                        ->where(function ($sub) {
+                            $sub->where('status_1', '!=', 'approved')
+                                ->orWhere('status_2', '!=', 'approved');
+                        });
                 }
             });
         }
 
         if ($request->filled('from_date')) {
-            $query->where('date_start', '>=',
+            $query->where(
+                'date_start',
+                '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $query->where('date_start', '<=',
+            $query->where(
+                'date_start',
+                '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -93,10 +98,10 @@ class OfficialTravelController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'date_start' => 'required|date|after_or_equal:today',
             'date_end' => 'required|date|after_or_equal:date_start',
-        ],[
+        ], [
             'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
             'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
             'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
@@ -104,50 +109,73 @@ class OfficialTravelController extends Controller
             'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
         ]);
 
-        $start = Carbon::parse($request->date_start);
-        $end = Carbon::parse($request->date_end);
+        $start = Carbon::parse($validated['date_start']);
+        $end = Carbon::parse($validated['date_end']);
 
         $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
 
-        $officialTravel = new OfficialTravel();
-        $officialTravel->employee_id = Auth::id();
-        $officialTravel->date_start = $start;
-        $officialTravel->date_end = $end;
-        $officialTravel->total = $totalDays;
-        $officialTravel->status_1 = 'pending';
-        $officialTravel->status_2 = 'pending';
-        $officialTravel->save();
+        $user = Auth::user();
+        $userName = $user->name;
+        $userEmail = $user->email;
+        $divisionId = $user->division_id;
 
-        // Send notification email to the approver
-        if ($officialTravel->approver) {
-            $token = Str::random(48);
-            ApprovalLink::create([
-                'model_type' => get_class($officialTravel),   // App\Models\officialTravel
-                'model_id' => $officialTravel->id,
-                'approver_user_id' => $officialTravel->approver->id,
-                'level' => 1, // level 1 berarti arahnya ke team lead
-                'scope' => 'both',             // boleh approve & reject
-                'token' => hash('sha256', $token), // simpan hash, kirim raw
-                'expires_at' => now()->addDays(3),  // masa berlaku
-            ]);
+        DB::transaction(function () use ($request, $start, $end, $totalDays, $user, $userName, $userEmail, $divisionId) {
+            $officialTravel = new OfficialTravel();
+            $officialTravel->employee_id = Auth::id();
+            $officialTravel->date_start = $start;
+            $officialTravel->date_end = $end;
+            $officialTravel->total = $totalDays;
+            $officialTravel->status_1 = 'pending';
+            $officialTravel->status_2 = 'pending';
+            $officialTravel->save();
 
-            $linkTanggapan = route('public.approval.show', $token);
 
-            $pesan = "Terdapat pengajuan perjalanan dinas baru atas nama " . Auth::user()->name . ".
+            // Siapkan token kalau ada approver
+            $tokenRaw = null;
+            // Send notification email to the approver
+            if ($officialTravel->approver) {
+                $tokenRaw = Str::random(48);
+                ApprovalLink::create([
+                    'model_type' => get_class($officialTravel),   // App\Models\officialTravel
+                    'model_id' => $officialTravel->id,
+                    'approver_user_id' => $officialTravel->approver->id,
+                    'level' => 1, // level 1 berarti arahnya ke team lead
+                    'scope' => 'both',             // boleh approve & reject
+                    'token' => hash('sha256', $tokenRaw), // simpan hash, kirim raw
+                    'expires_at' => now()->addDays(3),  // masa berlaku
+                ]);
+
+            }
+
+            DB::afterCommit(function () use ($officialTravel, $tokenRaw, $totalDays, $userName, $userEmail, $divisionId) {
+                $fresh = $officialTravel->fresh(); // ambil ulang (punya created_at dll)
+
+                event(new \App\Events\OfficialTravelSubmitted($fresh, $divisionId));
+
+                // Kalau tidak ada approver atau token, jangan kirim email
+                if (!$fresh || !$fresh->approver || !$tokenRaw) {
+                    return;
+                }
+
+                $linkTanggapan = route('public.approval.show', $tokenRaw);
+
+                $pesan = "Terdapat pengajuan perjalanan dinas baru atas nama " . $userName . ".
                 <br> Tanggal Mulai: " . $officialTravel->date_start->format('l, d/m/Y') . "
                 <br> Tanggal/Waktu Akhir: " . $officialTravel->date_end->format('l, d/m/Y') . "
                 <br> Total Waktu: " . $totalDays . " days";
 
-            Mail::to($officialTravel->approver->email)->queue(
-                new \App\Mail\SendMessage(
-                    namaPengaju: Auth::user()->name,
-                    pesan: $pesan,
-                    namaApprover: $officialTravel->approver->name,
-                    linkTanggapan: $linkTanggapan,
-                    emailPengaju: Auth::user()->email,
-                )
-            );
-        }
+                Mail::to($officialTravel->approver->email)->queue(
+                    new \App\Mail\SendMessage(
+                        namaPengaju: $userName,
+                        pesan: $pesan,
+                        namaApprover: $officialTravel->approver->name,
+                        linkTanggapan: $linkTanggapan,
+                        emailPengaju: $userEmail,
+                    )
+                );
+            });
+
+        });
 
         return redirect()->route('employee.official-travels.index')
             ->with('success', 'Official travel request submitted successfully. Total days: ' . $totalDays);
@@ -214,7 +242,7 @@ class OfficialTravelController extends Controller
         $request->validate([
             'date_start' => 'required|date|after_or_equal:today',
             'date_end' => 'required|date|after_or_equal:date_start',
-        ],[
+        ], [
             'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
             'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
             'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
