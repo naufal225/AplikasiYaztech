@@ -81,7 +81,7 @@ class LeaveController extends Controller
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
-        Leave::whereNull('seen_by_manager_at')->where('status_1', 'approved')->where('status_2', 'pending')
+        Leave::whereNull('seen_by_manager_at')
             ->update(['seen_by_manager_at' => now()]);
 
         return view('manager.leave-request.index', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));

@@ -81,6 +81,9 @@ class OvertimeController extends Controller
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
+        Overtime::whereNull('seen_by_manager_at')
+            ->update(['seen_by_manager_at' => now()]);
+
         return view('manager.overtime.index', compact('overtimes', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 

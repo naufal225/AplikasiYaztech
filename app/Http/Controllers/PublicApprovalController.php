@@ -6,10 +6,16 @@ use Illuminate\Http\Request;
 use App\Models\ApprovalLink;
 use App\Models\User;
 use App\Roles;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+
+use App\Events\LeaveLevelAdvanced;
+use App\Events\ReimbursementLevelAdvanced;
+use App\Events\OvertimeLevelAdvanced;
+use App\Events\OfficialTravelLevelAdvanced;
 
 class PublicApprovalController extends Controller
 {
@@ -77,6 +83,20 @@ class PublicApprovalController extends Controller
                                 Log::warning('No manager found for subject id ' . $subject->id . ' type ' . get_class($subject));
                                 return;
                             }
+                            
+                            $base = class_basename($subject); // "Leave", "OfficialTravel", "Overtime", "Reimbursement"
+                            $eventClass = "App\\Events\\{$base}LevelAdvanced"; // e.g. App\Events\LeaveLevelAdvanced
+
+                            if (!class_exists($eventClass)) {
+                                Log::error("Event class not found: {$eventClass}");
+                                return;
+                            }
+
+                            $divisionId = Auth::user()->division_id; // walau untuk manager channel tidak dipakai
+                            // pakai fresh biar field (timestamps, relasi) up-to-date
+                            $freshSubject = $subject->fresh();
+
+                            event(new $eventClass($freshSubject, $divisionId, 'manager'));
 
                             // 2) Buat token & simpan hash di DB untuk approval Level 2 (Manager)
                             $rawToken = Str::random(48);

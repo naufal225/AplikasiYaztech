@@ -14,4 +14,19 @@ window.Echo = new Echo({
     wsPort: import.meta.env.VITE_PUSHER_PORT,
     wssPort: import.meta.env.VITE_PUSHER_PORT,
     enabledTransports: ["ws", "wss"],
+    authorizer: (channel, options) => {
+    return {
+      authorize: (socketId, callback) => {
+        window.axios.post('/broadcasting/auth', {
+          socket_id: socketId,
+          channel_name: channel.name,
+        }).then(response => {
+          callback(false, response.data);
+        }).catch(error => {
+          console.error('[Echo auth error]', error?.response?.data || error);
+          callback(true, error);
+        });
+      }
+    };
+  }
 });

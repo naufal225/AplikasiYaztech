@@ -61,22 +61,18 @@
                     .listen('.leave.submitted', (e) => {
                         console.log('[Echo] leave.submitted received', e);
                         incrementBadge(badgeLeave);
-                        if (typeof loadLeaveTable === 'function') loadLeaveTable();
                     })
                     .listen('.official-travel.submitted', (e) => {
                         console.log('[Echo] official-travel.submitted received', e);
                         incrementBadge(badgeTravel);
-                        if (typeof loadTravelTable === 'function') loadTravelTable();
                     })
                     .listen('.overtime.submitted', (e) => {
                         console.log('[Echo] overtime.submitted received', e);
                         incrementBadge(badgeOvertime);
-                        if (typeof loadLeaveTable === 'function') loadLeaveTable();
                     })
                     .listen('.reimbursement.submitted', (e) => {
                         console.log('[Echo] reimbursement.submitted received', e);
                         incrementBadge(badgeReimbursement);
-                        if (typeof loadTravelTable === 'function') loadTravelTable();
                     });
             }
 

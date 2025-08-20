@@ -9,10 +9,9 @@ Broadcast::channel('approver.division.{divisionId}', function ($user, $divisionI
         && (int)$user->division_id === (int)$divisionId;
 });
 
-Broadcast::channel('manager.division.{divisionId}', function ($user, $divisionId) {
+Broadcast::channel('manager.approval', function ($user) {
     return $user
-        && $user->role === Roles::Manager->value
-        && (int)$user->division_id === (int)$divisionId;
+        && $user->role === Roles::Manager->value;
 });
 
 Broadcast::channel('send-message', function ($user) {

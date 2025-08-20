@@ -50,13 +50,11 @@
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
             <span class="font-medium">Leave Requests</span>
 
-            @if($unseenLeaveCount > 0)
             <span id="leave-badge"
                 class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-1 py-0.5 min-w-[1.25rem]"
                 style="{{ $unseenLeaveCount > 0 ? '' : 'display: none' }}">
                 {{ $unseenLeaveCount }}
             </span>
-            @endif
         </a>
 
         <a href="{{ route('approver.reimbursements.index') }}" id="reimbursement-nav" data-role="{{ Auth::user()->role }}"
@@ -66,13 +64,11 @@
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
             <span class="font-medium">Reimbursement Requests</span>
 
-            @if($unseenReimbursementCount > 0)
             <span id="reimbursement-badge"
                 class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-1 py-0.5 min-w-[1.25rem]"
                 style="{{ $unseenReimbursementCount > 0 ? '' : 'display: none' }}">
                 {{ $unseenReimbursementCount }}
             </span>
-            @endif
         </a>
 
         <a href="{{ route('approver.overtimes.index') }}" id="overtime-nav" data-role="{{ Auth::user()->role }}"
@@ -82,13 +78,11 @@
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
             <span class="font-medium">Overtime Requests</span>
 
-            @if($unseenOvertimeCount > 0)
             <span id="overtime-badge"
                 class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-1 py-0.5 min-w-[1.25rem]"
                 style="{{ $unseenOvertimeCount > 0 ? '' : 'display: none' }}">
                 {{ $unseenOvertimeCount }}
             </span>
-            @endif
         </a>
 
         <a href="{{ route('approver.official-travels.index') }}" id="official-travel-nav" data-role="{{ Auth::user()->role }}"
@@ -98,13 +92,11 @@
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
             <span class="font-medium">Official Travel Requests</span>
 
-            @if($unseenOfficialTravelCount > 0)
             <span id="official-travel-badge"
-                class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-1 py-0.5 min-w-[1.25rem]"
+                class="ml-auto inline-flex items-center justify-center rounded-full {{ $unseenOfficialTravelCount > 0 ? '' : 'opacity-0' }} bg-red-600 text-white text-xs font-bold px-1 py-0.5 min-w-[1.25rem]"
                 style="{{ $unseenOfficialTravelCount > 0 ? '' : 'display: none' }}">
                 {{ $unseenOfficialTravelCount }}
             </span>
-            @endif
         </a>
 
     </nav>

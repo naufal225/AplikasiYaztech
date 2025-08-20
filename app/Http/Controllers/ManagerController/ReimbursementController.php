@@ -81,6 +81,9 @@ class ReimbursementController extends Controller
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
+        Reimbursement::whereNull('seen_by_manager_at')
+            ->update(['seen_by_manager_at' => now()]);
+
         return view('manager.reimbursement.index', compact('reimbursements', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 

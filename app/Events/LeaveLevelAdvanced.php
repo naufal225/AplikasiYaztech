@@ -25,7 +25,7 @@ class LeaveLevelAdvanced implements ShouldBroadcast
     public function broadcastOn()
     {
         return $this->newLevel === 'manager'
-            ? new PrivateChannel("manager.division.{$this->divisionId}")
+            ? new PrivateChannel("manager.approval")
             : new PrivateChannel("approver.division.{$this->divisionId}");
     }
     public function broadcastAs()

@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manager Dashboard</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @stack('styles')
 </head>
@@ -39,36 +39,50 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-    const nav = document.getElementById('leave-nav');
-    const badgeEl = document.getElementById('leave-badge');
-    if (!nav || !badgeEl || !window.Echo) return;
+            const leaveNav = document.getElementById('leave-nav');
+            const officialTravelNav = document.getElementById('official-travel-nav');
+            const overtimeNav = document.getElementById('overtime-nav');
+            const reimbursementlNav = document.getElementById('reimbursement-nav');
+            const badgeLeave = document.getElementById('leave-badge');
+            const badgeTravel = document.getElementById('official-travel-badge');
+            const badgeOvertime = document.getElementById('overtime-badge');
+            const badgeReimbursement = document.getElementById('reimbursement-badge');
 
-    const role = nav.dataset.role;
-    const divisionId = nav.dataset.divisionId;
+            if (!leaveNav || !officialTravelNav || !reimbursementlNav || !overtimeNav || !window.Echo) return;
 
-    function incrementBadge() {
-        let current = parseInt(badgeEl.textContent) || 0;
-        current++;
-        badgeEl.textContent = current;
-        badgeEl.style.display = 'inline-flex';
-    }
+            const role = leaveNav.dataset.role;
+            const divisionId = leaveNav.dataset.divisionId;
 
-    if (role === 'approver') {
-        window.Echo.private(`approver.division.${divisionId}`)
-            .listen('.leave.submitted', (e) => {
-                console.log('[Echo] leave.submitted received', e);
-                incrementBadge();
-                if (typeof loadLeaveTable === 'function') loadLeaveTable();
-            });
-    }
+            function incrementBadge(badgeElement) {
+                if (!badgeElement) return;
+                let current = parseInt(badgeElement.textContent) || 0;
+                badgeElement.textContent = current + 1;
+                badgeElement.style.display = 'inline-flex';
+            }
+            if (role === 'manager') {
+                window.Echo.private(`manager.approval`)
+                    .listen('.leave.level-advanced', (e) => {
+                        console.log('[Echo] leave.level-advanced received', e);
+                        incrementBadge(badgeLeave);
+                    })
+                    .listen('.official-travel.level-advanced', (e) => {
+                        console.log('[Echo] official-travel.level-advanced received', e);
+                        incrementBadge(badgeTravel);
+                    })
+                    .listen('.overtime.level-advanced', (e) => {
+                        console.log('[Echo] overtime.level-advanced received', e);
+                        incrementBadge(badgeOvertime);
+                    })
+                    .listen('.reimbursement.level-advanced', (e) => {
+                        console.log('[Echo] reimbursement.level-advanced received', e);
+                        incrementBadge(badgeReimbursement);
+                    });
+            }
 
-    if (role === 'manager') {
-        window.Echo.private(`manager.division.${divisionId}`)
-            .listen('.leave.level-advanced', (e) => {
-                if (e.newLevel === 'manager') incrementBadge();
-            });
-    }
-});
+        });
+    </script>
+
+    <script>
         // Sidebar Toggle Functionality - Fixed
         const sidebarToggle = document.getElementById('sidebar-toggle');
         const sidebar = document.getElementById('sidebar');
