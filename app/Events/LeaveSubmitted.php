@@ -12,7 +12,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class LeaveSubmitted implements ShouldBroadcastNow {
+class LeaveSubmitted implements ShouldBroadcast {
     use Dispatchable, InteractsWithSockets, SerializesModels;
     public $leave, $divisionId;
 

@@ -18,49 +18,68 @@
             <span class="font-medium">Dashboard</span>
         </a>
 
-         @php
-        $isApprover = Auth::user()->role === 'approver';
-        $isManager = Auth::user()->role === 'manager';
-        $unseenCount = 0;
-        $unseenCount = \App\Models\Leave::whereNull('seen_by_manager_at')
+        @php
+        $leaveCount = \App\Models\Leave::whereNull('seen_by_manager_at')
         ->where('status_2','pending')
         ->where('status_1', '!=', 'pending')
         ->count();
 
+        $reimbursementCount = \App\Models\Reimbursement::whereNull('seen_by_manager_at')
+        ->where('status_2','pending')
+        ->count();
+
+        $overtimeCount = \App\Models\Overtime::whereNull('seen_by_manager_at')
+        ->where('status','pending')
+        ->count();
+
+        $travelCount = \App\Models\OfficialTravel::whereNull('seen_by_manager_at')
+        ->where('status','pending')
+        ->count();
         @endphp
 
-        <a href="{{ route('manager.leaves.index') }}" id="leave-nav" data-role="{{ Auth::user()->role }}"
-            data-division-id="{{ Auth::user()->division_id }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
-            <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
+        <a href="{{ route('manager.leaves.index') }}" class="flex items-center ...">
+            <i class="w-5 mr-3 fas fa-plane-departure"></i>
             <span class="font-medium">Leave Requests</span>
-
-            @if($unseenCount > 0)
-            <span id="leave-badge"
-                class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-2 py-0.5 min-w-[1.25rem]"
-                style="{{ $unseenCount > 0 ? '' : 'display: none' }}">
-                {{ $unseenCount }}
+            @if($leaveCount > 0)
+            <span
+                class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-2 py-0.5 min-w-[1.25rem]">
+                {{ $leaveCount }}
             </span>
             @endif
         </a>
 
-        <a href="{{ route('manager.reimbursements.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-            <i class="w-5 mr-3 text-center fas fa-file-invoice-dollar"></i>
+        <a href="{{ route('manager.reimbursements.index') }}" class="flex items-center ...">
+            <i class="w-5 mr-3 fas fa-file-invoice-dollar"></i>
             <span class="font-medium">Reimbursement Requests</span>
+            @if($reimbursementCount > 0)
+            <span
+                class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-2 py-0.5 min-w-[1.25rem]">
+                {{ $reimbursementCount }}
+            </span>
+            @endif
         </a>
 
-        <a href="{{ route('manager.overtimes.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-            <i class="w-5 mr-3 text-center fas fa-clock"></i>
+        <a href="{{ route('manager.overtimes.index') }}" class="flex items-center ...">
+            <i class="w-5 mr-3 fas fa-clock"></i>
             <span class="font-medium">Overtime Requests</span>
+            @if($overtimeCount > 0)
+            <span
+                class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-2 py-0.5 min-w-[1.25rem]">
+                {{ $overtimeCount }}
+            </span>
+            @endif
         </a>
 
-        <a href="{{ route('manager.official-travels.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-            <i class="w-5 mr-3 text-center fas fa-briefcase"></i>
+        <a href="{{ route('manager.official-travels.index') }}" class="flex items-center ...">
+            <i class="w-5 mr-3 fas fa-briefcase"></i>
             <span class="font-medium">Official Travel Requests</span>
+            @if($travelCount > 0)
+            <span
+                class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-2 py-0.5 min-w-[1.25rem]">
+                {{ $travelCount }}
+            </span>
+            @endif
         </a>
 
     </nav>
