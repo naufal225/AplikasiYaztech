@@ -146,8 +146,6 @@ class ReimbursementController extends Controller
             ]);
              $linkTanggapan = route('public.approval.show', $token);
 
-            $linkTanggapan = route('approver.reimbursements.show', $reimbursement->id);
-
             $pesan = "Terdapat pengajuan reimbursement baru atas nama " . Auth::user()->name . ".
                 <br> Total: Rp " . number_format($reimbursement->total, 0, ',', '.') . "
                 <br> Tanggal: {$request->date}";
