@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->string('email')->unique();
             $table->string('password');
             $table->enum('role', Roles::values())->default(Roles::Employee->value);
+            $table->text('url_profile')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
