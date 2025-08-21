@@ -94,9 +94,9 @@
             <div class="divider"></div>
 
             {{-- <h3 style="color: #4f46e5; margin-bottom: 10px;">Isi Pesan:</h3> --}}
-            <div class="message-box">
+            {{-- <div class="message-box">
                 <p style="margin: 0; white-space: pre-line;">{!! $pesan !!}</p>
-            </div>
+            </div> --}}
 
             <div class="divider"></div>
 
