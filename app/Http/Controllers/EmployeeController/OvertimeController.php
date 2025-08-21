@@ -98,9 +98,11 @@ class OvertimeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'customer' => 'required',
             'date_start' => 'required|date_format:Y-m-d\TH:i',
             'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
         ], [
+            'customer.required' => 'Customer harus diisi.',
             'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
             'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
             'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
@@ -123,18 +125,10 @@ class OvertimeController extends Controller
         $hours = floor($overtimeMinutes / 60);
         $minutes = $overtimeMinutes % 60;
 
-        DB::transaction(function () use ($start, $end, $overtimeMinutes, $hours, $minutes) {
-            // $overtime = Overtime::create([
-            //     'employee_id' => Auth::id(),
-            //     'date_start' => $start,
-            //     'date_end' => $end,
-            //     'total' => $overtimeMinutes, // Simpan dalam menit
-            //     'status_1' => 'pending',
-            //     'status_2' => 'pending',
-            // ]);
-
+        DB::transaction(function () use ($start, $end, $overtimeMinutes, $hours, $minutes, $request) {
             $overtime = new Overtime();
             $overtime->employee_id = Auth::id();
+            $overtime->customer = $request->customer;
             $overtime->date_start = $start;
             $overtime->date_end = $end;
             $overtime->total = $overtimeMinutes;
@@ -171,15 +165,9 @@ class OvertimeController extends Controller
 
                 $linkTanggapan = route('public.approval.show', $token);
 
-                $pesan = "Terdapat pengajuan overtime baru atas nama " . Auth::user()->name . ".
-                <br> Tanggal/Waktu Mulai: " . $start->format('d/m/Y H:i') . "
-                <br> Tanggal/Waktu Akhir: " . $end->format('d/m/Y H:i') . "
-                <br> Total Waktu: " . $hours . " hours " . $minutes . " minutes";
-
                 Mail::to($overtime->approver->email)->send(
                     new \App\Mail\SendMessage(
                         namaPengaju: Auth::user()->name,
-                        pesan: $pesan,
                         namaApprover: $overtime->approver->name,
                         linkTanggapan: $linkTanggapan,
                         emailPengaju: Auth::user()->email,
@@ -253,6 +241,7 @@ class OvertimeController extends Controller
         }
 
         $request->validate([
+            'customer' => 'required',
             'date_start' => 'required|date_format:Y-m-d\TH:i',
             'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
         ], [
@@ -275,6 +264,7 @@ class OvertimeController extends Controller
         }
 
         // Simpan data
+        $overtime->customer = $request->customer;
         $overtime->date_start = $request->date_start;
         $overtime->date_end = $request->date_end;
         $overtime->total = $overtimeMinutes; // Disimpan dalam menit
@@ -300,15 +290,10 @@ class OvertimeController extends Controller
 
             $hours = floor($overtimeMinutes / 60);
             $minutes = $overtimeMinutes % 60;
-            $pesan = "Pengajuan lembur milik " . Auth::user()->name . " telah dilakukan perubahan data.
-                <br> Tanggal/Waktu Mulai: " . $start->format('d/m/Y H:i') . "
-                <br> Tanggal/Waktu Akhir: " . $end->format('d/m/Y H:i') . "
-                <br> Total Waktu: " . $hours . " hours " . $minutes . " minutes";
 
             Mail::to($overtime->approver->email)->queue(
                 new \App\Mail\SendMessage(
                     namaPengaju: Auth::user()->name,
-                    pesan: $pesan,
                     namaApprover: $overtime->approver->name,
                     linkTanggapan: $linkTanggapan,
                     emailPengaju: Auth::user()->email,

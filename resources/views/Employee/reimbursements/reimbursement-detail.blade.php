@@ -23,7 +23,7 @@
                 <li aria-current="page">
                     <div class="flex items-center">
                         <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <span class="text-sm font-medium text-neutral-500">Klaim #{{ $reimbursement->id }}</span>
+                        <span class="text-sm font-medium text-neutral-500">Klaim #RY{{ $reimbursement->id }}</span>
                     </div>
                 </li>
             </ol>
@@ -37,7 +37,7 @@
                     <div class="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h1 class="text-xl font-bold text-white">Reimbursement Claim #{{ $reimbursement->id }}</h1>
+                                <h1 class="text-xl font-bold text-white">Reimbursement Claim #RY{{ $reimbursement->id }}</h1>
                                 <p class="text-primary-100 text-sm">Submitted on {{ $reimbursement->created_at->format('M d, Y \a\t H:i') }}</p>
                             </div>
                             <div class="text-right">
@@ -105,7 +105,7 @@
                                 <label class="text-sm font-semibold text-neutral-700">Customer</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     <i class="fas fa-users text-info-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ $reimbursement->customer->name ?? 'N/A' }}</span>
+                                    <span class="text-neutral-900 font-medium">{{ $reimbursement->customer ?? 'N/A' }}</span>
                                 </div>
                             </div>
                             <!-- Invoice Path (was Attachment) -->
@@ -198,10 +198,13 @@
                             <i class="fas fa-arrow-left mr-2"></i>
                             Back to List
                         </a>
-                        <button onclick="window.location.href='{{ route('employee.reimbursements.exportPdf', $reimbursement->id) }}'" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
-                            <i class="fas fa-print mr-2"></i>
-                            Print Request
-                        </button>
+                        
+                        @if ($reimbursement->status_1 == 'approved' && $reimbursement->status_2 == 'approved')
+                            <button onclick="window.location.href='{{ route('employee.reimbursements.exportPdf', $reimbursement->id) }}'" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                <i class="fas fa-print mr-2"></i>
+                                Print Request
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>

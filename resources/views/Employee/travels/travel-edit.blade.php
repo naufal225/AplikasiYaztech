@@ -23,7 +23,7 @@
                 <li>
                     <div class="flex items-center">
                         <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <a href="{{ route('employee.official-travels.show', $officialTravel->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Request #{{ $officialTravel->id }}</a>
+                        <a href="{{ route('employee.official-travels.show', $officialTravel->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Request #TY{{ $officialTravel->id }}</a>
                     </div>
                 </li>
                 <li aria-current="page">
@@ -37,7 +37,7 @@
 
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200">
             <div class="px-6 py-4 border-b border-neutral-200">
-                <h2 class="text-lg font-bold text-neutral-900">Edit Official Travel Request #{{ $officialTravel->id }}</h2>
+                <h2 class="text-lg font-bold text-neutral-900">Edit Official Travel Request #TY{{ $officialTravel->id }}</h2>
                 <p class="text-neutral-600 text-sm">Update your official travel request information</p>
             </div>
 
@@ -54,6 +54,17 @@
             <form action="{{ route('employee.official-travels.update', $officialTravel->id) }}" method="POST" class="p-6 space-y-6">
                 @csrf
                 @method('PUT')
+
+                <div>
+                    <label for="customer" class="block text-sm font-semibold text-neutral-700 mb-2">
+                        <i class="fas fa-users mr-2 text-primary-600"></i>
+                        Customer
+                    </label>
+                    
+                    <!-- Input tampilan -->
+                    <input type="text" name="customer" id="customer" class="form-input"
+                        value="{{ old('customer', $officialTravel->customer) }}" placeholder="e.g., John Doe" required>
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -82,7 +93,7 @@
                         <i class="fas fa-calculator text-green-600 mr-3 mt-0.5"></i>
                         <div>
                             <h4 class="text-sm font-semibold text-green-800 mb-1">Travel Duration</h4>
-                            <p id="duration-total" class="text-sm font-bold text-green-800"></p>
+                            <p id="duration-total" class="text-sm font-bold text-green-800">Total Duration: {{ $officialTravel->total ?? '0' }} day{{ $officialTravel->total > 1 ? 's' : '' }}</p>
                         </div>
                     </div>
                 </div>
@@ -108,32 +119,26 @@
             const calculationDiv = document.getElementById('duration-calculation');
             const totalP = document.getElementById('duration-total');
             
-            if (!startInput.value || !endInput.value) {
-                calculationDiv.style.display = 'none';
-                return;
-            }
-            
             const startDate = new Date(startInput.value);
             const endDate = new Date(endInput.value);
             
             if (endDate < startDate) {
-                calculationDiv.style.display = 'none';
+                totalP.textContent = `Total Duration: 0 days`;
                 return;
             }
-            
+
+            if (startInput.value === "" || endInput.value === "") {
+                totalP.textContent = `Total Duration: 0 days`;
+                return;
+            }
+
             const timeDiff = endDate.getTime() - startDate.getTime();
-            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; // +1 to include both start and end date
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
             
             if (daysDiff > 0) {
                 calculationDiv.style.display = 'block';
                 totalP.textContent = `Total Duration: ${daysDiff} day${daysDiff > 1 ? 's' : ''}`;
-            } else {
-                calculationDiv.style.display = 'none';
             }
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            calculateDays();
-        });
     @endpush
 @endsection

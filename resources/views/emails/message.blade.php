@@ -93,22 +93,15 @@
 
             <div class="divider"></div>
 
-            {{-- <h3 style="color: #4f46e5; margin-bottom: 10px;">Isi Pesan:</h3> --}}
-            {{-- <div class="message-box">
-                <p style="margin: 0; white-space: pre-line;">{!! $pesan !!}</p>
-            </div> --}}
-
-            <div class="divider"></div>
-
             <p style="margin-bottom: 5px;">Segera tanggapi pengajuan ini melalui:</p>
             <a href="{{ $linkTanggapan ?? '#' }}" class="button" style="display:inline-block;
-          padding:10px 20px;
-          background-color:#4f46e5;
-          color:#ffffff !important;
-          text-decoration:none !important;
-          border-radius:4px;
-          font-weight:500;
-          margin-top:15px;">
+                padding:10px 20px;
+                background-color:#4f46e5;
+                color:#ffffff !important;
+                text-decoration:none !important;
+                border-radius:4px;
+                font-weight:500;
+                margin-top:15px;">
                 Approve/Reject
             </a>
         </div>

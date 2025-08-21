@@ -62,6 +62,17 @@
                     </div>
                 </div>
 
+                <div>
+                    <label for="customer" class="block text-sm font-semibold text-neutral-700 mb-2">
+                        <i class="fas fa-users mr-2 text-primary-600"></i>
+                        Customer
+                    </label>
+                    
+                    <!-- Input tampilan -->
+                    <input type="text" name="customer" id="customer" class="form-input"
+                        value="{{ old('customer') }}" placeholder="e.g., John Doe" required>
+                </div>
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="date_start" class="block text-sm font-semibold text-neutral-700 mb-2">

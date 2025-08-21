@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Reimbursement Request #{{ $reimbursement->id }}</title>
+    <title>Reimbursement Request #RY{{ $reimbursement->id }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,7 +58,7 @@
     </div>
 
     <div class="section">
-        <div class="sub-title">Reimbursement Request #{{ $reimbursement->id }} | {{ \Carbon\Carbon::parse($reimbursement->created_at)->format('F d, Y \a\t H:i') }}</div>
+        <div class="sub-title">Reimbursement Request #RY{{ $reimbursement->id }} | {{ \Carbon\Carbon::parse($reimbursement->created_at)->format('F d, Y \a\t H:i') }}</div>
         <h3>Employee Information</h3>
         <div><span class="label">Email:</span> <span class="value">{{ Auth::user()->email }}</span></div>
         <div><span class="label">Name:</span> <span class="value">{{ Auth::user()->name }}</span></div>
@@ -75,7 +75,7 @@
             </div>
             <div>
                 <div><span class="label">Customer:</span></div>
-                <div class="box">{{ $reimbursement->customer->name ?? 'N/A' }}</div>
+                <div class="box">{{ $reimbursement->customer ?? 'N/A' }}</div>
             </div>
             <div>
                 <div><span class="label">Total Amount:</span></div>
@@ -85,14 +85,14 @@
             </div>
             <div>
                 <div><span class="label">Invoice:</span></div>
-                <div class="box">
+                <div class="box" style="height:300px;">
                     @php
                         $path = storage_path('app/public/' . $reimbursement->invoice_path);
                         $type = pathinfo($path, PATHINFO_EXTENSION);
                         $data = file_get_contents($path);
                         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
                     @endphp
-                    <img src="{{ $base64 }}" alt="Invoice" width="300">
+                    <img src="{{ $base64 }}" alt="Invoice" width="250" style="max-height:300px; max-width:100%; object-fit:fill;">
                 </div>
             </div>
         </div>

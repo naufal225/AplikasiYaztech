@@ -78,6 +78,7 @@ class LeaveController extends Controller
         $leaves = $query->paginate(10);
         $counts = $queryClone->withFinalStatusCount()->first();
 
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) $queryClone->where('status_1', 'approved')->where('status_2', 'approved')->whereYear('date_start', now()->year)->count();
         $totalRequests = (int) $queryClone->count();
         $pendingRequests = (int) $counts->pending;
         $approvedRequests = (int) $counts->approved;
@@ -85,7 +86,7 @@ class LeaveController extends Controller
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
-        return view('Employee.leaves.leave-show', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
+        return view('Employee.leaves.leave-show', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager', 'sisaCuti'));
     }
 
     /**
@@ -164,15 +165,9 @@ class LeaveController extends Controller
                 $startFormatted = Carbon::parse($request->date_start)->translatedFormat('l, d/m/Y');
                 $endFormatted = Carbon::parse($request->date_end)->translatedFormat('l, d/m/Y');
 
-                $pesan = "Terdapat pengajuan cuti baru atas nama " . Auth::user()->name . ".
-                <br> Tanggal Mulai: {$startFormatted}
-                <br> Tanggal Selesai: {$endFormatted}
-                <br> Alasan: {$request->reason}";
-
                 Mail::to($leave->approver->email)->queue(
                     new \App\Mail\SendMessage(
                         namaPengaju: Auth::user()->name,
-                        pesan: $pesan,
                         namaApprover: $leave->approver->name,
                         linkTanggapan: $linkTanggapan,
                         emailPengaju: Auth::user()->email
@@ -286,15 +281,10 @@ class LeaveController extends Controller
                 'expires_at' => now()->addDays(3),  // masa berlaku
             ]);
             $linkTanggapan = route('public.approval.show', $token);
-            $pesan = "Pengajuan cuti milik " . Auth::user()->name . " telah dilakukan perubahan data.
-                <br> Tanggal Mulai: {$request->date_start}
-                <br> Tanggal Selesai: {$request->date_end}
-                <br> Alasan: {$request->reason}";
 
             Mail::to($leave->approver->email)->send(
                 new \App\Mail\SendMessage(
                     namaPengaju: Auth::user()->name,
-                    pesan: $pesan,
                     namaApprover: $leave->approver->name,
                     linkTanggapan: $linkTanggapan,
                     emailPengaju: Auth::user()->email

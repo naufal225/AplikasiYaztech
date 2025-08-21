@@ -50,19 +50,14 @@
                 @csrf
 
                 <div>
-                    <label for="customer_id" class="block text-sm font-semibold text-neutral-700 mb-2">
+                    <label for="customer" class="block text-sm font-semibold text-neutral-700 mb-2">
                         <i class="fas fa-users mr-2 text-primary-600"></i>
                         Customer
                     </label>
-                    <select id="customer_id" name="customer_id" class="form-select" required>
-                        <option value="">Select Customer</option>
-                        @foreach($customers as $customer)
-                            <option value="{{ $customer->id }}" {{ old('customer_id') == $customer->id ? 'selected' : '' }}>
-                                {{ $customer->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="text-xs text-neutral-500 mt-1">Select the customer related to this reimbursement (if any)</p>
+                    
+                    <!-- Input tampilan -->
+                    <input type="text" name="customer" id="customer" class="form-input"
+                        value="{{ old('customer') }}" placeholder="e.g., John Doe" required>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

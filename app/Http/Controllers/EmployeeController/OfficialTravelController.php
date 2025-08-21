@@ -99,14 +99,19 @@ class OfficialTravelController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'customer' => 'required',
             'date_start' => 'required|date|after_or_equal:today',
             'date_end' => 'required|date|after_or_equal:date_start',
         ], [
+            'customer.required' => 'Customer harus diisi.',
             'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
             'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_start.after' => 'Tanggal/Waktu Mulai harus setelah sekarang.',
+            'date_start.after_or_equal' => 'Tanggal/Waktu Mulai harus hari ini atau setelahnya.',
             'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
             'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
             'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
+            'date_end.after_or_equal' => 'Tanggal/Waktu Akhir harus hari ini atau setelahnya.',
         ]);
 
         $start = Carbon::parse($validated['date_start']);
@@ -121,6 +126,7 @@ class OfficialTravelController extends Controller
 
         DB::transaction(function () use ($request, $start, $end, $totalDays, $user, $userName, $userEmail, $divisionId) {
             $officialTravel = new OfficialTravel();
+            $officialTravel->customer = $request->customer;
             $officialTravel->employee_id = Auth::id();
             $officialTravel->date_start = $start;
             $officialTravel->date_end = $end;
@@ -159,15 +165,9 @@ class OfficialTravelController extends Controller
 
                 $linkTanggapan = route('public.approval.show', $tokenRaw);
 
-                $pesan = "Terdapat pengajuan perjalanan dinas baru atas nama " . $userName . ".
-                <br> Tanggal Mulai: " . $officialTravel->date_start->format('l, d/m/Y') . "
-                <br> Tanggal/Waktu Akhir: " . $officialTravel->date_end->format('l, d/m/Y') . "
-                <br> Total Waktu: " . $totalDays . " days";
-
                 Mail::to($officialTravel->approver->email)->queue(
                     new \App\Mail\SendMessage(
                         namaPengaju: $userName,
-                        pesan: $pesan,
                         namaApprover: $officialTravel->approver->name,
                         linkTanggapan: $linkTanggapan,
                         emailPengaju: $userEmail,
@@ -240,14 +240,18 @@ class OfficialTravelController extends Controller
         }
 
         $request->validate([
+            'customer' => 'required',
             'date_start' => 'required|date|after_or_equal:today',
             'date_end' => 'required|date|after_or_equal:date_start',
         ], [
             'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
             'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_start.after_or_equal' => 'Tanggal/Waktu Mulai harus hari ini atau setelahnya.',
             'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
             'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
             'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
+            'date_end.after_or_equal' => 'Tanggal/Waktu Akhir harus hari ini atau setelahnya.',
+            'customer.required' => 'Customer harus diisi.',
         ]);
 
         // Calculate total days
@@ -256,6 +260,7 @@ class OfficialTravelController extends Controller
 
         $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
 
+        $officialTravel->customer = $request->customer;
         $officialTravel->date_start = $request->date_start;
         $officialTravel->date_end = $request->date_end;
         $officialTravel->status_1 = 'pending';
@@ -280,15 +285,9 @@ class OfficialTravelController extends Controller
 
             $linkTanggapan = route('public.approval.show', $token);
 
-            $pesan = "Pengajuan perjalanan dinas milik " . Auth::user()->name . " telah dilakukan perubahan data.
-                <br> Tanggal Mulai: " . $officialTravel->date_start->format('l, d/m/Y') . "
-                <br> Tanggal/Waktu Akhir: " . $officialTravel->date_end->format('l, d/m/Y') . "
-                <br> Total Waktu: " . $totalDays . " days";
-
             Mail::to($officialTravel->approver->email)->send(
                 new \App\Mail\SendMessage(
                     namaPengaju: Auth::user()->name,
-                    pesan: $pesan,
                     namaApprover: $officialTravel->approver->name,
                     linkTanggapan: $linkTanggapan,
                     emailPengaju: Auth::user()->email,

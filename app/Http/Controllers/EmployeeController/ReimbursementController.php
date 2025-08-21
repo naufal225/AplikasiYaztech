@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Reimbursement;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
-use App\Models\Customer;
 use App\Roles;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -25,7 +24,7 @@ class ReimbursementController extends Controller
     {
         $user = Auth::user();
         $query = Reimbursement::where('employee_id', $user->id)
-            ->with(['approver', 'customer'])
+            ->with(['approver'])
             ->orderBy('created_at', 'desc');
         $queryClone = (clone $query);
 
@@ -94,9 +93,8 @@ class ReimbursementController extends Controller
     {
         $approvers = User::where('role', Roles::Approver->value)
             ->get();
-        $customers = Customer::all();
 
-        return view('Employee.reimbursements.reimbursement-request', compact('approvers', 'customers'));
+        return view('Employee.reimbursements.reimbursement-request', compact('approvers'));
     }
 
     /**
@@ -105,13 +103,13 @@ class ReimbursementController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'customer_id' => 'required|exists:customers,id',
+            'customer' => 'required',
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
             'invoice_path' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ], [
-            'customer_id.required' => 'Customer harus dipilih.',
-            'customer_id.exists' => 'Customer tidak valid.',
+            'customer.required' => 'Customer harus dipilih.',
+            'customer.exists' => 'Customer tidak valid.',
             'total.required' => 'Total harus diisi.',
             'total.numeric' => 'Total harus berupa angka.',
             'total.min' => 'Total tidak boleh kurang dari 0.',
@@ -125,7 +123,7 @@ class ReimbursementController extends Controller
         DB::transaction(function () use ($request) {
             $reimbursement = new Reimbursement();
             $reimbursement->employee_id = Auth::id();
-            $reimbursement->customer_id = $request->customer_id;
+            $reimbursement->customer = $request->customer;
             $reimbursement->total = $request->total;
             $reimbursement->date = $request->date;
             $reimbursement->status_1 = 'pending';
@@ -166,14 +164,9 @@ class ReimbursementController extends Controller
 
                 $linkTanggapan = route('public.approval.show', $token);
 
-                $pesan = "Terdapat pengajuan reimbursement baru atas nama " . Auth::user()->name . ".
-                <br> Total: Rp " . number_format($reimbursement->total, 0, ',', '.') . "
-                <br> Tanggal: {$request->date}";
-
                 Mail::to($reimbursement->approver->email)->queue(
                     new \App\Mail\SendMessage(
                         namaPengaju: Auth::user()->name,
-                        pesan: $pesan,
                         namaApprover: $reimbursement->approver->name,
                         linkTanggapan: $linkTanggapan,
                         emailPengaju: Auth::user()->email,
@@ -199,7 +192,7 @@ class ReimbursementController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $reimbursement->load(['approver', 'customer']);
+        $reimbursement->load(['approver']);
 
         return view('Employee.reimbursements.reimbursement-detail', compact('reimbursement'));
     }
@@ -230,9 +223,7 @@ class ReimbursementController extends Controller
                 ->with('error', 'You cannot edit a reimbursement request that has already been processed.');
         }
 
-        $customers = Customer::all();
-
-        return view('Employee.reimbursements.reimbursement-edit', compact('reimbursement', 'customers'));
+        return view('Employee.reimbursements.reimbursement-edit', compact('reimbursement'));
     }
 
     /**
@@ -251,13 +242,13 @@ class ReimbursementController extends Controller
         }
 
         $request->validate([
-            'customer_id' => 'required|exists:customers,id',
+            'customer' => 'required',
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
             'invoice_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ], [
-            'customer_id.required' => 'Customer harus dipilih.',
-            'customer_id.exists' => 'Customer tidak valid.',
+            'customer.required' => 'Customer harus dipilih.',
+            'customer.exists' => 'Customer tidak valid.',
             'total.required' => 'Total harus diisi.',
             'total.numeric' => 'Total harus berupa angka.',
             'total.min' => 'Total tidak boleh kurang dari 0.',
@@ -268,7 +259,7 @@ class ReimbursementController extends Controller
             'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
         ]);
 
-        $reimbursement->customer_id = $request->customer_id;
+        $reimbursement->customer = $request->customer;
         $reimbursement->total = $request->total;
         $reimbursement->date = $request->date;
         $reimbursement->status_1 = 'pending';
@@ -305,14 +296,9 @@ class ReimbursementController extends Controller
             ]);
             $linkTanggapan = route('public.approval.show', $token);
 
-            $pesan = "Pengajuan pengajuan reimbursement milik " . Auth::user()->name . " telah dilakukan perubahan data.
-                <br> Total: Rp " . number_format($request->total, 0, ',', '.') . "
-                <br> Tanggal: {$request->date}";
-
             Mail::to($reimbursement->approver->email)->send(
                 new \App\Mail\SendMessage(
                     namaPengaju: Auth::user()->name,
-                    pesan: $pesan,
                     namaApprover: $reimbursement->approver->name,
                     linkTanggapan: $linkTanggapan,
                     emailPengaju: Auth::user()->email,
