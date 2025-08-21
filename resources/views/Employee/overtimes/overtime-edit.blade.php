@@ -23,7 +23,7 @@
                 <li>
                     <div class="flex items-center">
                         <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <a href="{{ route('employee.overtimes.show', $overtime->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Request #{{ $overtime->id }}</a>
+                        <a href="{{ route('employee.overtimes.show', $overtime->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Request #OY{{ $overtime->id }}</a>
                     </div>
                 </li>
                 <li aria-current="page">
@@ -37,7 +37,7 @@
 
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200">
             <div class="px-6 py-4 border-b border-neutral-200">
-                <h2 class="text-lg font-bold text-neutral-900">Edit Overtime Request #{{ $overtime->id }}</h2>
+                <h2 class="text-lg font-bold text-neutral-900">Edit Overtime Request #OY{{ $overtime->id }}</h2>
                 <p class="text-neutral-600 text-sm">Update your overtime request information</p>
             </div>
 
@@ -72,6 +72,17 @@
                             </p>
                         </div>
                     </div>
+                </div>
+
+                <div>
+                    <label for="customer" class="block text-sm font-semibold text-neutral-700 mb-2">
+                        <i class="fas fa-users mr-2 text-primary-600"></i>
+                        Customer
+                    </label>
+                    
+                    <!-- Input tampilan -->
+                    <input type="text" name="customer" id="customer" class="form-input"
+                        value="{{ old('customer', $overtime->customer) }}" placeholder="e.g., John Doe" required>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

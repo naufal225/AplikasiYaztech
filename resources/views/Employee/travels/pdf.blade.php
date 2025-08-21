@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Official Travel Request #{{ $officialTravel->id }}</title>
+    <title>Official Travel Request #TY{{ $officialTravel->id }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,7 +58,7 @@
     </div>
 
     <div class="section">
-        <div class="sub-title">Official Travel Request #{{ $officialTravel->id }} | {{ \Carbon\Carbon::parse($officialTravel->created_at)->format('F d, Y \a\t H:i') }}</div>
+        <div class="sub-title">Official Travel Request #TY{{ $officialTravel->id }} | {{ \Carbon\Carbon::parse($officialTravel->created_at)->format('F d, Y \a\t H:i') }}</div>
         <h3>Employee Information</h3>
         <div><span class="label">Email:</span> <span class="value">{{ Auth::user()->email }}</span></div>
         <div><span class="label">Name:</span> <span class="value">{{ Auth::user()->name }}</span></div>
@@ -69,6 +69,10 @@
     <div class="section">
         <h3>Official Travel Details</h3>
         <div class="grid-2">
+            <div>
+                <div><span class="label">Customer:</span></div>
+                <div class="box">{{ $officialTravel->customer ?? 'N/A' }}</div>
+            </div>
             <div>
                 <div><span class="label">Start Date:</span></div>
                 <div class="box">{{ \Carbon\Carbon::parse($officialTravel->date_start)->format('l, M d, Y') }}</div>

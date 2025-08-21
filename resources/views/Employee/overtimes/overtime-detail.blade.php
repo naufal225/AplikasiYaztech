@@ -29,7 +29,7 @@
                 <li aria-current="page">
                     <div class="flex items-center">
                         <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <span class="text-sm font-medium text-neutral-500">Request #{{ $overtime->id }}</span>
+                        <span class="text-sm font-medium text-neutral-500">Request #OY{{ $overtime->id }}</span>
                     </div>
                 </li>
             </ol>
@@ -44,7 +44,7 @@
                     <div class="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h1 class="text-xl font-bold text-white">Overtime Request #{{ $overtime->id }}</h1>
+                                <h1 class="text-xl font-bold text-white">Overtime Request #OY{{ $overtime->id }}</h1>
                                 <p class="text-primary-100 text-sm">Submitted on {{ $overtime->created_at->format('M d, Y \a\t H:i') }}</p>
                             </div>
                             <div class="text-right">
@@ -103,16 +103,12 @@
                                 </div>
                             </div>
 
-                            <!-- Work Hours Breakdown -->
+                            <!-- Customer -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Work Hours Breakdown</label>
-                                <div class="p-3.5 bg-blue-50 rounded-lg border border-blue-200">
-                                    <div class="grid grid-cols-1 md:grid-cols-1 gap-4 text-sm">
-                                        <div>
-                                            <span class="font-medium text-blue-800">Normal Hours:</span>
-                                            <span class="text-blue-700">09:00 - 17:00</span>
-                                        </div>
-                                    </div>
+                                <label class="text-sm font-semibold text-neutral-700">Customer</label>
+                                <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                                    <i class="fas fa-users text-info-600 mr-3"></i>
+                                    <span class="text-neutral-900 font-medium">{{ $overtime->customer ?? 'N/A' }}</span>
                                 </div>
                             </div>
 
@@ -136,7 +132,7 @@
 
                             <!-- Status -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status 1 - Team Lead</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status - Team Lead</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     @if($overtime->status_1 === 'pending')
                                         <i class="fas fa-clock text-warning-600 mr-3"></i>
@@ -151,7 +147,7 @@
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status 2 - Manager</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status - Manager</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     @if($overtime->status_2 === 'pending')
                                         <i class="fas fa-clock text-warning-600 mr-3"></i>
@@ -212,10 +208,13 @@
                             <i class="fas fa-arrow-left mr-2"></i>
                             Back to List
                         </a>
-                        <button onclick="window.location.href='{{ route('employee.overtimes.exportPdf', $overtime->id) }}'" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
-                            <i class="fas fa-print mr-2"></i>
-                            Print Request
-                        </button>
+
+                        @if ($overtime->status_1 == 'approved' && $overtime->status_2 == 'approved')
+                            <button onclick="window.location.href='{{ route('employee.overtimes.exportPdf', $overtime->id) }}'" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                <i class="fas fa-print mr-2"></i>
+                                Print Request
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>

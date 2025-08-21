@@ -26,6 +26,8 @@ class DashboardController extends Controller
         $queryLeave = Leave::where('employee_id', $user->id)
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
+        
+        $queryClone = (clone $queryLeave);
 
         $queryReimbursement = Reimbursement::where('employee_id', $user->id)
             ->with(['employee', 'approver'])
@@ -60,11 +62,13 @@ class DashboardController extends Controller
         // Get recent requests (combined from all types)
         $recentRequests = $this->getRecentRequests($userId);
 
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) $queryClone->where('status_1', 'approved')->where('status_2', 'approved')->whereYear('date_start', now()->year)->count();
+
         return view('Employee.index', compact(
             'employeeCount', 'pendingLeaves', 'pendingReimbursements', 'pendingOvertimes',
             'pendingTravels', 'recentRequests', 'approvedLeaves', 'approvedReimbursements',
             'approvedOvertimes', 'approvedTravels', 'rejectedLeaves', 'rejectedReimbursements',
-            'rejectedOvertimes', 'rejectedTravels'
+            'rejectedOvertimes', 'rejectedTravels', 'sisaCuti'
         ));
     }
 

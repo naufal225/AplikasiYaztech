@@ -23,7 +23,7 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-primary-100 text-primary-500">
+                    <div class="p-3 rounded-full bg-primary-100 text-primary-600">
                         <i class="fas fa-receipt text-xl"></i>
                     </div>
                     <div class="ml-4">
@@ -34,7 +34,7 @@
             </div>
             <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-warning-100 text-warning-500">
+                    <div class="p-3 rounded-full bg-warning-100 text-warning-600">
                         <i class="fas fa-clock text-xl"></i>
                     </div>
                     <div class="ml-4">
@@ -45,7 +45,7 @@
             </div>
             <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-success-100 text-success-500">
+                    <div class="p-3 rounded-full bg-success-100 text-success-600">
                         <i class="fas fa-check-circle text-xl"></i>
                     </div>
                     <div class="ml-4">
@@ -56,7 +56,7 @@
             </div>
             <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-error-100 text-error-500">
+                    <div class="p-3 rounded-full bg-error-100 text-error-600">
                         <i class="fas fa-times-circle text-xl"></i>
                     </div>
                     <div class="ml-4">
@@ -108,8 +108,8 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Total</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status - Team Lead</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status - Manager</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Team Lead</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Manager</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Customer</th>
@@ -121,7 +121,7 @@
                             <tr class="hover:bg-neutral-50 transition-colors duration-200">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div>
-                                        <div class="text-sm font-medium text-neutral-900">#{{ $reimbursement->id }}</div>
+                                        <div class="text-sm font-medium text-neutral-900">#RY{{ $reimbursement->id }}</div>
                                         <div class="text-sm text-neutral-500">{{ $reimbursement->created_at->format('M d, Y') }}</div>
                                     </div>
                                 </td>
@@ -133,17 +133,17 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($reimbursement->status_1 === 'pending')
-                                        <span class="badge-pending">
+                                        <span class="badge-pending text-warning-600">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
                                     @elseif($reimbursement->status_1 === 'approved')
-                                        <span class="badge-approved">
+                                        <span class="badge-approved text-success-600">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
                                     @elseif($reimbursement->status_1 === 'rejected')
-                                        <span class="badge-rejected">
+                                        <span class="badge-rejected text-error-600">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
                                         </span>
@@ -151,17 +151,17 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($reimbursement->status_2 === 'pending')
-                                        <span class="badge-pending">
+                                        <span class="badge-pending text-warning-600">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
                                     @elseif($reimbursement->status_2 === 'approved')
-                                        <span class="badge-approved">
+                                        <span class="badge-approved text-success-600">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
                                     @elseif($reimbursement->status_2 === 'rejected')
-                                        <span class="badge-rejected">
+                                        <span class="badge-rejected text-error-600">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
                                         </span>
@@ -174,7 +174,7 @@
                                     <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer->name ?? 'N/A' }}</div>
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">

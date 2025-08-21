@@ -24,10 +24,9 @@ class SendMessage extends Mailable implements ShouldQueue
     public $emailPengaju;
     public $attachmentPath;
 
-    public function __construct($namaPengaju, $pesan, $namaApprover, $linkTanggapan, $emailPengaju, $attachmentPath = null)
+    public function __construct($namaPengaju, $namaApprover, $linkTanggapan, $emailPengaju, $attachmentPath = null)
     {
         $this->namaPengaju = $namaPengaju;
-        $this->pesan = $pesan;
         $this->namaApprover = $namaApprover;
         $this->linkTanggapan = $linkTanggapan;
         $this->emailPengaju = $emailPengaju;

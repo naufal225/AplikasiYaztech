@@ -24,7 +24,7 @@
                 <li>
                     <div class="flex items-center">
                         <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <a href="{{ route('employee.reimbursements.show', $reimbursement->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Claim #{{ $reimbursement->id }}</a>
+                        <a href="{{ route('employee.reimbursements.show', $reimbursement->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Claim #RY{{ $reimbursement->id }}</a>
                     </div>
                 </li>
                 <li aria-current="page">
@@ -38,7 +38,7 @@
 
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200">
             <div class="px-6 py-4 border-b border-neutral-200">
-                <h2 class="text-lg font-bold text-neutral-900">Edit Reimbursement Claim #{{ $reimbursement->id }}</h2>
+                <h2 class="text-lg font-bold text-neutral-900">Edit Reimbursement Claim #RY{{ $reimbursement->id }}</h2>
                 <p class="text-neutral-600 text-sm">Update your reimbursement claim information</p>
             </div>
             
@@ -57,18 +57,14 @@
                 @method('PUT')
 
                 <div>
-                    <label for="customer_id" class="block text-sm font-semibold text-neutral-700 mb-2">
+                    <label for="customer" class="block text-sm font-semibold text-neutral-700 mb-2">
                         <i class="fas fa-users mr-2 text-primary-600"></i>
                         Customer
                     </label>
-                    <select id="customer_id" name="customer_id" class="form-select" required>
-                        <option value="">Select Customer</option>
-                        @foreach($customers as $customer)
-                            <option value="{{ $customer->id }}" {{ old('customer_id', $reimbursement->customer_id) == $customer->id ? 'selected' : '' }}>
-                                {{ $customer->name }}
-                            </option>
-                        @endforeach
-                    </select>
+
+                    <!-- Input tampilan -->
+                    <input type="text" name="customer" id="customer" class="form-input"
+                        value="{{ old('customer', $reimbursement->customer) }}" placeholder="e.g., John Doe" required>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

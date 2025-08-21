@@ -6,7 +6,7 @@
 
 @section('content')
     <!-- Statistics Cards - Adjusted for mobile -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 mb-6 md:mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-6 md:mb-8">
         <!-- Pending Approvals Card -->
         <div class="bg-white rounded-xl shadow-soft p-4 md:p-6 border border-neutral-200 hover:shadow-medium transition-shadow duration-300">
             <div class="flex items-center justify-between">
@@ -48,11 +48,31 @@
                 </div>
             </div>
         </div>
+
+        <!-- Rejected Requests Card -->
+        <div class="bg-white rounded-xl shadow-soft p-4 md:p-6 border border-neutral-200 hover:shadow-medium transition-shadow duration-300">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-neutral-600 text-xs md:text-sm font-medium mb-1">Remaining days off</p>
+                    <p class="text-2xl md:text-3xl font-bold text-neutral-900">{{ $sisaCuti }}/{{ env('CUTI_TAHUNAN', 20) }} ({{ now()->year }})</p>
+                    <p class="text-neutral-500 text-xs mt-1">Remaining leave</p>
+                </div>
+                <div class="w-10 h-10 md:w-12 md:h-12 {{ $sisaCuti <= 0 ? 'bg-error-100 text-error-600' : ($sisaCuti > ((int) env('CUTI_TAHUNAN', 20) / 2) ? 'bg-success-100 text-success-600' : 'bg-warning-100 text-warning-600')}} rounded-xl flex items-center justify-center">
+                    @if ($sisaCuti <= 0)
+                        <i class="fas fa-times-circle text-lg md:text-xl"></i>
+                    @elseif ($sisaCuti > ((int) env('CUTI_TAHUNAN', 20) / 2))
+                        <i class="fas fa-check-circle text-lg md:text-xl"></i>
+                    @else
+                        <i class="fas fa-exclamation-circle text-lg md:text-xl"></i>
+                    @endif
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Action Buttons -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <a href="{{ route('employee.leaves.create') }}" class="bg-primary-600 hover:bg-primary-700 text-white rounded-lg p-4 hover:shadow-md transition-all">
+        <button onclick="window.location.href='{{ route('employee.leaves.create') }}'" @if($sisaCuti <= 0) disabled @endif class="bg-primary-600 hover:bg-primary-700 text-white rounded-lg p-4 hover:shadow-md transition-all @if($sisaCuti <= 0) cursor-not-allowed @else cursor-pointer @endif">
             <div class="flex flex-col items-center text-center">
                 <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-3">
                     <i class="fas fa-calendar-plus text-primary-600 text-xl"></i>
@@ -60,7 +80,7 @@
                 <h3 class="font-semibold mb-1">Request Leave</h3>
                 <p class="text-primary-100 text-sm">Submit new leave request</p>
             </div>
-        </a>
+        </button>
 
         <a href="{{ route('employee.reimbursements.create') }}" class="bg-secondary-600 hover:bg-secondary-700 text-white rounded-lg p-4 hover:shadow-md transition-all">
             <div class="flex flex-col items-center text-center">

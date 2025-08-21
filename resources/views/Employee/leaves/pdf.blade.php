@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Leave Request #{{ $leave->id }}</title>
+    <title>Leave Request #LY{{ $leave->id }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,7 +58,7 @@
     </div>
 
     <div class="section">
-        <div class="sub-title">Leave Request #{{ $leave->id }} | {{ \Carbon\Carbon::parse($leave->created_at)->format('F d, Y \a\t H:i') }}</div>
+        <div class="sub-title">Leave Request #LY{{ $leave->id }} | {{ \Carbon\Carbon::parse($leave->created_at)->format('F d, Y \a\t H:i') }}</div>
         <h3>Employee Information</h3>
         <div><span class="label">Email:</span> <span class="value">{{ Auth::user()->email }}</span></div>
         <div><span class="label">Name:</span> <span class="value">{{ Auth::user()->name }}</span></div>

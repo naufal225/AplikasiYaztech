@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Overtime Request #{{ $overtime->id }}</title>
+    <title>Overtime Request #OY{{ $overtime->id }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,7 +58,7 @@
     </div>
 
     <div class="section">
-        <div class="sub-title">Overtime Request #{{ $overtime->id }} | {{ \Carbon\Carbon::parse($overtime->created_at)->format('F d, Y \a\t H:i') }}</div>
+        <div class="sub-title">Overtime Request #OY{{ $overtime->id }} | {{ \Carbon\Carbon::parse($overtime->created_at)->format('F d, Y \a\t H:i') }}</div>
         <h3>Employee Information</h3>
         <div><span class="label">Email:</span> <span class="value">{{ Auth::user()->email }}</span></div>
         <div><span class="label">Name:</span> <span class="value">{{ Auth::user()->name }}</span></div>
@@ -69,6 +69,10 @@
     <div class="section">
         <h3>Overtime Details</h3>
         <div class="grid-2">
+            <div>
+                <div><span class="label">Customer:</span></div>
+                <div class="box">{{ $overtime->customer ?? 'N/A' }}</div>
+            </div>
             <div>
                 <div><span class="label">Start Date:</span></div>
                 <div class="box">{{ \Carbon\Carbon::parse($overtime->date_start)->format('l, M d, Y \a\t H:i') }}</div>

@@ -12,14 +12,14 @@
                 <p class="text-neutral-600">Manage and track your leave requests</p>
             </div>
             <div class="mt-4 sm:mt-0">
-                <a href="{{ route('employee.leaves.create') }}" class="btn-primary">
+                <button onclick="window.location.href='{{ route('employee.leaves.create') }}'" class="btn-primary @if($sisaCuti <= 0) cursor-not-allowed @else cursor-pointer @endif" @if($sisaCuti <= 0) disabled @endif>
                     <i class="fas fa-plus mr-2"></i>
                     New Leave Request
-                </a>
+                </button>
             </div>
         </div>
         <!-- Statistics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
             <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-primary-100 text-primary-500">
@@ -33,7 +33,7 @@
             </div>
             <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-warning-100 text-warning-500">
+                    <div class="p-3 rounded-full bg-warning-100 text-warning-600">
                         <i class="fas fa-clock text-xl"></i>
                     </div>
                     <div class="ml-4">
@@ -44,7 +44,7 @@
             </div>
             <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-success-100 text-success-500">
+                    <div class="p-3 rounded-full bg-success-100 text-success-600">
                         <i class="fas fa-check-circle text-xl"></i>
                     </div>
                     <div class="ml-4">
@@ -55,12 +55,23 @@
             </div>
             <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-error-100 text-error-500">
+                    <div class="p-3 rounded-full bg-error-100 text-error-600">
                         <i class="fas fa-times-circle text-xl"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm text-neutral-500">Rejected</p>
                         <p class="text-lg font-semibold">{{ $rejectedRequests }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full {{ $sisaCuti <= 0 ? 'bg-error-100 text-error-600' : ($sisaCuti > ((int) env('CUTI_TAHUNAN', 20) / 2) ? 'bg-success-100 text-success-600' : 'bg-warning-100 text-warning-600')}}">
+                        <i class="fas fa-calendar-xmark text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-neutral-500">Remaining days off</p>
+                        <p class="text-lg font-semibold">{{ $sisaCuti }}/{{ env('CUTI_TAHUNAN', 20) }} ({{ now()->year }})</p>
                     </div>
                 </div>
             </div>
@@ -106,8 +117,8 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Duration</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status - Team Lead</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status - Manager</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Team Lead</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Manager</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
@@ -118,7 +129,7 @@
                             <tr class="hover:bg-neutral-50 transition-colors duration-200">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div>
-                                        <div class="text-sm font-medium text-neutral-900">#{{ $leave->id }}</div>
+                                        <div class="text-sm font-medium text-neutral-900">#LY{{ $leave->id }}</div>
                                         <div class="text-sm text-neutral-500">{{ $leave->created_at->format('M d, Y') }}</div>
                                     </div>
                                 </td>
@@ -132,17 +143,17 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($leave->status_1 === 'pending')
-                                        <span class="badge-pending">
+                                        <span class="badge-pending text-warning-600">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
                                     @elseif($leave->status_1 === 'approved')
-                                        <span class="badge-approved">
+                                        <span class="badge-approved text-success-600">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
                                     @elseif($leave->status_1 === 'rejected')
-                                        <span class="badge-rejected">
+                                        <span class="badge-rejected text-error-600">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
                                         </span>
@@ -150,17 +161,17 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($leave->status_2 === 'pending')
-                                        <span class="badge-pending">
+                                        <span class="badge-pending text-warning-600">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
                                     @elseif($leave->status_2 === 'approved')
-                                        <span class="badge-approved">
+                                        <span class="badge-approved text-success-600">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
                                     @elseif($leave->status_2 === 'rejected')
-                                        <span class="badge-rejected">
+                                        <span class="badge-rejected text-error-600">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
                                         </span>
@@ -199,11 +210,13 @@
                                         <i class="fas fa-inbox text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No leave requests found</p>
                                         <p class="text-sm">Create your first leave request to get started</p>
-                                        <a href="{{ route('employee.leaves.create') }}" 
-                                        class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">
-                                            <i class="fas fa-plus mr-2"></i>
-                                            New Leave Request
-                                        </a>
+                                        <button
+                                            onclick="window.location.href='{{ route('employee.leaves.create') }}'"
+                                            @if($sisaCuti <= 0) disabled @endif
+                                            class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 @if($sisaCuti <= 0) cursor-not-allowed @else cursor-pointer @endif">
+                                                <i class="fas fa-plus mr-2"></i>
+                                                New Leave Request
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
