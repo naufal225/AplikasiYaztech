@@ -93,7 +93,7 @@
             <span class="font-medium">Official Travel Requests</span>
 
             <span id="official-travel-badge"
-                class="ml-auto inline-flex items-center justify-center rounded-full {{ $unseenOfficialTravelCount > 0 ? '' : 'opacity-0' }} bg-red-600 text-white text-xs font-bold px-1 py-0.5 min-w-[1.25rem]"
+                class="ml-auto inline-flex items-center justify-center rounded-full bg-red-600 text-white text-xs font-bold px-1 py-0.5 min-w-[1.25rem]"
                 style="{{ $unseenOfficialTravelCount > 0 ? '' : 'display: none' }}">
                 {{ $unseenOfficialTravelCount }}
             </span>
