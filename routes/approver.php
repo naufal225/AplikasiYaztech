@@ -4,6 +4,7 @@ use App\Http\Controllers\ApproverController\LeaveController;
 use App\Http\Controllers\ApproverController\DashboardController;
 use App\Http\Controllers\ApproverController\OfficialTravelController;
 use App\Http\Controllers\ApproverController\OvertimeController;
+use App\Http\Controllers\ApproverController\ProfileController;
 use App\Http\Controllers\ApproverController\ReimbursementController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,5 +36,8 @@ Route::middleware(['auth', 'role:approver'])->prefix('approver')->name('approver
     Route::get('/overtimes/export', [OvertimeController::class, 'export'])
         ->name('overtimes.export');
     Route::resource('overtimes', OvertimeController::class);
+
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::resource('profile', ProfileController::class);
 
 });
