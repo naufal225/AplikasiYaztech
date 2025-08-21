@@ -54,16 +54,10 @@
             <span class="font-medium">Official Travel Requests</span>
         </a>
 
-        <a href="{{ route('admin.customers.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.customers.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-            <i class="w-5 mr-3 text-center fas fa-users"></i>
-            <span class="font-medium">Customer</span>
-        </a>
-
     </nav>
 
     <div class="p-4 border-t border-primary-700">
-        <div class="flex items-center mb-4">
+        <a class="flex items-center mb-4" href="{{ route('admin.profile.index') }}">
             <div class="flex items-center justify-center w-10 h-10 mr-3 rounded-full bg-primary-600">
                 <span class="text-sm font-semibold text-white">{{ substr(Auth::user()->name, 0, 1) }}</span>
             </div>
@@ -71,7 +65,7 @@
                 <p class="text-sm font-medium text-white truncate">{{ Auth::user()->name }}</p>
                 <p class="text-xs text-primary-200">{{ Auth::user()->email }}</p>
             </div>
-        </div>
+        </a>
         <form action="{{ route('logout') }}" method="POST">
             @csrf
             <button type="submit"
