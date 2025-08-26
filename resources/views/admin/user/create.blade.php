@@ -165,7 +165,7 @@
                         <div class="relative">
                             <select id="division_id" name="division_id"
                                 class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('division_id') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror"
-                                required>
+                                >
                                 <option value="">Select a division...</option>
                                 @if(isset($divisions))
                                 @foreach($divisions as $division)

@@ -26,7 +26,7 @@ class DashboardController extends Controller
         $queryLeave = Leave::where('employee_id', $user->id)
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
-        
+
         $queryClone = (clone $queryLeave);
 
         $queryReimbursement = Reimbursement::where('employee_id', $user->id)

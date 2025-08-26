@@ -139,6 +139,7 @@
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    @if(Auth::id() != $user->id)
                                     <button type="button" class="delete-user-btn text-error-600 hover:text-error-900"
                                         data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}">
                                         <i class="fas fa-trash"></i>
@@ -149,6 +150,7 @@
                                         @csrf
                                         @method('DELETE')
                                     </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
