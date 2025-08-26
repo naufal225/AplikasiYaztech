@@ -15,7 +15,6 @@ class Leave extends Model
         'reason',
         'status_1',
         'note_1',
-        'note_2',
     ];
 
     protected function finalStatusColumns(): array

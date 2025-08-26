@@ -9,6 +9,7 @@ use App\Models\Leave;
 use App\Models\User;
 use App\Roles;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 
@@ -117,9 +118,11 @@ class UserController extends Controller
             'division_id.exists' => 'The division field must be exists.'
         ]);
 
-        if (($user->division_id != $validated['division_id'] && $user->division->leader_id == $user->id)) {
+        if (($user->division_id == $validated['division_id'] && $user->division->leader_id == $user->id)) {
             $user->division->leader_id = null;
         }
+
+        $role = Auth::user()->role;
 
         $user->update([
             "email" => $validated["email"],
@@ -127,6 +130,15 @@ class UserController extends Controller
             'division_id' => $validated['division_id'],
             "role" => $validated['role'],
         ]);
+
+        if (Auth::id() == $user->id && $role != $user->role) {
+            Auth::logout();
+
+            session()->invalidate();
+            session()->regenerateToken();
+
+            return redirect()->route('login');
+        }
 
         return redirect()->route('admin.users.index')->with('success', 'Successfully update user.');
     }
