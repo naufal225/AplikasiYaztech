@@ -28,8 +28,7 @@ class LeavesExport implements FromCollection, WithHeadings, WithMapping, WithSty
 
         // Apply the same filters as in the index method
         if (!empty($this->filters['status'])) {
-            $query->where('status_1', $this->filters['status'])
-                ->orWhere('status_2', $this->filters['status']);
+            $query->where('status_1', $this->filters['status']);
         }
 
         if (!empty($this->filters['from_date'])) {
@@ -57,8 +56,7 @@ class LeavesExport implements FromCollection, WithHeadings, WithMapping, WithSty
             'End Date',
             'Duration (Days)',
             'Reason',
-            'Status 1',
-            'Status 2',
+            'Status',
             'Approver Name',
             'Applied Date',
             'Updated Date',
@@ -80,7 +78,6 @@ class LeavesExport implements FromCollection, WithHeadings, WithMapping, WithSty
             $duration,
             $leave->reason ?? 'N/A',
             ucfirst($leave->status_1),
-            ucfirst($leave->status_2),
             $leave->approver->name ?? 'N/A',
             $leave->created_at->format('M d, Y H:i'),
             $leave->updated_at->format('M d, Y H:i'),
