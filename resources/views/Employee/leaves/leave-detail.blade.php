@@ -40,17 +40,17 @@
                                 <p class="text-sm text-primary-100">Submitted on {{ Carbon\Carbon::parse($leave->created_at)->format('M d, Y \a\t H:i') }}</p>
                             </div>
                             <div class="text-right">
-                                @if($leave->status_1 === 'rejected' || $leave->status_2 === 'rejected')
+                                @if($leave->status_1 === 'rejected')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
                                         <i class="mr-1 mt-1 fas fa-times-circle"></i>
                                         Rejected
                                     </span>
-                                @elseif($leave->status_1 === 'approved' && $leave->status_2 === 'approved')
+                                @elseif($leave->status_1 === 'approved')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
                                         <i class="mr-1 mt-1 fas fa-check-circle"></i>
                                         Approved
                                     </span>
-                                @elseif($leave->status_1 === 'pending' || $leave->status_2 === 'pending')
+                                @elseif($leave->status_1 === 'pending')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
                                         <i class="mr-1 mt-1 fas fa-clock"></i>
                                         {{ $leave->status_1 === 'pending' ? 'Pending' : 'In Progress' }} Review
@@ -125,7 +125,7 @@
 
                             <!-- Status -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status - Team Lead</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     @if($leave->status_1 === 'pending')
                                         <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -139,35 +139,13 @@
                                     @endif
                                 </div>
                             </div>
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status - Manager</label>
-                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                    @if($leave->status_2 === 'pending')
-                                        <i class="mr-3 fas fa-clock text-warning-600"></i>
-                                        <span class="font-medium text-warning-800">Pending Review</span>
-                                    @elseif($leave->status_2 === 'approved')
-                                        <i class="mr-3 fas fa-check-circle text-success-600"></i>
-                                        <span class="font-medium text-success-800">Approved</span>
-                                    @elseif($leave->status_2 === 'rejected')
-                                        <i class="mr-3 fas fa-times-circle text-error-600"></i>
-                                        <span class="font-medium text-error-800">Rejected</span>
-                                    @endif
-                                </div>
-                            </div>
 
                             <!-- Note -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Note - Team Lead</label>
+                                <label class="text-sm font-semibold text-neutral-700">Note</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                     <span class="text-neutral-900">{{ $leave->note_1 ?? '-' }}</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Note - Manager</label>
-                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                    <span class="text-neutral-900">{{ $leave->note_2 ?? '-' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -200,7 +178,7 @@
                             Back to List
                         </a>
 
-                        @if ($leave->status_1 === 'approved' && $leave->status_2 === 'approved')
+                        @if ($leave->status_1 === 'approved')
                             <button onclick="window.location.href='{{ route('employee.leaves.exportPdf', $leave->id) }}'" class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                                 <i class="mr-2 fas fa-print"></i>
                                 Print Request

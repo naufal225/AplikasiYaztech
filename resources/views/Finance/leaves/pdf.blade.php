@@ -62,7 +62,6 @@
         <h3>Employee Information</h3>
         <div><span class="label">Email:</span> <span class="value">{{ $leave->employee->email }}</span></div>
         <div><span class="label">Name:</span> <span class="value">{{ $leave->employee->name }}</span></div>
-        <div><span class="label">Team Lead:</span> <span class="value">{{ $leave->approver->name ?? 'N/A' }}</span></div>
         <div><span class="label">Divisi:</span> <span class="value">{{ $leave->employee->division->name ?? 'N/A' }}</span></div>
     </div>
 
@@ -95,7 +94,7 @@
         <h3>Approval Status</h3>
         <div class="grid-2">
             <div>
-                <div><span class="label">Team Lead Status:</span></div>
+                <div><span class="label">Status:</span></div>
                 <div class="box status-{{ $leave->status_1 }}">
                     @if($leave->status_1 === 'pending')
                         Pending Review
@@ -107,24 +106,8 @@
                 </div>
             </div>
             <div>
-                <div><span class="label">Manager Status:</span></div>
-                <div class="box status-{{ $leave->status_2 }}">
-                    @if($leave->status_2 === 'pending')
-                        Pending Review
-                    @elseif($leave->status_2 === 'approved')
-                        Approved
-                    @elseif($leave->status_2 === 'rejected')
-                        Rejected
-                    @endif
-                </div>
-            </div>
-            <div>
-                <div><span class="label">Team Lead Note:</span></div>
+                <div><span class="label">Note:</span></div>
                 <div class="box">{{ $leave->note_1 ?? '-' }}</div>
-            </div>
-            <div>
-                <div><span class="label">Manager Note:</span></div>
-                <div class="box">{{ $leave->note_2 ?? '-' }}</div>
             </div>
         </div>
     </div>
