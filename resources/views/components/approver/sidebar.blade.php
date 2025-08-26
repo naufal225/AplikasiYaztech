@@ -24,8 +24,7 @@
         $unseenOfficialTravelCount = 0;
         $unseenOvertimeCount = 0;
         $unseenReimbursementCount = 0;
-        $unseenLeaveCount = \App\Models\Leave::whereHas('employee', fn($q)=>$q->where('division_id', $divisionId))
-        ->count();
+        $unseenLeaveCount = 0;
         $unseenOfficialTravelCount = \App\Models\OfficialTravel::whereNull('seen_by_approver_at')
         ->where('status_1','pending')
         ->whereHas('employee', fn($q)=>$q->where('division_id', $divisionId))
