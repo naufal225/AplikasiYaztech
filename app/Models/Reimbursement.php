@@ -23,10 +23,6 @@ class Reimbursement extends Model
         return $this->belongsTo(User::class, 'employee_id');
     }
 
-    public function customer() {
-        return $this->belongsTo(Customer::class, 'customer_id');
-    }
-
     protected $casts = [
         'date' => 'date',
     ];

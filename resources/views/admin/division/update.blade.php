@@ -109,7 +109,7 @@
                             <select id="leader_id" name="leader_id"
                                 class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('leader_id') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror"
                                 required>
-                                <option value="">Select an approver...</option>
+                                <option value="">Select a leader...</option>
                                 @if(isset($approvers))
                                     @foreach($approvers as $approver)
                                         <option value="{{ $approver->id }}" {{ old('leader_id', $division->leader_id) == $approver->id ? 'selected' : '' }}>
@@ -179,10 +179,10 @@ $(document).ready(function() {
         dropdownParent: $('#leader_id').parent(),
         language: {
             noResults: function() {
-                return "No approvers found";
+                return "No leaders found";
             },
             searching: function() {
-                return "Searching approvers...";
+                return "Searching leaders...";
             }
         }
     });

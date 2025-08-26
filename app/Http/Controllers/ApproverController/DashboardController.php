@@ -28,33 +28,12 @@ class DashboardController extends Controller
 
 
         foreach ($models as $key => $model) {
-            $table = (new $model)->getTable();
+            $base = $model::query()->where('created_at', '>=', $startOfMonth);
 
-            // Klasifikasi final_status berdasar dua kolom status
-            $caseExpr = "
-                CASE
-                    WHEN {$table}.status_1 = 'rejected' OR {$table}.status_2 = 'rejected'
-                        THEN 'rejected'
-                    WHEN {$table}.status_1 = 'pending' OR {$table}.status_2 = 'pending'
-                        THEN 'pending'
-                    WHEN {$table}.status_1 = 'approved' AND {$table}.status_2 = 'approved'
-                        THEN 'approved'
-                    ELSE 'unknown'
-                END AS final_status
-            ";
-
-            $counts = $model::query()
-                ->selectRaw("$caseExpr, COUNT(*) AS aggregate")
-                ->whereHas('employee.division', function ($q) {
-                    $q->where('leader_id', Auth::id());
-                })
-                ->where("{$table}.created_at", '>=', $startOfMonth)
-                ->groupBy('final_status')
-                ->pluck('aggregate', 'final_status');
-
-            $pendings[$key] = (int) ($counts['pending'] ?? 0);
-            $approveds[$key] = (int) ($counts['approved'] ?? 0);
-            $rejecteds[$key] = (int) ($counts['rejected'] ?? 0);
+            // Aman untuk single/dual status karena pakai scope trait
+            $pendings[$key] = (clone $base)->filterFinalStatus('pending')->count();
+            $rejecteds[$key] = (clone $base)->filterFinalStatus('rejected')->count();
+            $approveds[$key] = (clone $base)->filterFinalStatus('approved')->count();
         }
 
         $total_pending = array_sum($pendings);
@@ -90,7 +69,6 @@ class DashboardController extends Controller
                 $q->where('leader_id', Auth::id());
             })->whereBetween('created_at', [$start, $end])->count();
         }
-
 
         return view('approver.dashboard.index', compact([
             'total_pending',

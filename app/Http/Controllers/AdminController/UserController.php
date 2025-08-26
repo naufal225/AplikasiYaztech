@@ -145,6 +145,10 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+         if ($user->division->leader_id == $user->id) {
+            $user->division->leader_id = null;
+        }
+
         $user->delete();
 
         return redirect()->route('admin.users.index')->with('success', 'Successfully delete user.');
