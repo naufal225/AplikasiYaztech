@@ -280,14 +280,7 @@
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-neutral-900">{{ $leave->employee->name }}</div>
-                                    <div class="text-sm text-neutral-500">
-                                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full
-                                            @if($leave->employee->role === 'Manager') bg-purple-100 text-purple-800
-                                            @elseif($leave->employee->role === 'Employee') bg-blue-100 text-blue-800
-                                            @else bg-gray-100 text-gray-800 @endif">
-                                            {{ ucfirst($leave->employee->role) }}
-                                        </span>
-                                    </div>
+                                    <div class="text-sm text-neutral-500">{{ $leave->employee->email }}</div>
                                 </div>
                             </div>
                         </td>
