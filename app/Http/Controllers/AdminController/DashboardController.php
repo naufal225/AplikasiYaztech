@@ -27,21 +27,12 @@ class DashboardController extends Controller
         $pendings = $approveds = $rejecteds = [];
 
         foreach ($models as $key => $model) {
-            $pendings[$key] = $model::where('created_at', '>=', $startOfMonth)
-                ->where('status_1', 'pending')
-                ->orWhere('status_2', 'pending')
-                ->where('status_1', '!=', 'rejected')
-                ->where('status_2', '!=', 'rejected')
-                ->count();
-            $rejecteds[$key] = $model::where('created_at', '>=', $startOfMonth)
-                ->where('status_1', 'rejected')
-                ->orWhere('status_2', 'rejected')->count();
-            $approveds[$key] = $model::where('created_at', '>=', $startOfMonth)
-                ->where('status_1', 'approved')
-                ->where('status_2', 'approved')
-                ->where('status_1', '!=', 'rejected')
-                ->where('status_2', '!=', 'rejected')
-                ->count();
+            $base = $model::query()->where('created_at', '>=', $startOfMonth);
+
+            // Aman untuk single/dual status karena pakai scope trait
+            $pendings[$key] = (clone $base)->filterFinalStatus('pending')->count();
+            $rejecteds[$key] = (clone $base)->filterFinalStatus('rejected')->count();
+            $approveds[$key] = (clone $base)->filterFinalStatus('approved')->count();
         }
 
         $total_pending = array_sum($pendings);
