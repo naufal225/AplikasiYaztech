@@ -70,7 +70,7 @@
                         <i class="fas fa-calendar-xmark text-xl"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm text-neutral-500">Remaining days off</p>
+                        <p class="text-sm text-neutral-500">Remaining days</p>
                         <p class="text-lg font-semibold">{{ $sisaCuti }}/{{ env('CUTI_TAHUNAN', 20) }} ({{ now()->year }})</p>
                     </div>
                 </div>
@@ -108,6 +108,9 @@
                 </div>
             </form>
         </div>
+
+        <!-- Divider -->
+        <div class="border-t border-primary-700 transform scale-y-50 mb-10 mt-6"></div>
 
         <!-- Leaves Table -->
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">

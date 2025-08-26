@@ -16,42 +16,75 @@ class LeaveController extends Controller
 {
     public function index(Request $request)
     {
-        $queryReal = Leave::whereHas('employee', function ($q) {
-                $q->where('role', Roles::Employee->value);
-            });
-
-        $query = (clone $queryReal)
-            ->where('status_1', 'approved')
-            ->with(['employee', 'approver'])
+        // --- Query untuk "Your Leaves"
+        $yourLeavesQuery = Leave::with(['employee', 'approver'])
+            ->where('employee_id', Auth::id())
             ->orderBy('created_at', 'desc');
 
-        $queryClone = (clone $query);
-
         if ($request->filled('from_date')) {
-            $query->where('date_start', '>=',
-                Carbon::parse($request->from_date)
-                    ->startOfDay()
-                    ->timezone('Asia/Jakarta')
+            $yourLeavesQuery->where('date_start', '>=',
+                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $query->where('date_start', '<=',
-                Carbon::parse($request->to_date)
-                    ->endOfDay()
-                    ->timezone('Asia/Jakarta')
+            $yourLeavesQuery->where('date_start', '<=',
+                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
 
-        $leaves = $query->paginate(10);
-        $counts = $queryClone->withFinalStatusCount()->first();
+        if ($request->filled('status')) {
+            $yourLeavesQuery->where('status_1', $request->status);
+        }
 
-        $totalRequests = (int) $queryReal->count();
+        $yourLeaves = $yourLeavesQuery->paginate(10, ['*'], 'your_page');
+
+
+        // --- Query untuk "All Leaves"
+        $allLeavesQuery = Leave::with(['employee', 'approver'])
+            ->where('status_1', 'approved')
+            ->orderBy('created_at', 'desc');
+
+        if ($request->filled('from_date')) {
+            $allLeavesQuery->where('date_start', '>=',
+                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        if ($request->filled('to_date')) {
+            $allLeavesQuery->where('date_start', '<=',
+                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        $allLeaves = $allLeavesQuery->paginate(10, ['*'], 'all_page');
+
+        $counts = (clone $allLeavesQuery)->withFinalStatusCount()->first();
+        $totalRequests = Leave::count();
         $approvedRequests = (int) $counts->approved;
+
+        $countsYours = (clone $yourLeavesQuery)->withFinalStatusCount()->first();
+
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) $countsYours->approved;
+        $totalYoursRequests = (int) $yourLeavesQuery->count();
+        $pendingYoursRequests = (int) $countsYours->pending;
+        $approvedYoursRequests = (int) $countsYours->approved;
+        $rejectedYoursRequests = (int) $countsYours->rejected;
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
-        return view('Finance.leaves.leave-show', compact('leaves', 'totalRequests', 'approvedRequests', 'manager'));
+        return view('Finance.leaves.leave-show', compact(
+            'yourLeaves',
+            'allLeaves',
+            'totalRequests',
+            'approvedRequests',
+            'manager',
+            'sisaCuti',
+            'totalYoursRequests',
+            'pendingYoursRequests',
+            'approvedYoursRequests',
+            'rejectedYoursRequests'
+        ));
     }
 
     /**

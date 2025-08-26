@@ -99,6 +99,9 @@
             </form>
         </div>
 
+        <!-- Divider -->
+        <div class="border-t border-primary-700 transform scale-y-50 mb-10 mt-6"></div>
+
         <!-- Reimbursements Table -->
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
             <div class="overflow-x-auto">

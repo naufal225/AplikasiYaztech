@@ -49,11 +49,11 @@
             </div>
         </div>
 
-        <!-- Rejected Requests Card -->
+        <!-- Remaining Days Requests Card -->
         <div class="bg-white rounded-xl shadow-soft p-4 md:p-6 border border-neutral-200 hover:shadow-medium transition-shadow duration-300">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-neutral-600 text-xs md:text-sm font-medium mb-1">Remaining days off</p>
+                    <p class="text-neutral-600 text-xs md:text-sm font-medium mb-1">Remaining Days</p>
                     <p class="text-2xl md:text-3xl font-bold text-neutral-900">{{ $sisaCuti }}/{{ env('CUTI_TAHUNAN', 20) }} ({{ now()->year }})</p>
                     <p class="text-neutral-500 text-xs mt-1">Remaining leave</p>
                 </div>
@@ -184,9 +184,9 @@
 
                         <!-- Kanan: status + arrow -->
                         <div class="flex items-center flex-shrink-0 ml-3">
-                            @if($request['status_1'] === 'rejected' || $request['status_2'] === 'rejected')
+                            @if($request['status_1'] === 'rejected')
                                 <span class="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 mr-3">Rejected</span>
-                            @elseif($request['status_1'] === 'approved' && $request['status_2'] === 'approved')
+                            @elseif($request['status_1'] === 'approved')
                                 <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 mr-3">Approved</span>
                             @else
                                 <span class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 mr-3">Pending</span>

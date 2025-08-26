@@ -5,13 +5,13 @@
 @section('subtitle', 'Overview of all employee requests')
 
 @section('content')
-    <!-- Statistics Cards -->
+    <!-- Statistics All Employee Approved Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-6 md:mb-8">
         <!-- Leaves -->
         <div class="bg-white rounded-xl shadow-soft p-4 md:p-6 border border-neutral-200 hover:shadow-medium transition-shadow duration-300">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-neutral-600 text-xs md:text-sm font-medium mb-1">Leave Requests</p>
+                    <p class="text-neutral-600 text-xs md:text-sm font-medium mb-1">All Leave Requests</p>
                     <p class="text-2xl md:text-3xl font-bold text-neutral-900">{{ $leaveCount }}</p>
                     <p class="text-neutral-500 text-xs mt-1">Total approved</p>
                 </div>
@@ -25,7 +25,7 @@
         <div class="bg-white rounded-xl shadow-soft p-4 md:p-6 border border-neutral-200 hover:shadow-medium transition-shadow duration-300">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-neutral-600 text-xs md:text-sm font-medium mb-1">Overtime Requests</p>
+                    <p class="text-neutral-600 text-xs md:text-sm font-medium mb-1">All Overtime Requests</p>
                     <p class="text-2xl md:text-3xl font-bold text-neutral-900">{{ $overtimeCount }}</p>
                     <p class="text-neutral-500 text-xs mt-1">Total approved</p>
                 </div>
@@ -39,7 +39,7 @@
         <div class="bg-white rounded-xl shadow-soft p-4 md:p-6 border border-neutral-200 hover:shadow-medium transition-shadow duration-300">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-neutral-600 text-xs md:text-sm font-medium mb-1">Reimbursements</p>
+                    <p class="text-neutral-600 text-xs md:text-sm font-medium mb-1">All Reimbursement Requests</p>
                     <p class="text-2xl md:text-3xl font-bold text-neutral-900">{{ $reimbursementCount }}</p>
                     <p class="text-neutral-500 text-xs mt-1">Total approved</p>
                 </div>
@@ -53,7 +53,7 @@
         <div class="bg-white rounded-xl shadow-soft p-4 md:p-6 border border-neutral-200 hover:shadow-medium transition-shadow duration-300">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-neutral-600 text-xs md:text-sm font-medium mb-1">Official Travels</p>
+                    <p class="text-neutral-600 text-xs md:text-sm font-medium mb-1">All Official Travel Requests</p>
                     <p class="text-2xl md:text-3xl font-bold text-neutral-900">{{ $officialTravelCount }}</p>
                     <p class="text-neutral-500 text-xs mt-1">Total approved</p>
                 </div>
