@@ -138,7 +138,8 @@
                                 @foreach($roles as $role)
                                 <option value="{{ $role->value }}" {{ old('role')==$role->value ? 'selected' :
                                     '' }}>
-                                    {{ $role->value }}
+                                    {{ $role->value == App\Roles::Approver->value ? "team leader" : ($role->value ==
+                                    App\Roles::Employee->value ? "regular employee" : $role->value) }}
                                 </option>
                                 @endforeach
                                 @endif
