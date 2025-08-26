@@ -136,9 +136,10 @@
                                 <option value="">Select a role...</option>
                                 @if(isset($roles))
                                 @foreach($roles as $role)
-                                <option value="{{ $role->value }}" {{ old('role', $user->role)==$role->value ? 'selected' :
+                                <option value="{{ $role->value }}" {{ old('role', $user->role)==$role->value ?
+                                    'selected' :
                                     '' }}>
-                                    {{ $role->value }}
+                                    {{ $role->value == App\Roles::Approver->value ? "team leader" : ($role->value == App\Roles::Employee->value ? "regular employee" : $role->value) }}
                                 </option>
                                 @endforeach
                                 @endif
@@ -168,7 +169,8 @@
                                 <option value="">Select a division...</option>
                                 @if(isset($divisions))
                                 @foreach($divisions as $division)
-                                <option value="{{ $division->id }}" {{ old('division_id', $user->division_id)==$division->id ? 'selected' :
+                                <option value="{{ $division->id }}" {{ old('division_id', $user->
+                                    division_id)==$division->id ? 'selected' :
                                     '' }}>
                                     {{ $division->name }}
                                 </option>

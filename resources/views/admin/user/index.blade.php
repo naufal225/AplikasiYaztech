@@ -49,8 +49,7 @@
     <div class="mb-6">
         <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
             <div class="">
-                <form class="flex flex-col gap-4 sm:flex-row" action="{{ route("admin.users.index") }}"
-                    method="GET">
+                <form class="flex flex-col gap-4 sm:flex-row" action="{{ route("admin.users.index") }}" method="GET">
                     <div class="flex-1">
                         <div class="relative">
                             <input type="text" placeholder="Search users..." name="search"
@@ -130,7 +129,8 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-500">
-                                    {{ $user->role }}
+                                    {{ $user->role == App\Roles::Approver->value ? "team leader" : ($user->role ==
+                                    App\Roles::Employee->value ? "regular employee" : $user->role) }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
@@ -139,10 +139,8 @@
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button type="button"
-                                        class="delete-user-btn text-error-600 hover:text-error-900"
-                                        data-user-id="{{ $user->id }}"
-                                        data-user-name="{{ $user->name }}">
+                                    <button type="button" class="delete-user-btn text-error-600 hover:text-error-900"
+                                        data-user-id="{{ $user->id }}" data-user-name="{{ $user->name }}">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                     <form id="delete-form-{{ $user->id }}"

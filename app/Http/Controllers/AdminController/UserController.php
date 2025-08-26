@@ -17,18 +17,21 @@ class UserController extends Controller
     public function index()
     {
         $search = request('search');
-        $users = User::where('role', '!=', Roles::Admin->value)
-            ->where('name', 'like', '%' . $search . '%')
+        $users = User::where('name', 'like', '%' . $search . '%')
             ->orderByRaw("
                 CASE role
                     WHEN ? THEN 1
                     WHEN ? THEN 2
                     WHEN ? THEN 3
+                    WHEN ? THEN 4
+                    WHEN ? THEN 5
                 END
             ", [
+                Roles::Admin->value,
                 Roles::Manager->value,
                 Roles::Approver->value,
-                Roles::Employee->value
+                Roles::Employee->value,
+                Roles::Finance->value
             ])
             ->latest()
             ->paginate(10);
@@ -39,7 +42,6 @@ class UserController extends Controller
     {
         $divisions = Division::latest()->get();
         $roles = collect(Roles::cases())
-            ->reject(fn($role) => $role == Roles::Admin)
             ->values();
         return view('admin.user.create', compact('divisions', 'roles'));
     }
@@ -86,7 +88,6 @@ class UserController extends Controller
     {
         $divisions = Division::latest()->get();
         $roles = collect(Roles::cases())
-            ->reject(fn($role) => $role == Roles::Admin)
             ->values();
 
         return view('admin.user.update', compact('user', 'divisions', 'roles'));

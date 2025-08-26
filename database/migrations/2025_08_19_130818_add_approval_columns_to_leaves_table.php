@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('leaves', function (Blueprint $table) {
-            $table->timestamp('seen_by_approver_at')->nullable()->after('status_2');
+            $table->timestamp('seen_by_approver_at')->nullable()->after('status_1');
             $table->timestamp('seen_by_manager_at')->nullable()->after('seen_by_approver_at');
         });
     }
