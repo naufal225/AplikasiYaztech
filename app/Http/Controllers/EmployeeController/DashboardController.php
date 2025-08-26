@@ -63,12 +63,33 @@ class DashboardController extends Controller
         $recentRequests = $this->getRecentRequests($userId);
 
         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) $queryClone->where('status_1', 'approved')->where('status_2', 'approved')->whereYear('date_start', now()->year)->count();
+        $karyawanCuti = Leave::with(['employee:id,name,email'])
+            ->where('status_1', 'approved')
+            ->where('status_2', 'approved')
+            ->whereYear('date_start', now()->year)
+            ->orWhereYear('date_end', now()->year)
+            ->get(['id','employee_id','date_start','date_end']);
+
+        $cutiPerTanggal = [];
+
+        foreach ($karyawanCuti as $cuti) {
+            $start = \Carbon\Carbon::parse($cuti->date_start);
+            $end = \Carbon\Carbon::parse($cuti->date_end);
+            while ($start->lte($end)) {
+                $tanggal = $start->format('Y-m-d');
+                $cutiPerTanggal[$tanggal][] = [
+                    'employee' => $cuti->employee->name,
+                    'email'    => $cuti->employee->email,
+                ];
+                $start->addDay();
+            }
+        }
 
         return view('Employee.index', compact(
             'employeeCount', 'pendingLeaves', 'pendingReimbursements', 'pendingOvertimes',
             'pendingTravels', 'recentRequests', 'approvedLeaves', 'approvedReimbursements',
             'approvedOvertimes', 'approvedTravels', 'rejectedLeaves', 'rejectedReimbursements',
-            'rejectedOvertimes', 'rejectedTravels', 'sisaCuti'
+            'rejectedOvertimes', 'rejectedTravels', 'sisaCuti', 'cutiPerTanggal'
         ));
     }
 
@@ -151,7 +172,7 @@ class DashboardController extends Controller
             ->concat($overtimes)
             ->concat($travels)
             ->sortByDesc('created_at')
-            ->take(10)
+            ->take(8)
             ->values()
             ->all();
 
