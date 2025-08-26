@@ -6,10 +6,10 @@ use App\Http\Controllers\EmployeeController\LeaveController;
 use App\Http\Controllers\EmployeeController\ReimbursementController;
 use App\Http\Controllers\EmployeeController\OvertimeController;
 use App\Http\Controllers\EmployeeController\OfficialTravelController;
-
+use App\Http\Controllers\EmployeeController\ProfileController;
 
 Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee.')->group(function () {
-    Route::get('/', function() {
+    Route::get('/', function () {
         return redirect()->route('employee.dashboard');
     });
 
@@ -34,4 +34,8 @@ Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee
     // Official Travels
     Route::resource('official-travels', OfficialTravelController::class);
     Route::get('official-travels/{official_travel}/export-pdf', [OfficialTravelController::class, 'exportPdf'])->name('official-travels.exportPdf');
+
+
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::resource('profile', ProfileController::class);
 });

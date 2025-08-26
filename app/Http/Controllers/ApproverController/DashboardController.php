@@ -31,9 +31,9 @@ class DashboardController extends Controller
             $base = $model::query()->where('created_at', '>=', $startOfMonth);
 
             // Aman untuk single/dual status karena pakai scope trait
-            $pendings[$key] = (clone $base)->filterFinalStatus('pending')->count();
-            $rejecteds[$key] = (clone $base)->filterFinalStatus('rejected')->count();
-            $approveds[$key] = (clone $base)->filterFinalStatus('approved')->count();
+            $pendings[$key] = (clone $base)->filterFinalStatus('pending')->forLeader(Auth::id())->count();
+            $rejecteds[$key] = (clone $base)->filterFinalStatus('rejected')->forLeader(Auth::id())->count();
+            $approveds[$key] = (clone $base)->filterFinalStatus('approved')->forLeader(AUth::id())->count();
         }
 
         $total_pending = array_sum($pendings);
