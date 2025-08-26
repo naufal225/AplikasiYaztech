@@ -22,7 +22,6 @@ class LeaveController extends Controller
 
         $query = (clone $queryReal)
             ->where('status_1', 'approved')
-            ->where('status_2', 'approved')
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
 

@@ -30,7 +30,7 @@ class DashboardController extends Controller
         // =========================
         $leaveCount = Leave::whereHas('employee', function ($q) {
             $q->where('role', Roles::Employee->value);
-        })->where('status_1', 'approved')->where('status_2', 'approved')->count();
+        })->where('status_1', 'approved')->count();
 
         $overtimeCount = Overtime::whereHas('employee', function ($q) {
             $q->where('role', Roles::Employee->value);
@@ -65,7 +65,7 @@ class DashboardController extends Controller
 
             $leavesChartData[] = Leave::whereHas('employee', function ($q) {
                 $q->where('role', Roles::Employee->value);
-            })->where('status_1', 'approved')->where('status_2', 'approved')->whereBetween('created_at', [$start, $end])->count();
+            })->where('status_1', 'approved')->whereBetween('created_at', [$start, $end])->count();
 
             $overtimesChartData[] = Overtime::whereHas('employee', function ($q) {
                 $q->where('role', Roles::Employee->value);
@@ -84,6 +84,29 @@ class DashboardController extends Controller
             })->where('status_1', 'approved')->where('status_2', 'approved')->whereBetween('created_at', [$start, $end])->count();
         }
 
+        $karyawanCuti = Leave::with(['employee:id,name,email'])
+            ->where('status_1', 'approved')
+            ->where(function ($q) {
+                $q->whereYear('date_start', now()->year)
+                ->orWhereYear('date_end', now()->year);
+            })
+            ->get(['id','employee_id','date_start','date_end']);
+
+        $cutiPerTanggal = [];
+
+        foreach ($karyawanCuti as $cuti) {
+            $start = \Carbon\Carbon::parse($cuti->date_start);
+            $end = \Carbon\Carbon::parse($cuti->date_end);
+            while ($start->lte($end)) {
+                $tanggal = $start->format('Y-m-d');
+                $cutiPerTanggal[$tanggal][] = [
+                    'employee' => $cuti->employee->name,
+                    'email'    => $cuti->employee->email,
+                ];
+                $start->addDay();
+            }
+        }
+
         return view('Finance.index', [
             'leaveCount' => $leaveCount,
             'overtimeCount' => $overtimeCount,
@@ -97,6 +120,7 @@ class DashboardController extends Controller
             'reimbursementsRupiahChartData' => $reimbursementsRupiahChartData,
             'officialTravelsChartData' => $officialTravelsChartData,
             'recentRequests' => $recentRequests,
+            'cutiPerTanggal' => $cutiPerTanggal,
         ]);
     }
 
@@ -106,7 +130,7 @@ class DashboardController extends Controller
         $leaves = Leave::whereHas('employee', function ($q) {
                 $q->where('role', Roles::Employee->value);
             })
-            ->where('status_1', 'approved')->where('status_2', 'approved')
+            ->where('status_1', 'approved')
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get()
@@ -117,7 +141,6 @@ class DashboardController extends Controller
                     'title' => 'Leave Request: ' . Carbon::parse($leave->date_start)->format('M d') . ' - ' . Carbon::parse($leave->date_end)->format('M d'),
                     'date' => Carbon::parse($leave->created_at)->format('M d, Y'),
                     'status_1' => $leave->status_1,
-                    'status_2' => $leave->status_2,
                     'url' => route('finance.leaves.show', $leave->id),
                     'created_at' => $leave->created_at
                 ];
