@@ -77,11 +77,11 @@
                                 </div>
                             </div>
 
-                            <!-- Approver -->
+                            <!-- Division -->
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Division</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                    <i class="mr-3 fas fa-user-check text-info-600"></i>
+                                    <i class="mr-3 fas fa-building text-primary-600"></i>
                                     <span class="font-medium text-neutral-900">{{ $leave->employee->division->name ?? 'N/A' }}</span>
                                 </div>
                             </div>
