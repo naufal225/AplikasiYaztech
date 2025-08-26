@@ -190,7 +190,7 @@
                         <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                     </div>
                     <div class="p-6 space-y-3">
-                        @if(Auth::id() === $overtime->employee_id && $overtime->status === 'pending')
+                        @if(Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending')
                             <a href="{{ route('employee.overtimes.edit', $overtime->id) }}" class="w-full flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
                                 <i class="fas fa-edit mr-2"></i>
                                 Edit Request
