@@ -12,14 +12,18 @@ trait HasDualStatus
      *   protected array $finalStatusColumns = ['approval_a'];              // single
      *   protected array $finalStatusColumns = ['approval_a', 'approval_b']; // dual
      */
-    protected array $finalStatusColumns = ['status_1', 'status_2'];
+    protected function finalStatusColumns(): array
+    {
+        return ['status_1', 'status_2'];
+    }
+
 
     /**
      * Kembalikan [col1, col2|null]. Jika hanya 1 kolom, col2 = null (single-mode).
      */
     protected function getFinalStatusColumns(): array
     {
-        $cols = array_values($this->finalStatusColumns);
+        $cols = array_values($this->finalStatusColumns());
         $count = count($cols);
 
         if ($count === 0) {
@@ -38,7 +42,8 @@ trait HasDualStatus
      */
     public function scopeFilterFinalStatus(Builder $query, ?string $status): Builder
     {
-        if (!$status) return $query;
+        if (!$status)
+            return $query;
 
         [$s1, $s2] = $this->getFinalStatusColumns();
 
@@ -47,8 +52,8 @@ trait HasDualStatus
             return match ($status) {
                 'approved' => $query->where($s1, 'approved'),
                 'rejected' => $query->where($s1, 'rejected'),
-                'pending'  => $query->where($s1, 'pending'),
-                default    => $query,
+                'pending' => $query->where($s1, 'pending'),
+                default => $query,
             };
         }
 
@@ -57,19 +62,19 @@ trait HasDualStatus
             'approved' => $query->where($s1, 'approved')->where($s2, 'approved'),
 
             'rejected' => $query->where(function ($q) use ($s1, $s2) {
-                $q->where($s1, 'rejected')->orWhere($s2, 'rejected');
-            }),
+                    $q->where($s1, 'rejected')->orWhere($s2, 'rejected');
+                }),
 
-            'pending'  => $query->where(function ($q) use ($s1, $s2) {
-                // pending = (ada pending) && (tidak ada rejected)
-                $q->where(function ($qq) use ($s1, $s2) {
-                    $qq->where($s1, 'pending')->orWhere($s2, 'pending');
-                })->where(function ($qq) use ($s1, $s2) {
-                    $qq->where($s1, '!=', 'rejected')->where($s2, '!=', 'rejected');
-                });
-            }),
+            'pending' => $query->where(function ($q) use ($s1, $s2) {
+                    // pending = (ada pending) && (tidak ada rejected)
+                    $q->where(function ($qq) use ($s1, $s2) {
+                        $qq->where($s1, 'pending')->orWhere($s2, 'pending');
+                    })->where(function ($qq) use ($s1, $s2) {
+                        $qq->where($s1, '!=', 'rejected')->where($s2, '!=', 'rejected');
+                    });
+                }),
 
-            default    => $query,
+            default => $query,
         };
     }
 
@@ -122,7 +127,7 @@ trait HasDualStatus
     /** (Opsional) Scope umum yang sering dipakai */
     public function scopeForLeader(Builder $query, int $leaderId): Builder
     {
-        return $query->whereHas('employee.division', fn ($q) => $q->where('leader_id', $leaderId));
+        return $query->whereHas('employee.division', fn($q) => $q->where('leader_id', $leaderId));
     }
 
     public function scopeDateRange(Builder $query, ?string $fromDate, ?string $toDate, string $column = 'date_start'): Builder
@@ -147,9 +152,12 @@ trait HasDualStatus
         $v1 = $this->{$s1} ?? 'pending';
         $v2 = $s2 ? ($this->{$s2} ?? 'pending') : null;
 
-        if ($v1 === 'rejected' || $v2 === 'rejected') return 'rejected';
-        if ($v2 === null) return $v1; // single mode
-        if ($v1 === 'approved' && $v2 === 'approved') return 'approved';
+        if ($v1 === 'rejected' || $v2 === 'rejected')
+            return 'rejected';
+        if ($v2 === null)
+            return $v1; // single mode
+        if ($v1 === 'approved' && $v2 === 'approved')
+            return 'approved';
         return 'pending';
     }
 
@@ -162,7 +170,7 @@ trait HasDualStatus
         [$s1, $_] = $this->getFinalStatusColumns();
 
         return $q->whereNull('seen_by_approver_at')
-                ->where($s1, 'pending');
+            ->where($s1, 'pending');
     }
 
     /**
@@ -181,6 +189,6 @@ trait HasDualStatus
         }
 
         return $q->where($s1, 'approved')   // sudah lolos approver
-                 ->where($s2, 'pending');   // menunggu manager
+            ->where($s2, 'pending');   // menunggu manager
     }
 }

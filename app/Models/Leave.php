@@ -14,10 +14,15 @@ class Leave extends Model
         'date_end',
         'reason',
         'status_1',
-        'status_2',
         'note_1',
         'note_2',
     ];
+
+    protected function finalStatusColumns(): array
+    {
+        return ['status_1'];
+    }
+
 
     public function employee()
     {
