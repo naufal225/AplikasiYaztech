@@ -212,7 +212,7 @@
         <div class="bg-white p-6 sm:p-8 rounded-2xl w-[90%] max-w-md shadow-lg transform transition-all scale-95 opacity-0"
             id="cutiModalContent">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-bold text-gray-800">Daftar Cuti</h2>
+                <h2 class="text-lg font-bold text-gray-800">List of Employee on Leave</h2>
                 <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
                     <i class="fas fa-times"></i>
                 </button>

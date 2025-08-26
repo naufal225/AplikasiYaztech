@@ -70,9 +70,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Employee</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Duration</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Manager</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Team Lead</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Manager</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -124,27 +122,6 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($leave->status_2 === 'pending')
-                                        <span class="badge-pending">
-                                            <i class="fas fa-clock mr-1"></i>
-                                            Pending
-                                        </span>
-                                    @elseif($leave->status_2 === 'approved')
-                                        <span class="badge-approved">
-                                            <i class="fas fa-check-circle mr-1"></i>
-                                            Approved
-                                        </span>
-                                    @elseif($leave->status_2 === 'rejected')
-                                        <span class="badge-rejected">
-                                            <i class="fas fa-times-circle mr-1"></i>
-                                            Rejected
-                                        </span>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $leave->approver->name ?? 'N/A' }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -160,7 +137,7 @@
                                 <td colspan="8" class="h-64 text-center align-middle">
                                     <div class="flex flex-col items-center justify-center h-full text-neutral-400">
                                         <i class="fas fa-inbox text-4xl mb-4"></i>
-                                        <p class="text-lg font-medium">No leave requests found</p>
+                                        <p class="text-lg font-medium">No leave employee requests found</p>
                                     </div>
                                 </td>
                             </tr>
