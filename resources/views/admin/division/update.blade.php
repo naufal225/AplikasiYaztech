@@ -103,7 +103,7 @@
                     <!-- approver Selection Field -->
                     <div>
                         <label for="leader_id" class="block mb-2 text-sm font-medium text-gray-700">
-                            Select approver <span class="text-red-500">*</span>
+                            Select Leader <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <select id="leader_id" name="leader_id"
@@ -128,7 +128,7 @@
                         @error('leader_id')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="mt-2 text-xs text-gray-500">Choose the approver who will be assigned to this division</p>
+                        <p class="mt-2 text-xs text-gray-500">Choose the leader who will be assigned to this division</p>
                     </div>
 
                     <!-- Form Actions -->
