@@ -62,12 +62,13 @@ class DashboardController extends Controller
         // Get recent requests (combined from all types)
         $recentRequests = $this->getRecentRequests($userId);
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) $queryClone->where('status_1', 'approved')->where('status_2', 'approved')->whereYear('date_start', now()->year)->count();
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) $queryClone->where('status_1', 'approved')->whereYear('date_start', now()->year)->count();
         $karyawanCuti = Leave::with(['employee:id,name,email'])
             ->where('status_1', 'approved')
-            ->where('status_2', 'approved')
-            ->whereYear('date_start', now()->year)
-            ->orWhereYear('date_end', now()->year)
+            ->where(function ($q) {
+                $q->whereYear('date_start', now()->year)
+                ->orWhereYear('date_end', now()->year);
+            })
             ->get(['id','employee_id','date_start','date_end']);
 
         $cutiPerTanggal = [];
@@ -107,7 +108,6 @@ class DashboardController extends Controller
                     'title' => 'Leave Request: ' . Carbon::parse($leave->date_start)->format('M d') . ' - ' . Carbon::parse($leave->date_end)->format('M d'),
                     'date' => Carbon::parse($leave->created_at)->format('M d, Y'),
                     'status_1' => $leave->status_1,
-                    'status_2' => $leave->status_2,
                     'url' => route('employee.leaves.show', $leave->id),
                     'created_at' => $leave->created_at
                 ];
