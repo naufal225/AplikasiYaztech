@@ -10,7 +10,15 @@
             <p class="text-neutral-600">Manage and track your leave requests</p>
         </div>
         <div class="mt-4 sm:mt-0">
-            <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:flex-row">
+            <div class="flex flex-col items-center gap-5 mt-4 sm:mt-0 sm:flex-row">
+                <div class="mt-4 sm:mt-0">
+                    <button onclick="window.location.href='{{ route('admin.leaves.create') }}'"
+                        class="btn-primary @if($sisaCuti <= 0) cursor-not-allowed @else cursor-pointer @endif"
+                        @if($sisaCuti <=0) disabled @endif>
+                        <i class="mr-2 fas fa-plus"></i>
+                        New Leave Request
+                    </button>
+                </div>
                 <button id="exportLeaveRequests"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
                     <i class="mr-2 fa-solid fa-file-export"></i>
@@ -125,107 +133,220 @@
         </form>
     </div>
 
+    <!-- First Table: My Leave Requests -->
     <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-900">Leave Requests</h3>
+                <h3 class="text-lg font-semibold text-gray-900">My Leave Requests</h3>
+                <span class="px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
+                    {{ $ownRequests->total() }} requests
+                </span>
             </div>
         </div>
-        <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-neutral-200">
-                    <thead class="bg-neutral-50">
-                        <tr>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Request ID</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Duration</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Approver</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-neutral-200">
-                        @forelse($leaves as $leave)
-                        <tr class="transition-colors duration-200 hover:bg-neutral-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                    <div class="text-sm font-medium text-neutral-900">#{{ $leave->id }}</div>
-                                    <div class="text-sm text-neutral-500">{{ $leave->created_at->format('M d, Y') }}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-neutral-200">
+                <thead class="bg-neutral-50">
+                    <tr>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Request ID</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Duration</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Status</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Manager</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-neutral-200">
+                    @forelse($ownRequests as $leave)
+                    <tr class="transition-colors duration-200 hover:bg-neutral-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-neutral-900">#{{ $leave->id }}</div>
+                                <div class="text-sm text-neutral-500">{{ $leave->created_at->format('M d, Y') }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-neutral-900">
+                                {{ \Carbon\Carbon::parse($leave->date_start)->format('M d') }} - {{
+                                \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
+                            </div>
+                            <div class="text-sm text-neutral-500">
+                                {{
+                                \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
+                                + 1 }} days
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($leave->status_1 === 'pending')
+                            <span class="text-yellow-500 badge-pending">
+                                <i class="mr-1 fas fa-clock"></i>
+                                Pending
+                            </span>
+                            @elseif($leave->status_1 === 'approved')
+                            <span class="text-green-500 badge-approved">
+                                <i class="mr-1 fas fa-check-circle"></i>
+                                Approved
+                            </span>
+                            @elseif($leave->status_1 === 'rejected')
+                            <span class="text-red-500 badge-rejected">
+                                <i class="mr-1 fas fa-times-circle"></i>
+                                Rejected
+                            </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-neutral-900">{{ $manager->name ?? "N/A" }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                            <div class="flex items-center space-x-2">
+                                <a href="{{ route('admin.leaves.show', $leave->id) }}"
+                                    class="text-primary-600 hover:text-primary-900" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="text-neutral-400">
+                                <i class="mb-4 text-4xl fas fa-inbox"></i>
+                                <p class="text-lg font-medium">No personal leave requests found</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($ownRequests->hasPages())
+        <div class="px-6 py-4 border-t border-neutral-200">
+            {{ $ownRequests->appends(request()->query())->links() }}
+        </div>
+        @endif
+    </div>
+
+    <!-- Second Table: All Users' Leave Requests -->
+    <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">All Leave Requests</h3>
+                <span class="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
+                    {{ $allUsersRequests->total() }} requests
+                </span>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-neutral-200">
+                <thead class="bg-neutral-50">
+                    <tr>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Request ID</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Employee</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Duration</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Status</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-neutral-200">
+                    @forelse($allUsersRequests as $leave)
+                    <tr class="transition-colors duration-200 hover:bg-neutral-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-neutral-900">#{{ $leave->id }}</div>
+                                <div class="text-sm text-neutral-500">{{ $leave->created_at->format('M d, Y') }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 w-10 h-10">
+                                    @if($leave->employee->url_profile)
+                                    <img class="object-cover w-10 h-10 rounded-full"
+                                        src="{{ $leave->employee->url_profile }}" alt="{{ $leave->employee->name }}">
+                                    @else
+                                    <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full">
+                                        <span class="text-sm font-medium text-gray-700">
+                                            {{ strtoupper(substr($leave->employee->name, 0, 1)) }}
+                                        </span>
+                                    </div>
+                                    @endif
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-neutral-900">{{ $leave->employee->name }}</div>
+                                    <div class="text-sm text-neutral-500">
+                                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full
+                                            @if($leave->employee->role === 'Manager') bg-purple-100 text-purple-800
+                                            @elseif($leave->employee->role === 'Employee') bg-blue-100 text-blue-800
+                                            @else bg-gray-100 text-gray-800 @endif">
+                                            {{ ucfirst($leave->employee->role) }}
+                                        </span>
                                     </div>
                                 </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">
-                                    {{ \Carbon\Carbon::parse($leave->date_start)->format('M d') }} - {{
-                                    \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
-                                </div>
-                                <div class="text-sm text-neutral-500">
-                                    {{
-                                    \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
-                                    + 1 }} days
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($leave->status_1 === 'pending')
-                                <span class="text-yellow-500 badge-pending">
-                                    <i class="mr-1 fas fa-clock"></i>
-                                    Pending
-                                </span>
-                                @elseif($leave->status_1 === 'approved')
-                                <span class="text-green-500 badge-approved">
-                                    <i class="mr-1 fas fa-check-circle"></i>
-                                    Approved
-                                </span>
-                                @elseif($leave->status_1 === 'rejected')
-                                <span class="text-red-500 badge-rejected">
-                                    <i class="mr-1 fas fa-times-circle"></i>
-                                    Rejected
-                                </span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $leave->employee->division->leader->name ??
-                                    "N/A" }}</div>
-                                <div class="text-sm text-neutral-500">{{
-                                    ucfirst($leave->employee->division->leader->role ?? "N/A") }}</div>
-                            </td>
-                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                                <div class="flex items-center space-x-2">
-                                    <a href="{{ route('admin.leaves.show', $leave->id) }}"
-                                        class="text-primary-600 hover:text-primary-900" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
-                                <div class="text-neutral-400">
-                                    <i class="mb-4 text-4xl fas fa-inbox"></i>
-                                    <p class="text-lg font-medium">No leave requests found</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            @if($leaves->hasPages())
-            <div class="px-6 py-4 border-t border-neutral-200">
-                {{ $leaves->links() }}
-            </div>
-            @endif
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-neutral-900">
+                                {{ \Carbon\Carbon::parse($leave->date_start)->format('M d') }} - {{
+                                \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
+                            </div>
+                            <div class="text-sm text-neutral-500">
+                                {{
+                                \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
+                                + 1 }} days
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($leave->status_1 === 'pending')
+                            <span class="text-yellow-500 badge-pending">
+                                <i class="mr-1 fas fa-clock"></i>
+                                Pending
+                            </span>
+                            @elseif($leave->status_1 === 'approved')
+                            <span class="text-green-500 badge-approved">
+                                <i class="mr-1 fas fa-check-circle"></i>
+                                Approved
+                            </span>
+                            @elseif($leave->status_1 === 'rejected')
+                            <span class="text-red-500 badge-rejected">
+                                <i class="mr-1 fas fa-times-circle"></i>
+                                Rejected
+                            </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                            <div class="flex items-center space-x-2">
+                                <a href="{{ route('admin.leaves.show', $leave->id) }}"
+                                    class="text-primary-600 hover:text-primary-900" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="text-neutral-400">
+                                <i class="mb-4 text-4xl fas fa-inbox"></i>
+                                <p class="text-lg font-medium">No leave requests found</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
+        @if($allUsersRequests->hasPages())
+        <div class="px-6 py-4 border-t border-neutral-200">
+            {{ $allUsersRequests->appends(request()->query())->links() }}
+        </div>
+        @endif
     </div>
 
     <div id="toast" class="fixed z-50 hidden top-4 right-4">

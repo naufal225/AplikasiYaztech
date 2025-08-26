@@ -12,6 +12,7 @@ use App\Roles;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -82,12 +83,82 @@ class LeaveController extends Controller
 
     public function create()
     {
-
+        return view('approver.leave-request.create');
     }
 
     public function store(Request $request)
     {
+        $request->validate([
+            'date_start' => 'required|date',
+            'date_end' => 'required|date|after_or_equal:date_start',
+            'reason' => 'required|string|max:1000',
+        ], [
+            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
+            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
+            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
+            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
+            'reason.required' => 'Alasan harus diisi.',
+            'reason.string' => 'Alasan harus berupa teks.',
+            'reason.max' => 'Alasan tidak boleh lebih dari 1000 karakter.',
+        ]);
 
+        if (!Auth::user()->division_id) {
+            return back()->with('error', 'You are not in a division. Please contact your administrator.');
+        }
+
+        DB::transaction(function () use ($request) {
+            $leave = new Leave();
+            $leave->employee_id = Auth::id();
+            $leave->date_start = $request->date_start;
+            $leave->date_end = $request->date_end;
+            $leave->reason = $request->reason;
+            $leave->status_1 = 'pending';
+            $leave->save();
+
+            $tokenRaw = null;
+            // --- Email ke approver ---
+            $manager = User::where('role', Roles::Manager->value)->first();
+            if ($manager) {
+                $token = Str::random(48);
+                ApprovalLink::create([
+                    'model_type' => get_class($leave),   // App\Models\Leave
+                    'model_id' => $leave->id,
+                    'approver_user_id' => $manager->id,
+                    'level' => 2,
+                    'scope' => 'both',             // boleh approve & reject
+                    'token' => hash('sha256', $token), // simpan hash, kirim raw
+                    'expires_at' => now()->addDays(3),  // masa berlaku
+                ]);
+            }
+
+            // pastikan broadcast SETELAH commit
+            DB::afterCommit(function () use ($leave, $tokenRaw, $manager) {
+                $fresh = $leave->fresh(); // ambil ulang (punya created_at dll)
+
+                event(new \App\Events\LeaveSubmitted($fresh, Auth::user()->division_id));
+
+                if (!$fresh || !$fresh->approver || !$tokenRaw) {
+                    return;
+                }
+
+                $linkTanggapan = route('public.approval.show', $tokenRaw); // pastikan route param sesuai
+
+                // Gunakan queue
+                Mail::to($manager->email)->queue(
+                    new \App\Mail\SendMessage(
+                        namaPengaju: $leave->employee->name,
+                        namaApprover: $manager->name,
+                        linkTanggapan: $linkTanggapan,
+                        emailPengaju: $leave->employee->email
+                    )
+                );
+            });
+
+        });
+
+        return redirect()->route('approver.leaves.index')
+            ->with('success', 'Leave request submitted successfully.');
     }
 
     public function edit(Leave $leave)
@@ -149,16 +220,11 @@ class LeaveController extends Controller
                         'expires_at' => now()->addDays(3),  // masa berlaku
                     ]);
                     $link = route('public.approval.show', $token);
-                    $pesan = "Terdapat pengajuan perjalanan dinas baru atas nama {$leave->employee->name}.
-                          <br> Tanggal Mulai: {$leave->date_start}
-                          <br> Tanggal Selesai: {$leave->date_end}
-                          <br> Alasan: {$leave->reason}";
 
                     // Gunakan queue
                     Mail::to($manager->email)->queue(
                         new \App\Mail\SendMessage(
                             namaPengaju: $leave->employee->name,
-                            pesan: $pesan,
                             namaApprover: $manager->name,
                             linkTanggapan: $link,
                             emailPengaju: $leave->employee->email
@@ -168,24 +234,6 @@ class LeaveController extends Controller
             }
 
             $statusMessage = $validated['status_1'];
-        }
-
-        // === STATUS 2 ===
-        elseif ($request->filled('status_2')) {
-            if ($leave->status_1 !== 'approved') {
-                return back()->withErrors(['status_2' => 'Status 2 hanya dapat diubah setelah status 1 disetujui.']);
-            }
-
-            if ($leave->status_2 !== 'pending') {
-                return back()->withErrors(['status_2' => 'Status 2 sudah final dan tidak dapat diubah.']);
-            }
-
-            $leave->update([
-                'status_2' => $validated['status_2'],
-                'note_2' => $validated['note_2'] ?? NULL
-            ]);
-
-            $statusMessage = $validated['status_2'];
         }
 
         return redirect()

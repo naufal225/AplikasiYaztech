@@ -94,8 +94,8 @@ class LeaveController extends Controller
             ->get();
 
         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) Leave::where('employee_id', Auth::id())->with(['employee', 'approver'])->orderBy('created_at', 'desc')->where('status_1', 'approved')->whereYear('date_start', now()->year)->count();
-        
-        if($sisaCuti <= 0){
+
+        if ($sisaCuti <= 0) {
             abort(422, 'Sisa cuti tidak cukup.');
         }
 
@@ -136,23 +136,22 @@ class LeaveController extends Controller
             $leave->save();
 
             $tokenRaw = null;
-            // --- Email ke approver ---
-            if ($leave->approver) {
-                $tokenRaw = Str::random(48);
-                \App\Models\ApprovalLink::create([
-                    'model_type' => get_class($leave),
+            $manager = User::where('role', Roles::Manager->value)->first();
+            if ($manager) {
+                $token = Str::random(48);
+                ApprovalLink::create([
+                    'model_type' => get_class($leave),   // App\Models\Leave
                     'model_id' => $leave->id,
-                    'approver_user_id' => $leave->approver->id,
-                    'level' => 1,
-                    'scope' => 'both',
-                    'token' => hash('sha256', $tokenRaw),
-                    'expires_at' => now()->addDays(3),
+                    'approver_user_id' => $manager->id,
+                    'level' => 2,
+                    'scope' => 'both',             // boleh approve & reject
+                    'token' => hash('sha256', $token), // simpan hash, kirim raw
+                    'expires_at' => now()->addDays(3),  // masa berlaku
                 ]);
-
             }
 
             // pastikan broadcast SETELAH commit
-            DB::afterCommit(function () use ($leave, $request, $tokenRaw) {
+            DB::afterCommit(function () use ($leave, $request, $tokenRaw, $manager) {
                 $fresh = $leave->fresh(); // ambil ulang (punya created_at dll)
 
                 event(new \App\Events\LeaveSubmitted($fresh, Auth::user()->division_id));
@@ -163,15 +162,13 @@ class LeaveController extends Controller
 
                 $linkTanggapan = route('public.approval.show', $tokenRaw); // pastikan route param sesuai
 
-                $startFormatted = Carbon::parse($request->date_start)->translatedFormat('l, d/m/Y');
-                $endFormatted = Carbon::parse($request->date_end)->translatedFormat('l, d/m/Y');
-
-                Mail::to($leave->approver->email)->queue(
+                // Gunakan queue
+                Mail::to($manager->email)->queue(
                     new \App\Mail\SendMessage(
-                        namaPengaju: Auth::user()->name,
-                        namaApprover: $leave->approver->name,
+                        namaPengaju: $leave->employee->name,
+                        namaApprover: $manager->name,
                         linkTanggapan: $linkTanggapan,
-                        emailPengaju: Auth::user()->email
+                        emailPengaju: $leave->employee->email
                     )
                 );
             });
