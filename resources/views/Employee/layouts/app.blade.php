@@ -64,7 +64,7 @@
             </nav>
 
             <div class="p-4 border-t border-primary-700">
-                <div class="flex items-center mb-4">
+                <a class="flex items-center mb-4" href="{{ route('employee.profile.index') }}">
                     <div class="flex items-center justify-center w-10 h-10 mr-3 rounded-full bg-primary-600">
                         <span class="text-sm font-semibold text-white">{{ substr(Auth::user()->name, 0, 1) }}</span>
                     </div>
@@ -72,7 +72,7 @@
                         <p class="text-sm font-medium text-white truncate">{{ Auth::user()->name }}</p>
                         <p class="text-xs text-primary-200">{{ Auth::user()->email }}</p>
                     </div>
-                </div>
+                </a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="flex items-center w-full px-4 py-2 transition-all duration-200 rounded-lg text-primary-100 hover:bg-primary-700 hover:text-white">

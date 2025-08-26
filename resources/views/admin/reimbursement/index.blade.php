@@ -5,14 +5,21 @@
 
 @section('content')
 <main class="relative z-10 flex-1 p-0 space-y-6 overflow-x-hidden overflow-y-auto bg-gray-50">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col items-center sm:flex-row sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-neutral-900">Reimbursements Requests</h1>
             <p class="text-neutral-600">Manage and track reimbursements requests</p>
         </div>
         <div class="mt-4 sm:mt-0">
-            <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:flex-row">
-                <button id="exportReimbursementsData"
+            <div class="flex flex-col items-center gap-5 mt-4 sm:mt-0 sm:flex-row">
+                <div class="mt-4 sm:mt-0">
+                    <button onclick="window.location.href='{{ route('admin.reimbursements.create') }}'"
+                        class="btn-primary">
+                        <i class="mr-2 fas fa-plus"></i>
+                        New Leave Request
+                    </button>
+                </div>
+                <button id="exportLeaveRequests"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
                     <i class="mr-2 fa-solid fa-file-export"></i>
                     <span id="exportButtonText">Export Data</span>

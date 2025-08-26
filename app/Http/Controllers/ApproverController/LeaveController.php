@@ -57,8 +57,7 @@ class LeaveController extends Controller
         $rejectedRequests = (int) ($counts->rejected ?? 0);
         $pendingRequests = (int) ($counts->pending ?? 0);
 
-        Leave::whereNull('seen_by_approver_at')->where('status_1', 'pending')
-            ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
+        Leave::whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_approver_at' => now()]);
 
         return view('approver.leave-request.index', compact(
@@ -136,7 +135,8 @@ class LeaveController extends Controller
             DB::afterCommit(function () use ($leave, $tokenRaw, $manager) {
                 $fresh = $leave->fresh(); // ambil ulang (punya created_at dll)
 
-                event(new \App\Events\LeaveSubmitted($fresh, Auth::user()->division_id));
+                // event(new \App\Events\LeaveSubmitted($fresh, Auth::user()->division_id));
+                event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, 'manager'));
 
                 if (!$fresh || !$fresh->approver || !$tokenRaw) {
                     return;

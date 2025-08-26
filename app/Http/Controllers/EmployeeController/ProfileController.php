@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\ApproverController;
+namespace App\Http\Controllers\EmployeeController;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -13,7 +13,7 @@ class ProfileController extends Controller
 {
     public function index()
     {
-        return view('approver.profile.index');
+        return view('employee.profile.index');
     }
 
     public function update(Request $request)
@@ -44,7 +44,7 @@ class ProfileController extends Controller
         $user->email = $request->email;
         $user->save();
 
-        return redirect()->route('approver.profile.index')->with('success', 'Profile updated successfully!');
+        return redirect()->route('employee.profile.index')->with('success', 'Profile updated successfully!');
     }
 
     /**
@@ -72,6 +72,6 @@ class ProfileController extends Controller
         $user->password = bcrypt($request->new_password);
         $user->save();
 
-        return redirect()->route('approver.profile.index')->with('success', 'Password updated successfully!');
+        return redirect()->route('employee.profile.index')->with('success', 'Password updated successfully!');
     }
 }

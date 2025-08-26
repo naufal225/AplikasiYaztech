@@ -4,10 +4,16 @@ namespace App\Http\Controllers\AdminController;
 
 use App\Exports\ReimbursementsExport;
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalLink;
 use App\Models\Reimbursement;
+use App\Models\User;
+use App\Roles;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReimbursementController extends Controller
@@ -88,6 +94,95 @@ class ReimbursementController extends Controller
         $reimbursement->load(['approver', 'customer']);
 
         return view('admin.reimbursement.show', compact('reimbursement'));
+    }
+
+     public function create()
+    {
+        return view('admin.reimbursements.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'customer' => 'required',
+            'total' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'invoice_path' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ], [
+            'customer.required' => 'Customer harus dipilih.',
+            'customer.exists' => 'Customer tidak valid.',
+            'total.required' => 'Total harus diisi.',
+            'total.numeric' => 'Total harus berupa angka.',
+            'total.min' => 'Total tidak boleh kurang dari 0.',
+            'date.required' => 'Tanggal harus diisi.',
+            'date.date' => 'Format tanggal tidak valid.',
+            'invoice_path.file' => 'File yang diupload tidak valid.',
+            'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
+            'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            $reimbursement = new Reimbursement();
+            $reimbursement->employee_id = Auth::id();
+            $reimbursement->customer = $request->customer;
+            $reimbursement->total = $request->total;
+            $reimbursement->date = $request->date;
+            $reimbursement->status_1 = 'pending';
+            $reimbursement->status_2 = 'pending';
+
+            if ($request->hasFile('invoice_path')) {
+                $path = $request->file('invoice_path')->store('reimbursement_invoices', 'public');
+                $reimbursement->invoice_path = $path;
+            }
+
+            $reimbursement->save();
+
+            $token = null;
+            // Send notification email to the approver
+            if ($reimbursement->approver) {
+                $token = \Illuminate\Support\Str::random(48);
+                ApprovalLink::create([
+                    'model_type' => get_class($reimbursement),   // App\Models\reim$reimbursement
+                    'model_id' => $reimbursement->id,
+                    'approver_user_id' => $reimbursement->approver->id,
+                    'level' => 1, // level 1 berarti arahnya ke team lead
+                    'scope' => 'both',             // boleh approve & reject
+                    'token' => hash('sha256', $token), // simpan hash, kirim raw
+                    'expires_at' => now()->addDays(3),  // masa berlaku
+                ]);
+
+            }
+
+            DB::afterCommit(function () use ($reimbursement, $request, $token) {
+                $fresh = $reimbursement->fresh(); // ambil ulang (punya created_at dll)
+                // dd("jalan");
+                event(new \App\Events\ReimbursementSubmitted($fresh, Auth::user()->division_id));
+
+                // Kalau tidak ada approver atau token, jangan kirim email
+                if (!$fresh || !$fresh->approver || !$token) {
+                    return;
+                }
+
+                $linkTanggapan = route('public.approval.show', $token);
+
+                Mail::to($reimbursement->approver->email)->queue(
+                    new \App\Mail\SendMessage(
+                        namaPengaju: Auth::user()->name,
+                        namaApprover: $reimbursement->approver->name,
+                        linkTanggapan: $linkTanggapan,
+                        emailPengaju: Auth::user()->email,
+                        attachmentPath: $reimbursement->invoice_path
+                    )
+                );
+            });
+
+        });
+
+        return redirect()->route('admin.reimbursements.index')
+            ->with('success', 'Reimbursement request submitted successfully.');
     }
 
     public function export(Request $request)

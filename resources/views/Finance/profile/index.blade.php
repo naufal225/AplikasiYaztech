@@ -1,4 +1,4 @@
-@extends('components.manager.layout.layout-manager')
+@extends('Finance.layouts.app')
 
 @section('content')
 <div class="max-w-4xl mx-auto">
@@ -134,7 +134,7 @@
 <div id="editProfileModal" class="fixed inset-0 z-50 hidden bg-black/20">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="w-full max-w-md bg-white rounded-lg shadow-xl">
-            <form action="{{ route('manager.profile.update', Auth::id()) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('finance.profile.update', Auth::id()) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -199,7 +199,7 @@
 <div id="passwordModal" class="fixed inset-0 z-50 hidden bg-black/20">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="w-full max-w-md bg-white rounded-lg shadow-xl">
-            <form action="{{ route('manager.profile.password') }}" method="POST">
+            <form action="{{ route('finance.profile.password') }}" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -251,7 +251,6 @@
 </div>
 
 @push('scripts')
-<script>
     // Modal functions
     function openEditModal() {
         document.getElementById('editProfileModal').classList.remove('hidden');
@@ -300,6 +299,5 @@
     document.getElementById('passwordModal').addEventListener('click', function(e) {
         if (e.target === this) closePasswordModal();
     });
-</script>
 @endpush
 @endsection

@@ -117,7 +117,7 @@
                 </div>
                 <div>
                     <button onclick="openPasswordModal()"
-                        class="px-4 py-2 font-medium text-white transition-colors bg-gray-600 rounded-lg hover:bg-gray-700">
+                        class="px-4 py-2 font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">
                         <i class="mr-2 fas fa-key"></i>Change Password
                     </button>
                 </div>
