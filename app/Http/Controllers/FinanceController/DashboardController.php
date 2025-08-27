@@ -23,8 +23,6 @@ class DashboardController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $user = Auth::user()->where('role', Roles::Employee->value)->first();
-
         // =========================
         // DATA COUNT (CARD)
         // =========================
@@ -51,7 +49,7 @@ class DashboardController extends Controller
             return Carbon::create()->month($m)->format('M');
         });
 
-        $recentRequests = $this->getRecentRequests($user->id);
+        $recentRequests = $this->getRecentRequests();
 
         $leavesChartData = [];
         $overtimesChartData = [];
@@ -84,7 +82,7 @@ class DashboardController extends Controller
             })->where('status_1', 'approved')->where('status_2', 'approved')->whereBetween('created_at', [$start, $end])->count();
         }
 
-        $karyawanCuti = Leave::with(['employee:id,name,email'])
+        $karyawanCuti = Leave::with(['employee:id,name,email,url_profile'])
             ->where('status_1', 'approved')
             ->where(function ($q) {
                 $q->whereYear('date_start', now()->year)
@@ -102,6 +100,7 @@ class DashboardController extends Controller
                 $cutiPerTanggal[$tanggal][] = [
                     'employee' => $cuti->employee->name,
                     'email'    => $cuti->employee->email,
+                    'url_profile' => $cuti->employee->url_profile,
                 ];
                 $start->addDay();
             }
@@ -123,7 +122,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function getRecentRequests($userId)
+    private function getRecentRequests()
     {
         // Get recent leaves
         $leaves = Leave::whereHas('employee', function ($q) {
