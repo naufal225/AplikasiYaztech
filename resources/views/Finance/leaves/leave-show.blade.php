@@ -139,7 +139,7 @@
         </div>
 
         <!-- Divider -->
-        <div class="border-t border-primary-700 transform scale-y-50 mb-10 mt-6"></div>
+        <div class="border-t border-gray-300/80 transform scale-y-50 mb-10 mt-6"></div>
 
         <!-- Leaves You Employee Table -->
         <p class="text-sm text-neutral-500 mb-2 ms-4">Your leave requests are listed below.</p>
@@ -168,7 +168,12 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 bg-success-100 rounded-full flex items-center justify-center mr-3">
-                                            <span class="text-success-600 font-semibold text-xs">{{ substr($leave->employee->name, 0, 1) }}</span>
+                                            @if($leave->employee->url_profile)
+                                                <img class="object-cover rounded-full"
+                                                    src="{{ $leave->employee->url_profile }}" alt="{{ $leave->employee->name }}">
+                                            @else
+                                                <span class="text-success-600 font-semibold text-xs">{{ substr($leave->employee->name, 0, 1) }}</span>
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-neutral-900">{{ $leave->employee->name }}</div>
@@ -211,10 +216,10 @@
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         @if(Auth::id() === $leave->employee_id && $leave->status_1 === 'pending')
-                                            <a href="{{ route('employee.leaves.edit', $leave->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
+                                            <a href="{{ route('finance.leaves.edit', $leave->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <form action="{{ route('employee.leaves.destroy', $leave->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
+                                            <form action="{{ route('finance.leaves.destroy', $leave->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-error-600 hover:text-error-900" title="Delete">
@@ -273,7 +278,12 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 bg-success-100 rounded-full flex items-center justify-center mr-3">
-                                            <span class="text-success-600 font-semibold text-xs">{{ substr($leave->employee->name, 0, 1) }}</span>
+                                            @if($leave->employee->url_profile)
+                                                <img class="object-cover rounded-full"
+                                                    src="{{ $leave->employee->url_profile }}" alt="{{ $leave->employee->name }}">
+                                            @else
+                                                <span class="text-success-600 font-semibold text-xs">{{ substr($leave->employee->name, 0, 1) }}</span>
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-neutral-900">{{ $leave->employee->name . (Auth::id() === $leave->employee->id ? ' (You)' : '') }}</div>

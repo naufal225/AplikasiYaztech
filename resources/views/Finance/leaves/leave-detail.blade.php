@@ -160,14 +160,32 @@
                         <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                     </div>
                     <div class="p-6 space-y-3">
+                        @if(Auth::id() === $leave->employee_id && ($leave->status_1 === 'pending'))
+                            <a href="{{ route('finance.leaves.edit', $leave->id) }}" class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
+                                <i class="mr-2 fas fa-edit"></i>
+                                Edit Request
+                            </a>
+                            <form action="{{ route('finance.leaves.destroy', $leave->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this leave request?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-error-600 hover:bg-error-700">
+                                    <i class="mr-2 fas fa-trash"></i>
+                                    Delete Request
+                                </button>
+                            </form>
+                        @endif
+
                         <a href="{{ route('finance.leaves.index') }}" class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                             <i class="mr-2 fas fa-arrow-left"></i>
                             Back to List
                         </a>
-                        <button onclick="window.location.href='{{ route('finance.leaves.exportPdf', $leave->id) }}'" class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
-                            <i class="mr-2 fas fa-print"></i>
-                            Print Request
-                        </button>
+
+                        @if ($leave->status_1 === 'approved')
+                            <button onclick="window.location.href='{{ route('finance.leaves.exportPdf', $leave->id) }}'" class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
+                                <i class="mr-2 fas fa-print"></i>
+                                Print Request
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>
