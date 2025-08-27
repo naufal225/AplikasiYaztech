@@ -21,15 +21,13 @@ class LeaveController extends Controller
             switch ($request->status) {
                 case 'approved':
                     // approved = dua-duanya approved
-                    $query->where('status_1', 'approved')
-                        ->where('status_2', 'approved');
+                    $query->where('status_1', 'approved');
                     break;
 
                 case 'rejected':
                     // rejected = salah satu rejected
                     $query->where(function ($q) {
-                        $q->where('status_1', 'rejected')
-                            ->orWhere('status_2', 'rejected');
+                        $q->where('status_1', 'rejected');
                     });
                     break;
 
@@ -37,11 +35,9 @@ class LeaveController extends Controller
                     // pending = tidak ada rejected DAN (minimal salah satu pending)
                     $query->where(function ($q) {
                         $q->where(function ($qq) {
-                            $qq->where('status_1', 'pending')
-                                ->orWhere('status_2', 'pending');
+                            $qq->where('status_1', 'pending');
                         })->where(function ($qq) {
-                            $qq->where('status_1', '!=', 'rejected')
-                                ->where('status_2', '!=', 'rejected');
+                            $qq->where('status_1', '!=', 'rejected');
                         });
                     });
                     break;
@@ -72,12 +68,9 @@ class LeaveController extends Controller
 
         $leaves = $query->paginate(10);
         $totalRequests = Leave::count();
-        $pendingRequests = Leave::where('status_1', 'pending')
-            ->orWhere('status_2', 'pending')->count();
-        $approvedRequests = Leave::where('status_1', 'approved')
-            ->where('status_2', 'approved')->count();
-        $rejectedRequests = Leave::where('status_1', 'rejected')
-            ->orWhere('status_2', 'rejected')->count();
+        $pendingRequests = Leave::where('status_1', 'pending')->count();
+        $approvedRequests = Leave::where('status_1', 'approved')->count();
+        $rejectedRequests = Leave::where('status_1', 'rejected')->count();
 
         $manager = User::where('role', Roles::Manager->value)->first();
 

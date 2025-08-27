@@ -132,17 +132,17 @@
                                 Duration</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 1 - Team Lead</th>
+                                Status</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 2 - Manager</th>
+                                Manager</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-neutral-200">
-                        <template x-for="row in rows" :key="row.id">
+                        {{-- <template x-for="row in rows" :key="row.id">
                             <tr class="transition-colors duration-200 hover:bg-neutral-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div>
@@ -157,9 +157,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap"
                                     x-html="row.status_1 === 'approved' ? `<span class='text-green-500 badge-approved'><i class='mr-1 fas fa-check-circle'></i>Approved</span>` : (row.status_1 === 'rejected' ? `<span class='text-red-500 badge-rejected'><i class='mr-1 fas fa-times-circle'></i>Rejected</span>` : `<span class='text-yellow-500 badge-pending'><i class='mr-1 fas fa-clock'></i>Pending</span>`)">
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap"
-                                    x-html="row.status_2 === 'approved' ? `<span class='text-green-500 badge-approved'><i class='mr-1 fas fa-check-circle'></i>Approved</span>` : (row.status_2 === 'rejected' ? `<span class='text-red-500 badge-rejected'><i class='mr-1 fas fa-times-circle'></i>Rejected</span>` : `<span class='text-yellow-500 badge-pending'><i class='mr-1 fas fa-clock'></i>Pending</span>`)">
-                                </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <a :href="row.show_url" class="text-primary-600 hover:text-primary-900"
                                         title="View Details">
@@ -167,7 +165,7 @@
                                     </a>
                                 </td>
                             </tr>
-                        </template>
+                        </template> --}}
                         @forelse($leaves as $leave)
                         <tr class="transition-colors duration-200 hover:bg-neutral-50">
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -207,22 +205,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($leave->status_2 === 'pending')
-                                <span class="text-yellow-500 badge-pending">
-                                    <i class="mr-1 fas fa-clock"></i>
-                                    Pending
-                                </span>
-                                @elseif($leave->status_2 === 'approved')
-                                <span class="text-green-500 badge-approved">
-                                    <i class="mr-1 fas fa-check-circle"></i>
-                                    Approved
-                                </span>
-                                @elseif($leave->status_2 === 'rejected')
-                                <span class="text-red-500 badge-rejected">
-                                    <i class="mr-1 fas fa-times-circle"></i>
-                                    Rejected
-                                </span>
-                                @endif
+                                <div class="text-sm text-neutral-900">{{ $manager->name ?? "N/A" }}</div>
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">

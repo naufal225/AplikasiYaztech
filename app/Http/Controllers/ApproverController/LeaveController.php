@@ -60,12 +60,15 @@ class LeaveController extends Controller
         Leave::whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_approver_at' => now()]);
 
+        $manager = User::where('role', Roles::Manager->value)->firstOr();
+
         return view('approver.leave-request.index', compact(
             'leaves',
             'totalRequests',
             'pendingRequests',
             'approvedRequests',
-            'rejectedRequests'
+            'rejectedRequests',
+            'manager'
         ));
     }
 
