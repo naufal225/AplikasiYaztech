@@ -89,17 +89,13 @@ class LeaveController extends Controller
      */
     public function create()
     {
-        // Get all approvers for the dropdown
-        $approvers = User::where('role', Roles::Approver->value)
-            ->get();
-
         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) Leave::where('employee_id', Auth::id())->with(['employee', 'approver'])->orderBy('created_at', 'desc')->where('status_1', 'approved')->whereYear('date_start', now()->year)->count();
 
         if ($sisaCuti <= 0) {
             abort(422, 'Sisa cuti tidak cukup.');
         }
 
-        return view('Employee.leaves.leave-request', compact('approvers'));
+        return view('Employee.leaves.leave-request');
     }
 
     /**
@@ -154,9 +150,8 @@ class LeaveController extends Controller
             DB::afterCommit(function () use ($leave, $request, $tokenRaw, $manager) {
                 $fresh = $leave->fresh(); // ambil ulang (punya created_at dll)
 
-                // event(new \App\Events\LeaveSubmitted($fresh, Auth::user()->division_id));
                 event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, 'manager'));
-                
+
                 if (!$fresh || !$fresh->approver || !$tokenRaw) {
                     return;
                 }
@@ -263,16 +258,16 @@ class LeaveController extends Controller
         $leave->reason = $request->reason;
         $leave->status_1 = 'pending';
         $leave->note_1 = NULL;
-        $leave->note_2 = NULL;
         $leave->save();
 
         // Send notification email to the approver
-        if ($leave->approver) {
+        $manager = User::where('role', Roles::Manager->value)->first();
+        if ($manager) {
             $token = Str::random(48);
             ApprovalLink::create([
                 'model_type' => get_class($leave),   // App\Models\Leave
                 'model_id' => $leave->id,
-                'approver_user_id' => $leave->approver->id,
+                'approver_user_id' => $manager->id,
                 'level' => 1, // level 1 berarti arahnya ke team lead
                 'scope' => 'both',             // boleh approve & reject
                 'token' => hash('sha256', $token), // simpan hash, kirim raw
@@ -280,10 +275,10 @@ class LeaveController extends Controller
             ]);
             $linkTanggapan = route('public.approval.show', $token);
 
-            Mail::to($leave->approver->email)->send(
+            Mail::to($manager->email)->send(
                 new \App\Mail\SendMessage(
                     namaPengaju: Auth::user()->name,
-                    namaApprover: $leave->approver->name,
+                    namaApprover: $manager->name,
                     linkTanggapan: $linkTanggapan,
                     emailPengaju: Auth::user()->email
                 )

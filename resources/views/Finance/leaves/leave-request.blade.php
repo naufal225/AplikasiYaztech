@@ -1,4 +1,4 @@
-@extends('Employee.layouts.app')
+@extends('Finance.layouts.app')
 
 @section('title', 'Request Leave')
 @section('header', 'Request Leave')
@@ -10,7 +10,7 @@
         <nav class="flex mb-6" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
-                    <a href="{{ route('employee.dashboard') }}" class="inline-flex items-center text-sm font-medium text-neutral-700 hover:text-primary-600">
+                    <a href="{{ route('finance.dashboard') }}" class="inline-flex items-center text-sm font-medium text-neutral-700 hover:text-primary-600">
                         <i class="mr-2 fas fa-home"></i>
                         Dashboard
                     </a>
@@ -18,7 +18,7 @@
                 <li>
                     <div class="flex items-center">
                         <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
-                        <a href="{{ route('employee.leaves.index') }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Leave Requests</a>
+                        <a href="{{ route('finance.leaves.index') }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Leave Requests</a>
                     </div>
                 </li>
                 <li aria-current="page">
@@ -46,7 +46,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('employee.leaves.store') }}" method="POST" class="p-6 space-y-6">
+            <form action="{{ route('finance.leaves.store') }}" method="POST" class="p-6 space-y-6">
                 @csrf
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -110,7 +110,7 @@
                 </div>
 
                 <div class="flex justify-end pt-6 space-x-4 border-t border-neutral-200">
-                    <a href="{{ route('employee.leaves.index') }}" class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
+                    <a href="{{ route('finance.leaves.index') }}" class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
                         <i class="mr-2 fas fa-times"></i>
                         Cancel
                     </a>
