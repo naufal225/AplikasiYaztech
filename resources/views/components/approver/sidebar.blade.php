@@ -24,7 +24,9 @@
         $unseenOfficialTravelCount = 0;
         $unseenOvertimeCount = 0;
         $unseenReimbursementCount = 0;
-        $unseenLeaveCount = 0;
+        $unseenLeaveCount = \App\Models\Leave::whereNull('seen_by_approver_at')
+        ->whereHas('employee', fn($q)=>$q->where('division_id', $divisionId))
+        ->count();
         $unseenOfficialTravelCount = \App\Models\OfficialTravel::whereNull('seen_by_approver_at')
         ->where('status_1','pending')
         ->whereHas('employee', fn($q)=>$q->where('division_id', $divisionId))
@@ -58,7 +60,7 @@
             data-role="{{ Auth::user()->role }}" data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
-            <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
+            <i class="w-5 mr-3 text-center fas fa-file-invoice-dollar"></i>
             <span class="font-medium">Reimbursement Requests</span>
 
             <span id="reimbursement-badge"
@@ -72,7 +74,7 @@
             data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
-            <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
+            <i class="w-5 mr-3 text-center fas fa-clock"></i>
             <span class="font-medium">Overtime Requests</span>
 
             <span id="overtime-badge"
@@ -86,7 +88,7 @@
             data-role="{{ Auth::user()->role }}" data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
-            <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
+            <i class="w-5 mr-3 text-center fas fa-briefcase"></i>
             <span class="font-medium">Official Travel Requests</span>
 
             <span id="official-travel-badge"
