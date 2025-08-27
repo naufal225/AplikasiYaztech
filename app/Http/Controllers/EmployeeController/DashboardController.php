@@ -63,7 +63,7 @@ class DashboardController extends Controller
         $recentRequests = $this->getRecentRequests($userId);
 
         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) $queryClone->where('status_1', 'approved')->whereYear('date_start', now()->year)->count();
-        $karyawanCuti = Leave::with(['employee:id,name,email'])
+        $karyawanCuti = Leave::with(['employee:id,name,email,url_profile'])
             ->where('status_1', 'approved')
             ->where(function ($q) {
                 $q->whereYear('date_start', now()->year)

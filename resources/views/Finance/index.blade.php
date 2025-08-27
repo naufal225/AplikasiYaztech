@@ -278,11 +278,20 @@
 
         if (cutiPerTanggal[dateStr]) {
             cutiPerTanggal[dateStr].forEach(cuti => {
+                console.table(cuti);
+                let firstLetter = cuti.employee ? cuti.employee.substring(0, 1).toUpperCase() : "?";
                 list.innerHTML += `
                     <li class="flex items-start gap-2">
-                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 text-xs"><i class="fas fa-user"></i></span>
+                        ${cuti.url_profile ? `
+                            <img class="w-10 h-10 flex items-center justify-center object-cover rounded-full me-1"
+                                src="${cuti.url_profile}" alt="${cuti.employee}">
+                        ` : `
+                            <span class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600 text-xs me-1">
+                                ${firstLetter}
+                            </span>
+                        `}
                         <div>
-                            <p class="font-medium text-gray-800">${cuti.employee}</p>
+                            <p class="font-medium text-gray-800">${cuti.employee ?? '-'}</p>
                             <p class="text-gray-500 text-xs">${cuti.email ?? '-'}</p>
                         </div>
                     </li>
