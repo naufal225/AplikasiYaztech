@@ -112,7 +112,6 @@ class DashboardController extends Controller
             'overtimeCount' => $overtimeCount,
             'reimbursementCount' => $reimbursementCount,
             'officialTravelCount' => $officialTravelCount,
-
             'months' => $months,
             'leavesChartData' => $leavesChartData,
             'overtimesChartData' => $overtimesChartData,
@@ -139,6 +138,9 @@ class DashboardController extends Controller
                     'id' => $leave->id,
                     'type' => TypeRequest::Leaves->value,
                     'title' => 'Leave Request: ' . Carbon::parse($leave->date_start)->format('M d') . ' - ' . Carbon::parse($leave->date_end)->format('M d'),
+                    'name_owner' => $leave->employee->name,
+                    'email_owner' => $leave->employee->email,
+                    'url_photo' => $leave->employee->url_profile,
                     'date' => Carbon::parse($leave->created_at)->format('M d, Y'),
                     'status_1' => $leave->status_1,
                     'url' => route('finance.leaves.show', $leave->id),
@@ -159,6 +161,9 @@ class DashboardController extends Controller
                     'id' => $reimbursement->id,
                     'type' => TypeRequest::Reimbursements->value,
                     'title' => 'Reimbursement: Rp ' . number_format($reimbursement->total),
+                    'name_owner' => $reimbursement->employee->name,
+                    'email_owner' => $reimbursement->employee->email,
+                    'url_photo' => $reimbursement->employee->url_profile,
                     'date' => Carbon::parse($reimbursement->created_at)->format('M d, Y'),
                     'status_1' => $reimbursement->status_1,
                     'status_2' => $reimbursement->status_2,
@@ -181,6 +186,9 @@ class DashboardController extends Controller
                     'type' => TypeRequest::Overtimes->value,
                     'title' => 'Overtime: ' . Carbon::parse($overtime->date_start)->format('M d'),
                     'date' => Carbon::parse($overtime->created_at)->format('M d, Y'),
+                    'name_owner' => $overtime->employee->name,
+                    'email_owner' => $overtime->employee->email,
+                    'url_photo' => $overtime->employee->url_profile,
                     'status_1' => $overtime->status_1,
                     'status_2' => $overtime->status_2,
                     'url' => route('finance.overtimes.show', $overtime->id),
@@ -201,6 +209,9 @@ class DashboardController extends Controller
                     'id' => $travel->id,
                     'type' => TypeRequest::Travels->value,
                     'title' => 'Official Travel: ' . Carbon::parse($travel->date_start)->format('M d') . ' - ' . Carbon::parse($travel->date_end)->format('M d'),
+                    'name_owner' => $travel->employee->name,
+                    'email_owner' => $travel->employee->email,
+                    'url_photo' => $travel->employee->url_profile,
                     'date' => Carbon::parse($travel->created_at)->format('M d, Y'),
                     'status_1' => $travel->status_1,
                     'status_2' => $travel->status_2,
@@ -214,7 +225,7 @@ class DashboardController extends Controller
             ->concat($overtimes)
             ->concat($travels)
             ->sortByDesc('created_at')
-            ->take(10)
+            ->take(4)
             ->values()
             ->all();
 

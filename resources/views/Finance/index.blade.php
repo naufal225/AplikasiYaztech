@@ -114,12 +114,12 @@
         <!-- Recent Requests Section -->
         <div class="bg-white rounded-lg border border-gray-200 mb-8">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-800">Recent Approved Requests</h3>
+                <h3 class="text-lg font-semibold text-gray-800">Recent All Approved Requests</h3>
                 <p class="text-gray-500 text-sm">Employee latest submissions</p>
             </div>
             <div class="p-6">
                 @forelse($recentRequests as $request)
-                    <div class="flex items-center justify-between py-4 border-b border-gray-100 last:border-0">
+                    <div class="flex items-center justify-between py-4 border-b border-gray-100 last:border-0 cursor-pointer" onclick="window.location.href='{{ $request['url'] }}'">
                         <!-- Kiri: ikon + judul -->
                         <div class="flex items-center min-w-0">
                             @if($request['type'] === App\TypeRequest::Leaves->value)
@@ -144,17 +144,44 @@
                                     {{ $request['title'] ?? ($request['type'] === App\TypeRequest::Overtimes->value ? 'Overtime Request' : 'Travel Request') }}
                                 </h4>
                                 <p class="text-gray-500 text-sm truncate">{{ $request['date'] }}</p>
+
+                                <div class="flex items-center mt-4 mb-3 pt-3 border-t truncate">
+                                    <div class="w-8 h-8 bg-success-100 rounded-full flex items-center justify-center mr-3">
+                                        @if($request['url_photo'])
+                                            <img class="object-cover rounded-full"
+                                                src="{{ $request['url_photo'] }}" alt="{{ $request['name_owner'] }}">
+                                        @else
+                                            <span class="text-success-600 font-semibold text-xs">{{ substr($request['name_owner'], 0, 1) }}</span>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-neutral-900">{{ $request['name_owner'] }}</div>
+                                        <div class="text-sm text-neutral-500">{{ $request['email_owner'] }}</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Kanan: status + arrow -->
                         <div class="flex items-center flex-shrink-0 ml-3">
-                            @if($request['status_1'] === 'rejected')
-                                <span class="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 mr-3">Rejected</span>
-                            @elseif($request['status_1'] === 'approved')
-                                <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 mr-3">Approved</span>
+                            @if(isset($request['status_2']) && $request['status_2'] !== null)
+                                {{-- Jika ada status_2, maka cek keduanya --}}
+                                @if($request['status_1'] === 'approved' && $request['status_2'] === 'approved')
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 mr-3">Approved</span>
+                                @elseif($request['status_1'] === 'rejected' || $request['status_2'] === 'rejected')
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 mr-3">Rejected</span>
+                                @else
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 mr-3">Pending</span>
+                                @endif
                             @else
-                                <span class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 mr-3">Pending</span>
+                                {{-- Jika tidak ada status_2, cek hanya status_1 --}}
+                                @if($request['status_1'] === 'approved')
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 mr-3">Approved</span>
+                                @elseif($request['status_1'] === 'rejected')
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 mr-3">Rejected</span>
+                                @else
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 mr-3">Pending</span>
+                                @endif
                             @endif
 
                             <a href="{{ $request['url'] }}" class="text-gray-400 hover:text-gray-600 flex-shrink-0">

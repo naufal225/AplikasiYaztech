@@ -91,10 +91,7 @@ class ReimbursementController extends Controller
      */
     public function create()
     {
-        $approvers = User::where('role', Roles::Approver->value)
-            ->get();
-
-        return view('Employee.reimbursements.reimbursement-request', compact('approvers'));
+        return view('Employee.reimbursements.reimbursement-request');
     }
 
     /**
