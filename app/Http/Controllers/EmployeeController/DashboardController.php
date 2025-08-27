@@ -81,6 +81,7 @@ class DashboardController extends Controller
                 $cutiPerTanggal[$tanggal][] = [
                     'employee' => $cuti->employee->name,
                     'email'    => $cuti->employee->email,
+                    'url_profile' => $cuti->employee->url_profile,
                 ];
                 $start->addDay();
             }
