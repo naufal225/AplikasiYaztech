@@ -154,7 +154,7 @@
             </div>
             <div class="p-6">
                 @forelse($recentRequests as $request)
-                    <div class="flex items-center justify-between py-4 border-b border-gray-100 last:border-0">
+                    <div class="flex items-center justify-between py-4 border-b border-gray-100 last:border-0 cursor-pointer" onclick="window.location.href='{{ $request['url'] }}'">
                         <!-- Kiri: ikon + judul -->
                         <div class="flex items-center min-w-0">
                             @if($request['type'] === App\TypeRequest::Leaves->value)
@@ -184,17 +184,25 @@
 
                         <!-- Kanan: status + arrow -->
                         <div class="flex items-center flex-shrink-0 ml-3">
-                            @if($request['status_1'] === 'rejected')
-                                <span class="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 mr-3">Rejected</span>
-                            @elseif($request['status_1'] === 'approved')
-                                <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 mr-3">Approved</span>
+                            @if(isset($request['status_2']) && $request['status_2'] !== null)
+                                {{-- Jika ada status_2, maka cek keduanya --}}
+                                @if($request['status_1'] === 'approved' && $request['status_2'] === 'approved')
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 mr-3">Approved</span>
+                                @elseif($request['status_1'] === 'rejected' || $request['status_2'] === 'rejected')
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 mr-3">Rejected</span>
+                                @else
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 mr-3">Pending</span>
+                                @endif
                             @else
-                                <span class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 mr-3">Pending</span>
+                                {{-- Jika tidak ada status_2, cek hanya status_1 --}}
+                                @if($request['status_1'] === 'approved')
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 mr-3">Approved</span>
+                                @elseif($request['status_1'] === 'rejected')
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 mr-3">Rejected</span>
+                                @else
+                                    <span class="px-3 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 mr-3">Pending</span>
+                                @endif
                             @endif
-
-                            <a href="{{ $request['url'] }}" class="text-gray-400 hover:text-gray-600 flex-shrink-0">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
                         </div>
                     </div>
                 @empty
