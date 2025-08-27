@@ -20,64 +20,79 @@ class OfficialTravelController extends Controller
 {
     public function index(Request $request)
     {
-        $query = OfficialTravel::with(['employee', 'approver'])
+        // Query for user's own requests (all statuses)
+        $ownRequestsQuery = OfficialTravel::with(['employee', 'approver'])
+            ->where('employee_id', Auth::id())
             ->orderBy('created_at', 'desc');
 
-        // Apply filters
+        // Query for all users' requests (excluding own unless approved)
+        $allUsersQuery = OfficialTravel::with(['employee', 'approver'])
+            ->where(function ($q) {
+                $q->where('employee_id', '!=', Auth::id())
+                    ->orWhere(function ($subQ) {
+                        $subQ->where('employee_id', Auth::id())
+                            ->where('status_2', 'approved');
+                    });
+            })
+            ->orderBy('created_at', 'desc');
+
         if ($request->filled('status')) {
-            switch ($request->status) {
-                case 'approved':
-                    // approved = dua-duanya approved
-                    $query->where('status_1', 'approved')
-                        ->where('status_2', 'approved');
-                    break;
+            $statusFilter = function ($query) use ($request) {
+                switch ($request->status) {
+                    case 'approved':
+                        // approved = dua-duanya approved
+                        $query->where('status_1', 'approved')
+                            ->where('status_2', 'approved');
+                        break;
 
-                case 'rejected':
-                    // rejected = salah satu rejected
-                    $query->where(function ($q) {
-                        $q->where('status_1', 'rejected')
-                            ->orWhere('status_2', 'rejected');
-                    });
-                    break;
-
-                case 'pending':
-                    // pending = tidak ada rejected DAN (minimal salah satu pending)
-                    $query->where(function ($q) {
-                        $q->where(function ($qq) {
-                            $qq->where('status_1', 'pending')
-                                ->orWhere('status_2', 'pending');
-                        })->where(function ($qq) {
-                            $qq->where('status_1', '!=', 'rejected')
-                                ->where('status_2', '!=', 'rejected');
+                    case 'rejected':
+                        // rejected = salah satu rejected
+                        $query->where(function ($q) {
+                            $q->where('status_1', 'rejected')
+                                ->orWhere('status_2', 'rejected');
                         });
-                    });
-                    break;
+                        break;
 
-                default:
-                    // nilai status tak dikenal: biarkan tanpa filter atau lempar 422
-                    // optional: $query->whereRaw('1=0');
-                    break;
-            }
+                    case 'pending':
+                        // pending = tidak ada rejected DAN (minimal salah satu pending)
+                        $query->where(function ($q) {
+                            $q->where(function ($qq) {
+                                $qq->where('status_1', 'pending')
+                                    ->orWhere('status_2', 'pending');
+                            })->where(function ($qq) {
+                                $qq->where('status_1', '!=', 'rejected')
+                                    ->where('status_2', '!=', 'rejected');
+                            });
+                        });
+                        break;
+
+                    default:
+                        // nilai status tak dikenal: biarkan tanpa filter atau lempar 422
+                        // optional: $query->whereRaw('1=0');
+                        break;
+                }
+            };
+
+            $ownRequestsQuery->where($statusFilter);
+            $allUsersQuery->where($statusFilter);
         }
 
 
         if ($request->filled('from_date')) {
-            $query->where(
-                'date_start',
-                '>=',
-                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
-            );
+            $fromDate = Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta');
+            $ownRequestsQuery->where('date_start', '>=', $fromDate);
+            $allUsersQuery->where('date_start', '>=', $fromDate);
         }
 
         if ($request->filled('to_date')) {
-            $query->where(
-                'date_start',
-                '<=',
-                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
-            );
+            $toDate = Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta');
+            $ownRequestsQuery->where('date_start', '<=', $toDate);
+            $allUsersQuery->where('date_start', '<=', $toDate);
         }
 
-        $officialTravels = $query->paginate(10);
+        $ownRequests = $ownRequestsQuery->paginate(10, ['*'], 'own_page');
+        $allUsersRequests = $allUsersQuery->paginate(10, ['*'], 'all_page');
+
         $totalRequests = OfficialTravel::count();
         $pendingRequests = OfficialTravel::where('status_1', 'pending')
             ->orWhere('status_2', 'pending')->count();
@@ -86,7 +101,7 @@ class OfficialTravelController extends Controller
         $rejectedRequests = OfficialTravel::where('status_1', 'rejected')
             ->orWhere('status_2', 'rejected')->count();
 
-        return view('admin.official-travel.index', compact('officialTravels', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        return view('admin.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
 
     public function show($id)
@@ -96,7 +111,7 @@ class OfficialTravelController extends Controller
         return view('admin.official-travel.show', compact('officialTravel'));
     }
 
-     public function create()
+    public function create()
     {
         return view('admin.official-travel.create');
     }

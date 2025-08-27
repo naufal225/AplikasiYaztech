@@ -306,9 +306,6 @@
                 <tbody class="bg-white divide-y divide-neutral-200">
                     @forelse($allUsersRequests as $reimbursement)
                     <tr class="transition-colors duration-200 hover:bg-neutral-50">
-
-
-
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div>
                                 <div class="text-sm font-medium text-neutral-900">#{{ $reimbursement->id }}</div>
