@@ -20,63 +20,80 @@ class ReimbursementController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Reimbursement::with(['approver', 'customer'])
+        // Query for user's own requests (all statuses)
+        $ownRequestsQuery = Reimbursement::with(['employee', 'approver'])
+            ->where('employee_id', Auth::id())
+            ->orderBy('created_at', 'desc');
+
+        // Query for all users' requests (excluding own unless approved)
+        $allUsersQuery = Reimbursement::with(['employee', 'approver'])
+            ->where(function ($q) {
+                $q->where('employee_id', '!=', Auth::id())
+                    ->orWhere(function ($subQ) {
+                        $subQ->where('employee_id', Auth::id())
+                            ->where('status_2', 'approved');
+                    });
+            })
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('status')) {
-            switch ($request->status) {
-                case 'approved':
-                    // approved = dua-duanya approved
-                    $query->where('status_1', 'approved')
-                        ->where('status_2', 'approved');
-                    break;
+            $statusFilter = function ($query) use ($request) {
+                switch ($request->status) {
+                    case 'approved':
+                        // approved = dua-duanya approved
+                        $query->where('status_1', 'approved')
+                            ->where('status_2', 'approved');
+                        break;
 
-                case 'rejected':
-                    // rejected = salah satu rejected
-                    $query->where(function ($q) {
-                        $q->where('status_1', 'rejected')
-                            ->orWhere('status_2', 'rejected');
-                    });
-                    break;
-
-                case 'pending':
-                    // pending = tidak ada rejected DAN (minimal salah satu pending)
-                    $query->where(function ($q) {
-                        $q->where(function ($qq) {
-                            $qq->where('status_1', 'pending')
-                                ->orWhere('status_2', 'pending');
-                        })->where(function ($qq) {
-                            $qq->where('status_1', '!=', 'rejected')
-                                ->where('status_2', '!=', 'rejected');
+                    case 'rejected':
+                        // rejected = salah satu rejected
+                        $query->where(function ($q) {
+                            $q->where('status_1', 'rejected')
+                                ->orWhere('status_2', 'rejected');
                         });
-                    });
-                    break;
+                        break;
 
-                default:
-                    // nilai status tak dikenal: biarkan tanpa filter atau lempar 422
-                    // optional: $query->whereRaw('1=0');
-                    break;
-            }
+                    case 'pending':
+                        // pending = tidak ada rejected DAN (minimal salah satu pending)
+                        $query->where(function ($q) {
+                            $q->where(function ($qq) {
+                                $qq->where('status_1', 'pending')
+                                    ->orWhere('status_2', 'pending');
+                            })->where(function ($qq) {
+                                $qq->where('status_1', '!=', 'rejected')
+                                    ->where('status_2', '!=', 'rejected');
+                            });
+                        });
+                        break;
+
+                    default:
+                        // nilai status tak dikenal: biarkan tanpa filter atau lempar 422
+                        // optional: $query->whereRaw('1=0');
+                        break;
+                }
+            };
+
+            $ownRequestsQuery->where($statusFilter);
+            $allUsersQuery->where($statusFilter);
         }
 
 
         if ($request->filled('from_date')) {
-            $query->where(
-                'date',
-                '>=',
-                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
-            );
+            $fromDate = Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta');
+            $ownRequestsQuery->where('date_start', '>=', $fromDate);
+            $allUsersQuery->where('date_start', '>=', $fromDate);
         }
 
         if ($request->filled('to_date')) {
-            $query->where(
-                'date',
-                '<=',
-                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
-            );
+            $toDate = Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta');
+            $ownRequestsQuery->where('date_start', '<=', $toDate);
+            $allUsersQuery->where('date_start', '<=', $toDate);
         }
 
-        $reimbursements = $query->paginate(10);
+        $ownRequests = $ownRequestsQuery->paginate(10, ['*'], 'own_page');
+        $allUsersRequests = $allUsersQuery->paginate(10, ['*'], 'all_page');
+
+
         $totalRequests = Reimbursement::count();
         $pendingRequests = Reimbursement::where('status_1', 'pending')
             ->orWhere('status_2', 'pending')->count();
@@ -85,7 +102,7 @@ class ReimbursementController extends Controller
         $rejectedRequests = Reimbursement::where('status_1', 'rejected')
             ->orWhere('status_2', 'rejected')->count();
 
-        return view('admin.reimbursement.index', compact('reimbursements', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        return view('admin.reimbursement.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
     }
 
     public function show($id)
@@ -96,7 +113,7 @@ class ReimbursementController extends Controller
         return view('admin.reimbursement.show', compact('reimbursement'));
     }
 
-     public function create()
+    public function create()
     {
         return view('admin.reimbursements.create');
     }

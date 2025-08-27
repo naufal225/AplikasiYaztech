@@ -11,7 +11,14 @@
             <p class="text-neutral-600">Manage and track official travel requests</p>
         </div>
         <div class="mt-4 sm:mt-0">
-            <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:flex-row">
+            <div class="flex flex-col items-center gap-3 mt-4 sm:mt-0 sm:flex-row">
+                 <div class="mt-4 sm:mt-0">
+                    <button onclick="window.location.href='{{ route('admin.official-travels.create') }}'"
+                        class="btn-primary">
+                        <i class="mr-2 fas fa-plus"></i>
+                        New Official Travel Request
+                    </button>
+                </div>
                 <button id="exportOfficialTravelsData"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
                     <i class="mr-2 fa-solid fa-file-export"></i>
