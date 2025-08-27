@@ -4,10 +4,14 @@ namespace App\Http\Controllers\AdminController;
 
 use App\Exports\OvertimesExport;
 use App\Http\Controllers\Controller;
+use App\Models\ApprovalLink;
 use App\Models\Overtime;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 
 class OvertimeController extends Controller
@@ -88,6 +92,101 @@ class OvertimeController extends Controller
         $overtime->load(['employee', 'approver']);
         return view('admin.overtime.show', compact('overtime'));
     }
+
+    public function create()
+    {
+        return view('admin.overtime.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'customer' => 'required',
+            'date_start' => 'required|date_format:Y-m-d\TH:i',
+            'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
+        ], [
+            'customer.required' => 'Customer harus diisi.',
+            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
+            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
+            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
+            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
+        ]);
+
+        // Parsing waktu input
+        $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
+        $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
+
+        // Hitung langsung dari date_start
+        $overtimeMinutes = $start->diffInMinutes($end);
+        $overtimeHours = $overtimeMinutes / 60;
+
+        if ($overtimeHours < 0.5) {
+            return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
+        }
+
+        $hours = floor($overtimeMinutes / 60);
+        $minutes = $overtimeMinutes % 60;
+
+        DB::transaction(function () use ($start, $end, $overtimeMinutes, $hours, $minutes, $request) {
+            $overtime = new Overtime();
+            $overtime->employee_id = Auth::id();
+            $overtime->customer = $request->customer;
+            $overtime->date_start = $start;
+            $overtime->date_end = $end;
+            $overtime->total = $overtimeMinutes;
+            $overtime->status_1 = 'pending';
+            $overtime->status_2 = 'pending';
+            $overtime->save();
+
+            $token = null;
+            // Send notification email to the approver
+            if ($overtime->approver) {
+                $token = \Illuminate\Support\Str::random(48);
+                ApprovalLink::create([
+                    'model_type' => get_class($overtime),   // App\Models\overtime
+                    'model_id' => $overtime->id,
+                    'approver_user_id' => $overtime->approver->id,
+                    'level' => 1, // level 1 berarti arahnya ke team lead
+                    'scope' => 'both',             // boleh approve & reject
+                    'token' => hash('sha256', $token), // simpan hash, kirim raw
+                    'expires_at' => now()->addDays(3),  // masa berlaku
+                ]);
+
+            }
+
+            DB::afterCommit(function () use ($overtime, $token, $start, $end, $hours, $minutes) {
+                $fresh = $overtime->fresh(); // ambil ulang (punya created_at dll)
+                // dd("jalan");
+                event(new \App\Events\OvertimeSubmitted($fresh, Auth::user()->division_id));
+
+                // Kalau tidak ada approver atau token, jangan kirim email
+
+                if (!$fresh || !$fresh->approver || !$token) {
+                    return;
+                }
+
+                $linkTanggapan = route('public.approval.show', $token);
+
+                Mail::to($overtime->approver->email)->send(
+                    new \App\Mail\SendMessage(
+                        namaPengaju: Auth::user()->name,
+                        namaApprover: $overtime->approver->name,
+                        linkTanggapan: $linkTanggapan,
+                        emailPengaju: Auth::user()->email,
+                    )
+                );
+            });
+
+        });
+
+        return redirect()->route('admin.overtimes.index')
+            ->with('success', 'Overtime submitted. Total: ' . $hours . ' hours ' . $minutes . ' minutes');
+    }
+
 
     public function export(Request $request)
     {
