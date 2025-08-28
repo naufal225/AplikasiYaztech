@@ -139,7 +139,8 @@
                                 <option value="{{ $role->value }}" {{ old('role', $user->role)==$role->value ?
                                     'selected' :
                                     '' }}>
-                                    {{ $role->value == App\Roles::Approver->value ? "team leader" : ($role->value == App\Roles::Employee->value ? "regular employee" : $role->value) }}
+                                    {{ $role->value == App\Roles::Approver->value ? "team leader" : ($role->value ==
+                                    App\Roles::Employee->value ? "regular employee" : $role->value) }}
                                 </option>
                                 @endforeach
                                 @endif
@@ -164,8 +165,7 @@
                         </label>
                         <div class="relative">
                             <select id="division_id" name="division_id"
-                                class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('division_id') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror"
-                                >
+                                class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('division_id') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror">
                                 <option value="">Select a division...</option>
                                 @if(isset($divisions))
                                 @foreach($divisions as $division)
@@ -194,7 +194,7 @@
                     <!-- Form Actions -->
                     <div class="flex items-center justify-end pt-6 space-x-4 border-t border-gray-200">
                         <!-- Cancel Button -->
-                        <a href="{{ route('admin.users.index') }}"
+                        <a href="{{ url()->previous() }}"
                             class="px-6 py-3 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                             Cancel
                         </a>

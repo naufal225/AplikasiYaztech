@@ -15,9 +15,17 @@
         </div>
         <div class="flex items-center space-x-4">
             <div class="flex items-center px-3 py-2 rounded-full bg-secondary-600">
-                <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full lg:mr-2">
-                    <span class="text-sm font-semibold text-secondary-600">{{ strtoupper(substr(trim(explode(' ',
-                        Auth::user()->name)[0]), 0, 1)) }}</span>
+                <div class="flex items-center justify-center w-10 h-10 mr-3 rounded-full bg-primary-600">
+                    @if(Auth::user()->url_profile)
+                    <img class="object-cover w-10 h-10 rounded-full" src="{{ Auth::user()->url_profile }}"
+                        alt="{{ Auth::user()->name }}">
+                    @else
+                    <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full">
+                        <span class="text-sm font-medium text-gray-700">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </span>
+                    </div>
+                    @endif
                 </div>
                 <span class="hidden text-sm font-medium text-white lg:block">{{ Auth::user()->name }}</span>
             </div>

@@ -134,7 +134,7 @@
                     <!-- Form Actions -->
                     <div class="flex items-center justify-end pt-6 space-x-4 border-t border-gray-200">
                         <!-- Cancel Button -->
-                        <a href="{{ route('admin.divisions.index') }}"
+                        <a href="{{ url()->previous() }}"
                             class="px-6 py-3 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                             Cancel
                         </a>

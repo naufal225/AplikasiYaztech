@@ -103,7 +103,16 @@
     <div class="p-4 border-t border-primary-700">
         <a class="flex items-center mb-4" href="{{ route('approver.profile.index') }}">
             <div class="flex items-center justify-center w-10 h-10 mr-3 rounded-full bg-primary-600">
-                <span class="text-sm font-semibold text-white">{{ substr(Auth::user()->name, 0, 1) }}</span>
+                @if(Auth::user()->url_profile)
+                <img class="object-cover w-10 h-10 rounded-full" src="{{ Auth::user()->url_profile }}"
+                    alt="{{ Auth::user()->name }}">
+                @else
+                <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full">
+                    <span class="text-sm font-medium text-gray-700">
+                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    </span>
+                </div>
+                @endif
             </div>
             <div class="flex-1 min-w-0">
                 <p class="text-sm font-medium text-white truncate">{{ Auth::user()->name }}</p>

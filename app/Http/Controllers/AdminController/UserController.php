@@ -52,7 +52,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email:dns|unique:users,email',
-            'role' => 'required|string|in:employee,approver,manager',
+            'role' => 'required|string|in:employee,approver,manager,finance,admin',
             'division_id' => 'required|exists:divisions,id'
 
         ], [
@@ -99,7 +99,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email:dns|unique:users,email,' . $user->id . ',id',
-            'role' => 'required|string|in:employee,approver,manager',
+            'role' => 'required|string|in:employee,approver,manager,finance,admin',
             'division_id' => 'required|exists:divisions,id'
         ], [
             'name.required' => 'The name field is required.',

@@ -23,8 +23,6 @@ class DashboardController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $user = Auth::user()->where('role', Roles::Employee->value)->first();
-
         // =========================
         // DATA COUNT (CARD)
         // =========================
@@ -51,7 +49,7 @@ class DashboardController extends Controller
             return Carbon::create()->month($m)->format('M');
         });
 
-        $recentRequests = $this->getRecentRequests($user->id);
+        $recentRequests = $this->getRecentRequests();
 
         $leavesChartData = [];
         $overtimesChartData = [];
@@ -123,7 +121,7 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function getRecentRequests($userId)
+    private function getRecentRequests()
     {
         // Get recent leaves
         $leaves = Leave::whereHas('employee', function ($q) {
