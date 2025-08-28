@@ -82,7 +82,7 @@ class DashboardController extends Controller
             })->where('status_1', 'approved')->where('status_2', 'approved')->whereBetween('created_at', [$start, $end])->count();
         }
 
-        $karyawanCuti = Leave::with(['employee:id,name,email'])
+        $karyawanCuti = Leave::with(['employee:id,name,email,url_profile'])
             ->where('status_1', 'approved')
             ->where(function ($q) {
                 $q->whereYear('date_start', now()->year)
@@ -100,6 +100,7 @@ class DashboardController extends Controller
                 $cutiPerTanggal[$tanggal][] = [
                     'employee' => $cuti->employee->name,
                     'email'    => $cuti->employee->email,
+                    'url_profile' => $cuti->employee->url_profile,
                 ];
                 $start->addDay();
             }
