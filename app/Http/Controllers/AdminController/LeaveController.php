@@ -185,7 +185,7 @@ class LeaveController extends Controller
 
     public function edit(Leave $leave)
     {
-
+        return view('admin.leave-request.update', compact('leave'));
     }
 
     public function update(Request $request)

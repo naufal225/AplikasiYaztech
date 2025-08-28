@@ -5,136 +5,138 @@
 @section('subtitle', 'Modify your overtime request details')
 
 @section('content')
-    <div class="max-w-3xl mx-auto">
-        <nav class="flex mb-6" aria-label="Breadcrumb">
-            <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                <li class="inline-flex items-center">
-                    <a href="{{ route('employee.dashboard') }}" class="inline-flex items-center text-sm font-medium text-neutral-700 hover:text-primary-600">
-                        <i class="fas fa-home mr-2"></i>
-                        Dashboard
-                    </a>
-                </li>
-                <li>
-                    <div class="flex items-center">
-                        <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <a href="{{ route('employee.overtimes.index') }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Overtime Requests</a>
-                    </div>
-                </li>
-                <li>
-                    <div class="flex items-center">
-                        <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <a href="{{ route('employee.overtimes.show', $overtime->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Request #OY{{ $overtime->id }}</a>
-                    </div>
-                </li>
-                <li aria-current="page">
-                    <div class="flex items-center">
-                        <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <span class="text-sm font-medium text-neutral-500">Edit</span>
-                    </div>
-                </li>
-            </ol>
-        </nav>
+<div class="max-w-3xl mx-auto">
+    <nav class="flex mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="{{ route('employee.dashboard') }}"
+                    class="inline-flex items-center text-sm font-medium text-neutral-700 hover:text-primary-600">
+                    <i class="mr-2 fas fa-home"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
+                    <a href="{{ route('employee.overtimes.index') }}"
+                        class="text-sm font-medium text-neutral-700 hover:text-primary-600">Overtime Requests</a>
+                </div>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
+                    <a href="{{ route('employee.overtimes.show', $overtime->id) }}"
+                        class="text-sm font-medium text-neutral-700 hover:text-primary-600">Request #OY{{ $overtime->id
+                        }}</a>
+                </div>
+            </li>
+            <li aria-current="page">
+                <div class="flex items-center">
+                    <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
+                    <span class="text-sm font-medium text-neutral-500">Edit</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
 
-        <div class="bg-white rounded-xl shadow-soft border border-neutral-200">
-            <div class="px-6 py-4 border-b border-neutral-200">
-                <h2 class="text-lg font-bold text-neutral-900">Edit Overtime Request #OY{{ $overtime->id }}</h2>
-                <p class="text-neutral-600 text-sm">Update your overtime request information</p>
+    <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
+        <div class="px-6 py-4 border-b border-neutral-200">
+            <h2 class="text-lg font-bold text-neutral-900">Edit Overtime Request #OY{{ $overtime->id }}</h2>
+            <p class="text-sm text-neutral-600">Update your overtime request information</p>
+        </div>
+
+        @if ($errors->any())
+        <div class="px-4 py-3 mx-6 mt-6 border rounded-lg bg-error-50 border-error-200 text-error-700">
+            <ul class="pl-5 space-y-1 list-disc">
+                @foreach ($errors->all() as $error)
+                <li class="text-sm">{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
+        <form action="{{ route('employee.overtimes.update', $overtime->id) }}" method="POST" class="p-6 space-y-6">
+            @csrf
+            @method('PUT')
+
+            <!-- Work Hours Info -->
+            <div class="p-4 border border-blue-200 rounded-lg bg-blue-50">
+                <div class="flex items-start">
+                    <i class="fas fa-clock text-blue-600 mr-3 mt-0.5"></i>
+                    <div>
+                        <h4 class="mb-1 text-sm font-semibold text-blue-800">Normal Work Hours</h4>
+                        <p class="text-xs text-blue-700">
+                            Regular working hours: 09:00 - 17:00 (8 hours)<br>
+                            @php
+                            $totalMinutes = $overtime->total;
+                            $hours = floor($totalMinutes / 60);
+                            $minutes = $totalMinutes % 60;
+                            @endphp
+                            Current overtime: {{ $hours }} hours {{ $minutes }} minutes
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            @if ($errors->any())
-                <div class="mx-6 mt-6 bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
-                    <ul class="list-disc pl-5 space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <li class="text-sm">{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            <div>
+                <label for="customer" class="block mb-2 text-sm font-semibold text-neutral-700">
+                    <i class="mr-2 fas fa-users text-primary-600"></i>
+                    Customer
+                </label>
 
-            <form action="{{ route('employee.overtimes.update', $overtime->id) }}" method="POST" class="p-6 space-y-6">
-                @csrf
-                @method('PUT')
+                <!-- Input tampilan -->
+                <input type="text" name="customer" id="customer" class="form-input"
+                    value="{{ old('customer', $overtime->customer) }}" placeholder="e.g., John Doe" required>
+            </div>
 
-                <!-- Work Hours Info -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div class="flex items-start">
-                        <i class="fas fa-clock text-blue-600 mr-3 mt-0.5"></i>
-                        <div>
-                            <h4 class="text-sm font-semibold text-blue-800 mb-1">Normal Work Hours</h4>
-                            <p class="text-xs text-blue-700">
-                                Regular working hours: 09:00 - 17:00 (8 hours)<br>
-                                @php
-                                    $totalMinutes = $overtime->total;
-                                    $hours = floor($totalMinutes / 60);
-                                    $minutes = $totalMinutes % 60;
-                                @endphp
-                                Current overtime: {{ $hours }} hours {{ $minutes }} minutes
-                            </p>
-                        </div>
-                    </div>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label for="date_start" class="block mb-2 text-sm font-semibold text-neutral-700">
+                        <i class="mr-2 fas fa-calendar-alt text-primary-600"></i>
+                        Start Date & Time
+                    </label>
+                    <input type="datetime-local" name="date_start"
+                        value="{{ old('date_start', $overtime->date_start->format('Y-m-d\TH:i')) }}" class="form-input"
+                        required>
                 </div>
 
                 <div>
-                    <label for="customer" class="block text-sm font-semibold text-neutral-700 mb-2">
-                        <i class="fas fa-users mr-2 text-primary-600"></i>
-                        Customer
+                    <label for="date_end" class="block mb-2 text-sm font-semibold text-neutral-700">
+                        <i class="mr-2 fas fa-calendar-alt text-primary-600"></i>
+                        End Date & Time
                     </label>
-                    
-                    <!-- Input tampilan -->
-                    <input type="text" name="customer" id="customer" class="form-input"
-                        value="{{ old('customer', $overtime->customer) }}" placeholder="e.g., John Doe" required>
+                    <input type="datetime-local" name="date_end"
+                        value="{{ old('date_end', $overtime->date_end->format('Y-m-d\TH:i')) }}" class="form-input"
+                        required>
                 </div>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Warning Notice -->
+            <div class="p-4 border rounded-lg bg-warning-50 border-warning-200">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-warning-600 mr-3 mt-0.5"></i>
                     <div>
-                        <label for="date_start" class="block text-sm font-semibold text-neutral-700 mb-2">
-                            <i class="fas fa-calendar-alt mr-2 text-primary-600"></i>
-                            Start Date & Time
-                        </label>
-                        <input type="datetime-local" 
-                            name="date_start" 
-                            value="{{ old('date_start', $overtime->date_start->format('Y-m-d\TH:i')) }}"
-                            class="form-input"
-                            required>
-                    </div>
-
-                    <div>
-                        <label for="date_end" class="block text-sm font-semibold text-neutral-700 mb-2">
-                            <i class="fas fa-calendar-alt mr-2 text-primary-600"></i>
-                            End Date & Time
-                        </label>
-                        <input type="datetime-local"
-                            name="date_end"
-                            value="{{ old('date_end', $overtime->date_end->format('Y-m-d\TH:i')) }}"
-                            class="form-input"
-                            required>
+                        <h4 class="mb-1 text-sm font-semibold text-warning-800">Important Notice</h4>
+                        <p class="text-xs text-warning-700">
+                            Editing this request will reset its status to pending and require re-approval from your team
+                            lead.
+                        </p>
                     </div>
                 </div>
+            </div>
 
-                 <!-- Warning Notice -->
-                <div class="bg-warning-50 border border-warning-200 rounded-lg p-4">
-                    <div class="flex items-start">
-                        <i class="fas fa-exclamation-triangle text-warning-600 mr-3 mt-0.5"></i>
-                        <div>
-                            <h4 class="text-sm font-semibold text-warning-800 mb-1">Important Notice</h4>
-                            <p class="text-xs text-warning-700">
-                                Editing this request will reset its status to pending and require re-approval from your team lead.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex justify-end space-x-4 pt-6 border-t border-neutral-200">
-                    <a href="{{ route('employee.overtimes.show', $overtime->id) }}" class="px-6 py-2 text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 rounded-lg transition-colors duration-200">
-                        <i class="fas fa-times mr-2"></i>
-                        Cancel
-                    </a>
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-save mr-2"></i>
-                        Update Request
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="flex justify-end pt-6 space-x-4 border-t border-neutral-200">
+                <a href="{{ url()->previous() }}"
+                    class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
+                    <i class="mr-2 fas fa-times"></i>
+                    Cancel
+                </a>
+                <button type="submit" class="btn-primary">
+                    <i class="mr-2 fas fa-save"></i>
+                    Update Request
+                </button>
+            </div>
+        </form>
     </div>
+</div>
 @endsection
