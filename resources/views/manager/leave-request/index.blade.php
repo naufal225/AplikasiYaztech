@@ -57,6 +57,19 @@
                 </div>
             </div>
         </div>
+        <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
+            <div class="flex items-center">
+                <div
+                    class="p-3 rounded-full {{ $sisaCuti <= 0 ? 'bg-error-100 text-error-600' : ($sisaCuti > ((int) env('CUTI_TAHUNAN', 20) / 2) ? 'bg-success-100 text-success-600' : 'bg-warning-100 text-warning-600')}}">
+                    <i class="text-xl fas fa-calendar-xmark"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-neutral-500">Remaining days</p>
+                    <p class="text-lg font-semibold">{{ $sisaCuti }}/{{ env('CUTI_TAHUNAN', 20) }} ({{ now()->year }})
+                    </p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
@@ -211,4 +224,3 @@
     </div>
 </main>
 @endsection
-

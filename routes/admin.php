@@ -25,6 +25,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/leaves/export', [LeaveController::class, 'export'])
         ->name('leaves.export');
+
+    Route::get('leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
+
     Route::resource('leaves', LeaveController::class)
         ->parameters([
             "leaves" => "leave"
@@ -32,6 +35,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/reimbursements/export', [ReimbursementController::class, 'export'])
         ->name('reimbursements.export');
+    Route::get('reimbursements/{reimbursement}/export-pdf', [ReimbursementController::class, 'exportPdf'])->name('reimbursements.exportPdf');
     Route::resource('reimbursements', ReimbursementController::class)
         ->parameters([
             "reimbursements" => "reimbursement"

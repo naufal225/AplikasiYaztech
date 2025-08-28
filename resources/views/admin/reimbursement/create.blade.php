@@ -1,4 +1,4 @@
-@extends('components.admin.layout.admin-layout')
+@extends('components.admin.layout.layout-admin')
 
 @section('header', 'Request Reimbursement')
 @section('subtitle', 'Submit a new reimbursement claim')

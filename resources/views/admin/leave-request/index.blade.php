@@ -52,7 +52,7 @@
         @endif
     </div>
 
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-5">
         <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
             <div class="flex items-center">
                 <div class="p-3 rounded-full bg-primary-100 text-primary-500">
@@ -94,6 +94,19 @@
                 <div class="ml-4">
                     <p class="text-sm text-neutral-500">Rejected</p>
                     <p class="text-lg font-semibold">{{ $rejectedRequests }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
+            <div class="flex items-center">
+                <div
+                    class="p-3 rounded-full {{ $sisaCuti <= 0 ? 'bg-error-100 text-error-600' : ($sisaCuti > ((int) env('CUTI_TAHUNAN', 20) / 2) ? 'bg-success-100 text-success-600' : 'bg-warning-100 text-warning-600')}}">
+                    <i class="text-xl fas fa-calendar-xmark"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm text-neutral-500">Remaining days</p>
+                    <p class="text-lg font-semibold">{{ $sisaCuti }}/{{ env('CUTI_TAHUNAN', 20) }} ({{ now()->year }})
+                    </p>
                 </div>
             </div>
         </div>
@@ -213,7 +226,8 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <button type="button" class="delete-leave-btn text-error-600 hover:text-error-900"
-                                    data-leave-id="{{ $leave->id }}" data-leave-name="Leave Request #{{ $leave->id }}" title="Delete">
+                                    data-leave-id="{{ $leave->id }}" data-leave-name="Leave Request #{{ $leave->id }}"
+                                    data-table="own" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
                                 @endif
@@ -337,7 +351,8 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <button type="button" class="delete-leave-btn text-error-600 hover:text-error-900"
-                                    data-leave-id="{{ $leave->id }}" data-leave-name="Leave Request #{{ $leave->id }}" title="Delete">
+                                    data-leave-id="{{ $leave->id }}" data-leave-name="Leave Request #{{ $leave->id }}"
+                                    data-table="all" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
                                 @endif
@@ -364,9 +379,10 @@
         @endif
     </div>
 
-    {{-- Added hidden forms for delete functionality --}}
+    {{-- Fixed duplicate form IDs by adding unique prefixes for each table --}}
     @foreach($ownRequests as $leave)
-    <form id="delete-form-{{ $leave->id }}" action="{{ route('admin.leaves.destroy', $leave->id) }}" method="POST" style="display: none;">
+    <form id="own-delete-form-{{ $leave->id }}" action="{{ route('admin.leaves.destroy', $leave->id) }}" method="POST"
+        style="display: none;">
         @csrf
         @method('DELETE')
     </form>
@@ -374,7 +390,8 @@
 
     @foreach($allUsersRequests as $leave)
     @if(Auth::id() === $leave->employee_id)
-    <form id="delete-form-{{ $leave->id }}" action="{{ route('admin.leaves.destroy', $leave->id) }}" method="POST" style="display: none;">
+    <form id="all-delete-form-{{ $leave->id }}" action="{{ route('admin.leaves.destroy', $leave->id) }}" method="POST"
+        style="display: none;">
         @csrf
         @method('DELETE')
     </form>
@@ -422,7 +439,7 @@
                     Cancel
                 </button>
                 <button type="button" id="confirmDeleteBtn"
-                    class="px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    class="z-40 px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                     <span id="deleteButtonText">Delete</span>
                     <svg id="deleteSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
                         viewBox="0 0 24 24">
@@ -441,7 +458,7 @@
 
 @push('scripts')
 <script>
-function showToast(message, type = 'success') {
+    function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const toastContent = document.getElementById('toastContent');
     const toastMessage = document.getElementById('toastMessage');
@@ -533,14 +550,12 @@ document.addEventListener('DOMContentLoaded', function() {
             exportButton.disabled = false;
         }
     });
+
+    initializeDeleteFunctionality();
 });
 
 let leaveIdToDelete = null;
-
-// Initialize delete functionality when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDeleteFunctionality();
-});
+let deleteTableType = null;
 
 function initializeDeleteFunctionality() {
     // Add event listeners to all delete buttons
@@ -549,7 +564,8 @@ function initializeDeleteFunctionality() {
         button.addEventListener('click', function() {
             const leaveId = this.getAttribute('data-leave-id');
             const leaveName = this.getAttribute('data-leave-name');
-            confirmDelete(leaveId, leaveName);
+            const tableType = this.getAttribute('data-table');
+            confirmDelete(leaveId, leaveName, tableType);
         });
     });
 
@@ -566,8 +582,9 @@ function initializeDeleteFunctionality() {
     }
 }
 
-function confirmDelete(leaveId, leaveName) {
+function confirmDelete(leaveId, leaveName, tableType) {
     leaveIdToDelete = leaveId;
+    deleteTableType = tableType;
     document.getElementById('leaveName').textContent = leaveName;
     document.getElementById('deleteConfirmModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
@@ -575,12 +592,13 @@ function confirmDelete(leaveId, leaveName) {
 
 function closeDeleteModal() {
     leaveIdToDelete = null;
+    deleteTableType = null;
     document.getElementById('deleteConfirmModal').classList.add('hidden');
     document.body.style.overflow = 'auto'; // Restore scrolling
 }
 
 function executeDelete() {
-    if (!leaveIdToDelete) return;
+    if (!leaveIdToDelete || !deleteTableType) return;
 
     // Show loading state
     const deleteBtn = document.getElementById('confirmDeleteBtn');
@@ -593,8 +611,16 @@ function executeDelete() {
     deleteText.textContent = 'Deleting...';
     deleteSpinner.classList.remove('hidden');
 
-    // Submit the form
-    document.getElementById(`delete-form-${leaveIdToDelete}`).submit();
+    const formId = `${deleteTableType}-delete-form-${leaveIdToDelete}`;
+    const form = document.getElementById(formId);
+
+    if (form) {
+        form.submit();
+    } else {
+        console.error('Delete form not found:', formId);
+        showToast('Error: Could not find delete form', 'error');
+        closeDeleteModal();
+    }
 }
 
 // Close modal when pressing Escape key
