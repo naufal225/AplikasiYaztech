@@ -68,33 +68,43 @@
         </div>
 
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 p-6">
-            <form method="GET" action="{{ route('employee.reimbursements.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-neutral-700 mb-2">Status</label>
-                    <select name="status" class="form-select">
-                        <option value="">All Status</option>
-                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
-                        <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                    </select>
+            <form method="GET" action="{{ route('employee.reimbursements.index') }}" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 mb-2">Status</label>
+                        <select name="status" class="w-full rounded-xl p-2.5 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                            <option value="">All Status</option>
+                            <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                            <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 mb-2">From Date</label>
+                        <input type="date" name="from_date" value="{{ request('from_date') }}" class="w-full rounded-xl p-2.5 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-neutral-700 mb-2">To Date</label>
+                        <input type="date" name="to_date" value="{{ request('to_date') }}" class="w-full rounded-xl p-2.5 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-neutral-700 mb-2">From Date</label>
-                    <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-input">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-neutral-700 mb-2">To Date</label>
-                    <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-input">
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="btn-primary mr-2">
+
+                <div class="flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 border-t pt-3 border-gray-300/80">
+                    <!-- Filter Button -->
+                    <button type="submit" 
+                        class="flex justify-center-safe items-center cursor-pointer px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl shadow-sm 
+                            hover:bg-blue-700 hover:shadow-md transition-all duration-300">
                         <i class="fas fa-search mr-2"></i>
                         Filter
                     </button>
-                    <a href="{{ route('employee.reimbursements.index') }}" class="btn-secondary">
-                        <i class="fas fa-refresh mr-2"></i>
-                        Reset
-                    </a>
+
+                    <!-- Reset Button -->
+                    <button onclick="window.location.href = '{{ route('employee.reimbursements.index') }}'" type="button"
+                        class="flex items-center justify-center-safe px-4 py-2 bg-gray-100 text-gray-700 text-sm cursor-pointer font-medium rounded-xl shadow-sm 
+                                hover:bg-gray-200 hover:shadow-md transition-all duration-300">
+                            <i class="fas fa-refresh mr-2"></i>
+                            Reset
+                    </button>
                 </div>
             </form>
         </div>

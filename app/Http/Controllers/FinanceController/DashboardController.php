@@ -24,6 +24,89 @@ class DashboardController extends Controller
         }
 
         // =========================
+        // YOURS (hanya data milik user yg login)
+        // =========================
+        // Pending (belum disetujui)
+
+        $userId = Auth::id();
+        $thisMonth = Carbon::now()->month;
+        $thisYear  = Carbon::now()->year;
+
+        $pendingYoursLeaves = Leave::where('employee_id', $userId)
+            ->where('status_1', 'pending')->count();
+
+        $pendingYoursOvertimes = Overtime::where('employee_id', $userId)
+            ->where(function($q){
+                $q->where('status_1','pending')->orWhere('status_2','pending');
+            })->count();
+
+        $pendingYoursReimbursements = Reimbursement::where('employee_id', $userId)
+            ->where(function($q){
+                $q->where('status_1','pending')->orWhere('status_2','pending');
+            })->count();
+
+        $pendingYoursTravels = OfficialTravel::where('employee_id', $userId)
+            ->where(function($q){
+                $q->where('status_1','pending')->orWhere('status_2','pending');
+            })->count();
+
+        // Approved This Month
+        $approvedYoursLeaves = Leave::where('employee_id', $userId)
+            ->where('status_1', 'approved')
+            ->whereMonth('created_at', $thisMonth)
+            ->whereYear('created_at', $thisYear)
+            ->count();
+
+        $approvedYoursOvertimes = Overtime::where('employee_id', $userId)
+            ->where('status_1', 'approved')->where('status_2', 'approved')
+            ->whereMonth('created_at', $thisMonth)
+            ->whereYear('created_at', $thisYear)
+            ->count();
+
+        $approvedYoursReimbursements = Reimbursement::where('employee_id', $userId)
+            ->where('status_1', 'approved')->where('status_2', 'approved')
+            ->whereMonth('created_at', $thisMonth)
+            ->whereYear('created_at', $thisYear)
+            ->count();
+
+        $approvedYoursTravels = OfficialTravel::where('employee_id', $userId)
+            ->where('status_1', 'approved')->where('status_2', 'approved')
+            ->whereMonth('created_at', $thisMonth)
+            ->whereYear('created_at', $thisYear)
+            ->count();
+
+        // Rejected This Month
+        $rejectedYoursLeaves = Leave::where('employee_id', $userId)
+            ->where('status_1', 'rejected')
+            ->whereMonth('created_at', $thisMonth)
+            ->whereYear('created_at', $thisYear)
+            ->count();
+
+        $rejectedYoursOvertimes = Overtime::where('employee_id', $userId)
+            ->where(function($q){
+                $q->where('status_1','rejected')->orWhere('status_2','rejected');
+            })
+            ->whereMonth('created_at', $thisMonth)
+            ->whereYear('created_at', $thisYear)
+            ->count();
+
+        $rejectedYoursReimbursements = Reimbursement::where('employee_id', $userId)
+            ->where(function($q){
+                $q->where('status_1','rejected')->orWhere('status_2','rejected');
+            })
+            ->whereMonth('created_at', $thisMonth)
+            ->whereYear('created_at', $thisYear)
+            ->count();
+
+        $rejectedYoursTravels = OfficialTravel::where('employee_id', $userId)
+            ->where(function($q){
+                $q->where('status_1','rejected')->orWhere('status_2','rejected');
+            })
+            ->whereMonth('created_at', $thisMonth)
+            ->whereYear('created_at', $thisYear)
+            ->count();
+
+        // =========================
         // DATA COUNT (CARD)
         // =========================
         $leaveCount = Leave::whereHas('employee', function ($q) {
@@ -106,6 +189,10 @@ class DashboardController extends Controller
             }
         }
 
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) Leave::where('employee_id', $userId)
+            ->with(['employee', 'approver'])
+            ->orderBy('created_at', 'desc')->where('status_1', 'approved')->whereYear('date_start', now()->year)->count();
+
         return view('Finance.index', [
             'leaveCount' => $leaveCount,
             'overtimeCount' => $overtimeCount,
@@ -119,6 +206,23 @@ class DashboardController extends Controller
             'officialTravelsChartData' => $officialTravelsChartData,
             'recentRequests' => $recentRequests,
             'cutiPerTanggal' => $cutiPerTanggal,
+
+            'pendingYoursLeaves' => $pendingYoursLeaves,
+            'pendingYoursOvertimes' => $pendingYoursOvertimes,
+            'pendingYoursReimbursements' => $pendingYoursReimbursements,
+            'pendingYoursTravels' => $pendingYoursTravels,
+
+            'approvedYoursLeaves' => $approvedYoursLeaves,
+            'approvedYoursOvertimes' => $approvedYoursOvertimes,
+            'approvedYoursReimbursements' => $approvedYoursReimbursements,
+            'approvedYoursTravels' => $approvedYoursTravels,
+
+            'rejectedYoursLeaves' => $rejectedYoursLeaves,
+            'rejectedYoursOvertimes' => $rejectedYoursOvertimes,
+            'rejectedYoursReimbursements' => $rejectedYoursReimbursements,
+            'rejectedYoursTravels' => $rejectedYoursTravels,
+
+            'sisaCuti' => $sisaCuti
         ]);
     }
 

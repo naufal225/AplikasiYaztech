@@ -85,15 +85,22 @@
                     <label class="block text-sm font-medium text-neutral-700 mb-2">To Date</label>
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-input">
                 </div>
-                <div class="flex items-end">
-                    <button type="submit" class="btn-primary mr-2">
+                <div class="flex items-end space-x-3">
+                    <!-- Filter Button -->
+                    <button type="submit" 
+                        class="flex items-center cursor-pointer px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl shadow-sm 
+                            hover:bg-blue-700 hover:shadow-md transition-all duration-300">
                         <i class="fas fa-search mr-2"></i>
                         Filter
                     </button>
-                    <a href="{{ route('employee.overtimes.index') }}" class="btn-secondary">
-                        <i class="fas fa-refresh mr-2"></i>
-                        Reset
-                    </a>
+
+                    <!-- Reset Button -->
+                    <button onclick="window.location.href = '{{ route('employee.overtimes.index') }}'" type="button"
+                        class="flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm cursor-pointer font-medium rounded-xl shadow-sm 
+                                hover:bg-gray-200 hover:shadow-md transition-all duration-300">
+                            <i class="fas fa-refresh mr-2"></i>
+                            Reset
+                    </button>
                 </div>
             </form>
         </div>

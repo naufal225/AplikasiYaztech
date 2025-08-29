@@ -15,6 +15,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use ZipArchive;
 use Illuminate\Support\Str;
 
 class LeaveController extends Controller
@@ -70,7 +72,9 @@ class LeaveController extends Controller
 
         $countsYours = (clone $yourLeavesQuery)->withFinalStatusCount()->first();
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) $countsYours->approved;
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) Leave::where('employee_id', Auth::id())
+            ->with(['employee', 'approver'])
+            ->orderBy('created_at', 'desc')->where('status_1', 'approved')->whereYear('date_start', now()->year)->count();
         $totalYoursRequests = (int) $yourLeavesQuery->count();
         $pendingYoursRequests = (int) $countsYours->pending;
         $approvedYoursRequests = (int) $countsYours->approved;
@@ -194,6 +198,67 @@ class LeaveController extends Controller
     {
         $pdf = Pdf::loadView('Finance.leaves.pdf', compact('leave'));
         return $pdf->download('leave-details-finance.pdf');
+    }
+
+    /**
+     * Bulk export approved requests as PDFs in a ZIP file.
+     */
+    public function bulkExport(Request $request)
+    {
+        $dateFrom = $request->input('from_date');
+        $dateTo = $request->input('date_to');
+
+        $query = Leave::with('employee')->where('status_1', 'approved');
+
+        if ($dateFrom && $dateTo) {
+            $query->where(function($q) use ($dateFrom, $dateTo) {
+                $q->whereDate('date_start', '<=', $dateTo)
+                ->whereDate('date_end', '>=', $dateFrom);
+            });
+        }
+
+        $leaves = $query->get();
+
+        if ($leaves->isEmpty()) {
+            return back()->with('error', 'Tidak ada data untuk filter tersebut.');
+        }
+
+        $zipFileName = 'LeaveRequests_' . Carbon::now()->format('YmdHis') . '.zip';
+        $zipPath = Storage::disk('public')->path($zipFileName);
+
+        // Folder sementara untuk menyimpan PDF
+        $tempFolder = 'temp_leaves';
+        if (!Storage::disk('public')->exists($tempFolder)) {
+            Storage::disk('public')->makeDirectory($tempFolder);
+        }
+
+        $files = [];
+
+        foreach ($leaves as $leave) {
+            $pdf = Pdf::loadView('Finance.leaves.pdf', compact('leave'));
+            $fileName = "leave_{$leave->employee->name}_" . $leave->id . ".pdf";
+            $filePath = "{$tempFolder}/{$fileName}";
+            Storage::disk('public')->put($filePath, $pdf->output());
+            $files[] = Storage::disk('public')->path($filePath);
+        }
+
+        // Buat ZIP
+        $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+            foreach ($files as $file) {
+                $zip->addFile($file, basename($file));
+            }
+            $zip->close();
+        }
+
+        // Bersihkan file sementara
+        foreach ($files as $file) {
+            @unlink($file);
+        }
+        Storage::disk('public')->deleteDirectory($tempFolder);
+
+        // Return download
+        return response()->download($zipPath)->deleteFileAfterSend(true);
     }
 
     /**

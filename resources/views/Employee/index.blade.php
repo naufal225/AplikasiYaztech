@@ -113,6 +113,9 @@
         </a>
     </div>
 
+    <!-- Divider -->
+    <div class="border-t border-gray-300/80 transform scale-y-50 mb-10 mt-6"></div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Calendar Section -->
         <div class="bg-white rounded-xl border border-gray-200 mb-8 shadow-soft">
