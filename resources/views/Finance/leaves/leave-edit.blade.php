@@ -103,19 +103,6 @@
                               placeholder="Please provide a detailed reason for your leave request..." required>{{ $leave->reason }}</textarea>
                 </div>
 
-                <!-- Warning Notice -->
-                <div class="p-4 border rounded-lg bg-warning-50 border-warning-200">
-                    <div class="flex items-start">
-                        <i class="fas fa-exclamation-triangle text-warning-600 mr-3 mt-0.5"></i>
-                        <div>
-                            <h4 class="mb-1 text-sm font-semibold text-warning-800">Important Notice</h4>
-                            <p class="text-xs text-warning-700">
-                                Editing this request will reset its status to pending and require re-approval from your team lead.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="flex justify-end pt-6 space-x-4 border-t border-neutral-200">
                     <a href="{{ url()->previous() }}" class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
                         <i class="mr-2 fas fa-times"></i>

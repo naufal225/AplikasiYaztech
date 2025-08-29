@@ -73,7 +73,7 @@ class LeaveController extends Controller
         $leaves = $query->paginate(10);
         $counts = $queryClone->withFinalStatusCount()->first();
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) $queryClone->whereYear('date_start', now()->year)->count();
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) $queryClone->where('status_1', 'approved')->whereYear('date_start', now()->year)->count();
         $totalRequests = (int) $queryClone->count();
         $pendingRequests = (int) $counts->pending;
         $approvedRequests = (int) $counts->approved;

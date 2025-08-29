@@ -107,33 +107,64 @@
         </div>
 
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 p-6">
-            <form method="GET" action="{{ route('finance.leaves.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-neutral-700 mb-2">Status</label>
-                    <select name="status" class="form-select">
-                        <option value="">All Status</option>
-                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
-                        <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
-                    </select>
+            <form method="GET" action="{{ route('finance.leaves.index') }}" class="space-y-4">
+                <!-- Filter Fields -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Status -->
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select name="status" id="status"
+                            class="w-full rounded-xl p-2.5 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                            <option value="">All</option>
+                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                        </select>
+                    </div>
+
+                    <!-- From Date -->
+                    <div>
+                        <label for="from_date" class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                        <input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}"
+                            class="w-full rounded-xl p-2.5 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                    </div>
+
+                    <!-- To Date -->
+                    <div>
+                        <label for="to_date" class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                        <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}"
+                            class="w-full rounded-xl p-2.5 border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-neutral-700 mb-2">From Date</label>
-                    <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-input">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-neutral-700 mb-2">To Date</label>
-                    <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-input">
-                </div>
-                <div class="flex items-end">
-                    <button type="submit" class="btn-primary mr-2">
-                        <i class="fas fa-search mr-2"></i>
-                        Filter
+
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row sm:justify-end sm:space-x-3 space-y-3 sm:space-y-0 border-t pt-3 border-gray-300/80">
+                    
+                    <!-- Filter -->
+                    <button type="submit"
+                        class="flex justify-center-safe items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl shadow-sm 
+                            hover:bg-blue-700 hover:shadow-md transition-all duration-300 w-full sm:w-auto">
+                        <i class="fas fa-search mr-2"></i> Filter
                     </button>
-                    <a href="{{ route('finance.leaves.index') }}" class="btn-secondary">
-                        <i class="fas fa-refresh mr-2"></i>
-                        Reset
-                    </a>
+
+                    <!-- Reset -->
+                    <button type="button" onclick="window.location.href = '{{ route('finance.leaves.index') }}'"
+                        class="flex justify-center-safe items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl shadow-sm 
+                            hover:bg-gray-200 hover:shadow-md transition-all duration-300 w-full sm:w-auto">
+                        <i class="fas fa-refresh mr-2"></i> Reset
+                    </button>
+
+                    <!-- Bulk Request -->
+                    <button type="button"
+                        onclick="window.location.href='{{ route('finance.leaves.bulkExport', [
+                            'status' => request('status'),
+                            'from_date' => request('from_date'),
+                            'to_date' => request('to_date'),
+                        ]) }}'"
+                        class="flex justify-center-safe items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-xl shadow-sm 
+                            hover:bg-green-700 hover:shadow-md transition-all duration-300 w-full sm:w-auto">
+                        <i class="fas fa-layer-group mr-2"></i> Bulk Request
+                    </button>
                 </div>
             </form>
         </div>
