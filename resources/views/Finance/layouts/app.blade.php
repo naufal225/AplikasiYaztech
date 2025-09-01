@@ -95,10 +95,6 @@
                         <button class="mr-4 text-white lg:hidden hover:text-secondary-100" onclick="toggleSidebar()">
                             <i class="text-lg fas fa-bars"></i>
                         </button>
-                        <div>
-                            <h2 class="text-xl font-bold text-white">@yield('header', 'Dashboard')</h2>
-                            <p class="text-sm text-secondary-100">@yield('subtitle', 'Welcome back!')</p>
-                        </div>
                     </div>
                     <div class="flex items-center space-x-4">
                         <div class="flex items-center px-3 py-2 rounded-full bg-secondary-600">
