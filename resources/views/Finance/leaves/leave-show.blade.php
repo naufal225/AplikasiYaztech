@@ -19,33 +19,6 @@
             </div>
         </div>
 
-        <!-- Statistics All Employee Cards -->
-        <p class="text-sm text-neutral-500 mb-2 ms-4">All Requests</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-primary-100 text-primary-500">
-                        <i class="fas fa-calendar-alt text-xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-neutral-500">Total All Requests</p>
-                        <p class="text-lg font-semibold">{{ $totalRequests }}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-success-100 text-success-500">
-                        <i class="fas fa-check-circle text-xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-neutral-500">Total All Approved</p>
-                        <p class="text-lg font-semibold">{{ $approvedRequests }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Statistics Yours Cards -->
         <p class="text-sm text-neutral-500 mb-2 ms-4">Your Requests</p>
         <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
@@ -101,6 +74,33 @@
                     <div class="ml-4">
                         <p class="text-sm text-neutral-500">Remaining days</p>
                         <p class="text-lg font-semibold">{{ $sisaCuti }}/{{ env('CUTI_TAHUNAN', 20) }} ({{ now()->year }})</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics All Employee Cards -->
+        <p class="text-sm text-neutral-500 mb-2 ms-4">All Requests</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-primary-100 text-primary-500">
+                        <i class="fas fa-calendar-alt text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-neutral-500">Total All Requests</p>
+                        <p class="text-lg font-semibold">{{ $totalRequests }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-success-100 text-success-500">
+                        <i class="fas fa-check-circle text-xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-neutral-500">Total All Approved</p>
+                        <p class="text-lg font-semibold">{{ $approvedRequests }}</p>
                     </div>
                 </div>
             </div>
