@@ -42,6 +42,8 @@ Route::get('/', function () {
     $user = Auth::user();
     if($user) {
         switch($user->role) {
+            case (Roles::SuperAdmin->value) :
+                return redirect()->route('super-admin.dashboard');
             case (Roles::Admin->value) :
                 return redirect()->route('admin.dashboard');
             case (Roles::Approver->value) :
@@ -73,6 +75,7 @@ Route::get('/login', [AuthController::class, 'index'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+require __DIR__.'/super-admin.php';
 require __DIR__.'/admin.php';
 require __DIR__.'/approver.php';
 require __DIR__.'/employee.php';

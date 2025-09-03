@@ -83,7 +83,7 @@ class PublicApprovalController extends Controller
                                 Log::warning('No manager found for subject id ' . $subject->id . ' type ' . get_class($subject));
                                 return;
                             }
-                            
+
                             $base = class_basename($subject); // "Leave", "OfficialTravel", "Overtime", "Reimbursement"
                             $eventClass = "App\\Events\\{$base}LevelAdvanced"; // e.g. App\Events\LeaveLevelAdvanced
 
@@ -127,7 +127,6 @@ class PublicApprovalController extends Controller
                             Mail::to($manager->email)->queue(
                                 new \App\Mail\SendMessage(
                                     namaPengaju: $employeeName,
-                                    pesan: $pesan,
                                     namaApprover: $manager->name,
                                     linkTanggapan: $publicUrl,
                                     emailPengaju: $subject->employee->email ?? null

@@ -12,44 +12,44 @@
 
     <!-- Navigation -->
     <nav class="flex-1 px-4 py-6 space-y-2">
-        <a href="{{ route('admin.dashboard') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('super-admin.dashboard') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('super-admin.dashboard') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-tachometer-alt"></i>
             <span class="font-medium">Dashboard</span>
         </a>
 
-        <a href="{{ route('admin.divisions.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.divisions.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('super-admin.divisions.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('super-admin.divisions.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-users"></i>
             <span class="font-medium">Division</span>
         </a>
 
-        <a href="{{ route('admin.users.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.users.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('super-admin.users.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('super-admin.users.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-users"></i>
             <span class="font-medium">User</span>
         </a>
 
-        <a href="{{ route('admin.leaves.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('super-admin.leaves.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('super-admin.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
             <span class="font-medium">Leave Requests</span>
         </a>
 
-        <a href="{{ route('admin.reimbursements.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('super-admin.reimbursements.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('super-admin.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-file-invoice-dollar"></i>
             <span class="font-medium">Reimbursement Requests</span>
         </a>
 
-        <a href="{{ route('admin.overtimes.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('super-admin.overtimes.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('super-admin.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-clock"></i>
             <span class="font-medium">Overtime Requests</span>
         </a>
 
-        <a href="{{ route('admin.official-travels.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('super-admin.official-travels.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('super-admin.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-briefcase"></i>
             <span class="font-medium">Official Travel Requests</span>
         </a>
@@ -57,7 +57,7 @@
     </nav>
 
     <div class="p-4 border-t border-primary-700">
-        <a class="flex items-center mb-4" href="{{ route('admin.profile.index') }}">
+        <a class="flex items-center mb-4" href="{{ route('super-admin.profile.index') }}">
             <div class="flex items-center justify-center w-10 h-10 mr-3 rounded-full bg-primary-600">
                 @if(Auth::user()->url_profile)
                 <img class="object-cover w-10 h-10 rounded-full" src="{{ Auth::user()->url_profile }}"
