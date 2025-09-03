@@ -23,21 +23,29 @@
                 <li aria-current="page">
                     <div class="flex items-center">
                         <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
-                        <span class="text-sm font-medium text-neutral-500">Klaim #{{ $reimbursement->id }}</span>
+                        <span class="text-sm font-medium text-neutral-500">Klaim #RY{{ $reimbursement->id }}</span>
                     </div>
                 </li>
             </ol>
         </nav>
+
         <!-- Main Content -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Left Column - Main Details -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Request Header -->
-                <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
+                <div class="relative bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
+                    <!-- Overlay Checklist -->
+                    @if($reimbursement->marked_down)
+                        <div class="absolute inset-0 flex items-center justify-center bg-white/70 z-10 rounded-xl">
+                            <i class="fas fa-check-circle bg-white rounded-full text-green-500 text-7xl drop-shadow-lg"></i>
+                        </div>
+                    @endif
+
                     <div class="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h1 class="text-xl font-bold text-white">Reimbursement Claim #{{ $reimbursement->id }}</h1>
+                                <h1 class="text-xl font-bold text-white">Reimbursement Claim #RY{{ $reimbursement->id }}</h1>
                                 <p class="text-primary-100 text-sm">Submitted on {{ $reimbursement->created_at->format('M d, Y \a\t H:i') }}</p>
                                 <p class="text-sm mt-4 text-primary-100 font-medium">Owner Name: {{ $reimbursement->employee->name }}</p>
                             </div>
@@ -74,7 +82,7 @@
                                 <label class="text-sm font-semibold text-neutral-700">Email</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     <i class="fas fa-envelope text-primary-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ Auth::user()->email }}</span>
+                                    <span class="text-neutral-900 font-medium truncate">{{ Auth::user()->email }}</span>
                                 </div>
                             </div>
                             <!-- Approver -->
@@ -82,7 +90,7 @@
                                 <label class="text-sm font-semibold text-neutral-700">Team Lead</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     <i class="fas fa-user-check text-info-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ $reimbursement->approver->name ?? 'N/A' }}</span>
+                                    <span class="text-neutral-900 font-medium truncate">{{ $reimbursement->approver->name ?? 'N/A' }}</span>
                                 </div>
                             </div>
                             <!-- Total (was Amount) -->
@@ -90,7 +98,7 @@
                                 <label class="text-sm font-semibold text-neutral-700">Total Amount</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     <i class="fas fa-dollar-sign text-primary-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">Rp {{ number_format($reimbursement->total, 0, ',', '.') }}</span>
+                                    <span class="text-neutral-900 font-medium truncate">Rp {{ number_format($reimbursement->total, 0, ',', '.') }}</span>
                                 </div>
                             </div>
                             <!-- Date -->
@@ -98,7 +106,7 @@
                                 <label class="text-sm font-semibold text-neutral-700">Date of Expense</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     <i class="fas fa-calendar-day text-secondary-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ \Carbon\Carbon::parse($reimbursement->date)->format('l, M d, Y') }}</span>
+                                    <span class="text-neutral-900 font-medium truncate">{{ \Carbon\Carbon::parse($reimbursement->date)->format('l, M d, Y') }}</span>
                                 </div>
                             </div>
                             <!-- Customer -->
@@ -106,7 +114,7 @@
                                 <label class="text-sm font-semibold text-neutral-700">Customer</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     <i class="fas fa-users text-info-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ $reimbursement->customer->name ?? 'N/A' }}</span>
+                                    <span class="text-neutral-900 font-medium truncate">{{ $reimbursement->customer ?? 'N/A' }}</span>
                                 </div>
                             </div>
                             <!-- Invoice Path (was Attachment) -->
@@ -119,7 +127,7 @@
                                             View Invoice ({{ pathinfo($reimbursement->invoice_path, PATHINFO_EXTENSION) }})
                                         </a>
                                     @else
-                                        <p class="text-neutral-500">No invoice provided.</p>
+                                        <p class="text-neutral-500 truncate">No invoice provided.</p>
                                     @endif
                                 </div>
                             </div>
@@ -159,14 +167,14 @@
                                 <label class="text-sm font-semibold text-neutral-700">Note - Team Lead</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                    <span class="text-neutral-900">{{ $reimbursement->note_1 ?? '-' }}</span>
+                                    <span class="text-neutral-900 truncate">{{ $reimbursement->note_1 ?? '-' }}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Note - Manager</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                    <span class="text-neutral-900">{{ $reimbursement->note_2 ?? '-' }}</span>
+                                    <span class="text-neutral-900 truncate">{{ $reimbursement->note_2 ?? '-' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -181,14 +189,31 @@
                         <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                     </div>
                     <div class="p-6 space-y-3">
+                        @if((Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending') || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $reimbursement->status_2 === 'pending'))
+                            <a href="{{ route('employee.reimbursements.edit', $reimbursement->id) }}" class="w-full flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                <i class="fas fa-edit mr-2"></i>
+                                Edit Request
+                            </a>
+                            <form action="{{ route('employee.reimbursements.destroy', $reimbursement->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this reimbursement request?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="w-full flex items-center justify-center px-4 py-2 bg-error-600 hover:bg-error-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                    <i class="fas fa-trash mr-2"></i>
+                                    Delete Request
+                                </button>
+                            </form>
+                        @endif
                         <a href="{{ route('finance.reimbursements.index') }}" class="w-full flex items-center justify-center px-4 py-2 bg-neutral-600 hover:bg-neutral-700 text-white font-semibold rounded-lg transition-colors duration-200">
                             <i class="fas fa-arrow-left mr-2"></i>
                             Back to List
                         </a>
-                        <button onclick="window.location.href='{{ route('finance.reimbursements.exportPdf', $reimbursement->id) }}'" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
-                            <i class="fas fa-print mr-2"></i>
-                            Print Request
-                        </button>
+
+                        @if ($reimbursement->status_1 == 'approved' && $reimbursement->status_2 == 'approved' && $reimbursement->marked_down)
+                            <button onclick="window.location.href='{{ route('finance.reimbursements.exportPdf', $reimbursement->id) }}'" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                <i class="fas fa-print mr-2"></i>
+                                Print Request
+                            </button>
+                        @endif
                     </div>
                 </div>
             </div>

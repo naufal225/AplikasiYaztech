@@ -24,7 +24,7 @@
                 <li>
                     <div class="flex items-center">
                         <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
-                        <a href="{{ route('finance.leaves.show', $leave->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Request #{{ $leave->id }}</a>
+                        <a href="{{ route('finance.leaves.show', $leave->id) }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Request #LY{{ $leave->id }}</a>
                     </div>
                 </li>
                 <li aria-current="page">
@@ -38,7 +38,7 @@
 
         <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
             <div class="px-6 py-4 border-b border-neutral-200">
-                <h2 class="text-lg font-bold text-neutral-900">Edit Leave Request #{{ $leave->id }}</h2>
+                <h2 class="text-lg font-bold text-neutral-900">Edit Leave Request #LY{{ $leave->id }}</h2>
                 <p class="text-sm text-neutral-600">Update your leave request information</p>
             </div>
 
