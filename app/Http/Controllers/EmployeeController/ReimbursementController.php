@@ -328,6 +328,11 @@ class ReimbursementController extends Controller
         if ($reimbursement->invoice_path) {
             Storage::disk('public')->delete($reimbursement->invoice_path);
         }
+
+        if (\App\Models\ApprovalLink::where('model_id', $reimbursement->id)->where('model_type', get_class($reimbursement))->exists()) {
+            \App\Models\ApprovalLink::where('model_id', $reimbursement->id)->where('model_type', get_class($reimbursement))->delete();
+        }
+
         $reimbursement->delete();
 
         return redirect()->route('employee.reimbursements.index')

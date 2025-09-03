@@ -367,7 +367,12 @@ class LeaveController extends Controller
                 ->with('error', 'You cannot delete a leave request that has already been processed.');
         }
 
+        if (\App\Models\ApprovalLink::where('model_id', $leave->id)->where('model_type', get_class($leave))->exists()) {
+            \App\Models\ApprovalLink::where('model_id', $leave->id)->where('model_type', get_class($leave))->delete();
+        }
+
         $leave->delete();
+
         return redirect()->route('finance.leaves.index')
             ->with('success', 'Leave request deleted successfully.');
     }

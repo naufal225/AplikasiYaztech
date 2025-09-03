@@ -23,7 +23,7 @@
                 <li aria-current="page">
                     <div class="flex items-center">
                         <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
-                        <span class="text-sm font-medium text-neutral-500">Cuti #{{ $leave->id }}</span>
+                        <span class="text-sm font-medium text-neutral-500">Cuti #LY{{ $leave->id }}</span>
                     </div>
                 </li>
             </ol>
@@ -36,7 +36,7 @@
                     <div class="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h1 class="text-xl font-bold text-white">Leave Request #{{ $leave->id }}</h1>
+                                <h1 class="text-xl font-bold text-white">Leave Request #LY{{ $leave->id }}</h1>
                                 <p class="text-sm text-primary-100">Submitted on {{ Carbon\Carbon::parse($leave->created_at)->format('M d, Y \a\t H:i') }}</p>
                                 <p class="text-sm mt-4 text-primary-100 font-medium">Owner Name: {{ $leave->employee->name }}</p>
                             </div>

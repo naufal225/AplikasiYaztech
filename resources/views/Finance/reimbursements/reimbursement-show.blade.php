@@ -102,7 +102,7 @@
                     </div>
                     <div class="ml-4">
                         <p class="text-sm text-neutral-500">Total All Marked</p>
-                        <p class="text-lg font-semibold">{{ $markedRequests }}</p>
+                        <p class="text-lg font-semibold">{{ $markedRequests . '/' . $totalAllNoMark }}</p>
                     </div>
                 </div>
             </div>
@@ -195,14 +195,19 @@
                             <tr class="hover:bg-neutral-50 transition-colors duration-200">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div>
-                                        <div class="text-sm font-medium text-neutral-900">#{{ $reimbursement->id }}</div>
+                                        <div class="text-sm font-medium text-neutral-900">#RY{{ $reimbursement->id }}</div>
                                         <div class="text-sm text-neutral-500">{{ $reimbursement->created_at->format('M d, Y') }}</div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 bg-success-100 rounded-full flex items-center justify-center mr-3">
-                                            <span class="text-success-600 font-semibold text-xs">{{ substr($reimbursement->employee->name, 0, 1) }}</span>
+                                            @if($reimbursement->employee->url_profile)
+                                                <img class="object-cover rounded-full"
+                                                    src="{{ $reimbursement->employee->url_profile }}" alt="{{ $reimbursement->employee->name }}">
+                                            @else
+                                                <span class="text-success-600 font-semibold text-xs">{{ substr($reimbursement->employee->name, 0, 1) }}</span>
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-neutral-900">{{ $reimbursement->employee->name }}</div>
@@ -218,17 +223,17 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($reimbursement->status_1 === 'pending')
-                                        <span class="badge-pending">
+                                        <span class="badge-pending text-warning-600">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
                                     @elseif($reimbursement->status_1 === 'approved')
-                                        <span class="badge-approved">
+                                        <span class="badge-approved text-success-600">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
                                     @elseif($reimbursement->status_1 === 'rejected')
-                                        <span class="badge-rejected">
+                                        <span class="badge-rejected text-error-600">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
                                         </span>
@@ -236,17 +241,17 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($reimbursement->status_2 === 'pending')
-                                        <span class="badge-pending">
+                                        <span class="badge-pending text-warning-600">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
                                     @elseif($reimbursement->status_2 === 'approved')
-                                        <span class="badge-approved">
+                                        <span class="badge-approved text-success-600">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
                                     @elseif($reimbursement->status_2 === 'rejected')
-                                        <span class="badge-rejected">
+                                        <span class="badge-rejected text-error-600">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
                                         </span>
@@ -259,14 +264,14 @@
                                     <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer->name ?? 'N/A' }}</div>
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('finance.reimbursements.show', $reimbursement->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if(Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending')
+                                        @if((Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending') || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $reimbursement->status_2 === 'pending'))
                                             <a href="{{ route('finance.reimbursements.edit', $reimbursement->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -302,9 +307,156 @@
             @endif
         </div>
 
-        <!-- Leaves All Employee Table -->
-        <p class="text-sm text-neutral-500 mb-2 ms-4">All employee reimbursement requests are listed below.</p>
-        <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
+        <!-- Reimbursement All Employee Table -->
+        <form action="{{ route('finance.reimbursements.marked') }}" method="POST"
+            onsubmit="return confirm('Are you sure you want to mark selected reimbursements as done?')">
+            @csrf
+            @method('PATCH')
+
+            <div class="flex flex-row max-md:flex-col justify-between items-center p-4 mb-2">
+                <p class="text-sm text-neutral-500 max-md:mb-6">All employee reimbursement requests are listed below.</p>
+                <button type="submit"
+                        class="w-full sm:w-auto px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 disabled:opacity-50"
+                        id="bulk-mark-btn"
+                        disabled>
+                    <i class="fas fa-check mr-1"></i> Mark Selected Done
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-neutral-200">
+                    <thead class="bg-neutral-50">
+                        <tr>
+                            <!-- checkbox select all -->
+                            <th class="px-4 py-3">
+                                <input type="checkbox" id="select-all" class="form-checkbox">
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Request ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Employee</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Total</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status 1 - Team Lead</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status 2 - Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Team Lead</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Customer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-neutral-200">
+                        @forelse($allReimbursements as $reimbursement)
+                            <tr class="hover:bg-neutral-50 transition-colors duration-200">
+                                <!-- Checkbox per row -->
+                                <td class="px-4 py-4">
+                                    @if(!$reimbursement->marked_down && $reimbursement->locked_by === Auth::id())
+                                        <input type="checkbox"
+                                            name="ids[]"
+                                            value="{{ $reimbursement->id }}"
+                                            class="row-checkbox form-checkbox">
+                                    @endif
+                                </td>
+
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div>
+                                        <div class="text-sm font-medium text-neutral-900">#RY{{ $reimbursement->id }}</div>
+                                        <div class="text-sm text-neutral-500">{{ $reimbursement->created_at->format('M d, Y') }}</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="w-8 h-8 bg-success-100 rounded-full flex items-center justify-center mr-3">
+                                            @if($reimbursement->employee->url_profile)
+                                                <img class="object-cover rounded-full"
+                                                    src="{{ $reimbursement->employee->url_profile }}"
+                                                    alt="{{ $reimbursement->employee->name }}">
+                                            @else
+                                                <span class="text-success-600 font-semibold text-xs">
+                                                    {{ substr($reimbursement->employee->name, 0, 1) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-neutral-900">{{ $reimbursement->employee->name }}</div>
+                                            <div class="text-sm text-neutral-500">{{ $reimbursement->employee->email }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">
+                                        Rp {{ number_format($reimbursement->total, 0, ',', '.') }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">
+                                        {{ \Carbon\Carbon::parse($reimbursement->date)->format('M d, Y') }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($reimbursement->status_1 === 'pending')
+                                        <span class="badge-pending text-warning-600">
+                                            <i class="fas fa-clock mr-1"></i> Pending
+                                        </span>
+                                    @elseif($reimbursement->status_1 === 'approved')
+                                        <span class="badge-approved text-success-600">
+                                            <i class="fas fa-check-circle mr-1"></i> Approved
+                                        </span>
+                                    @elseif($reimbursement->status_1 === 'rejected')
+                                        <span class="badge-rejected text-error-600">
+                                            <i class="fas fa-times-circle mr-1"></i> Rejected
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($reimbursement->status_2 === 'pending')
+                                        <span class="badge-pending text-warning-600">
+                                            <i class="fas fa-clock mr-1"></i> Pending
+                                        </span>
+                                    @elseif($reimbursement->status_2 === 'approved')
+                                        <span class="badge-approved text-success-600">
+                                            <i class="fas fa-check-circle mr-1"></i> Approved
+                                        </span>
+                                    @elseif($reimbursement->status_2 === 'rejected')
+                                        <span class="badge-rejected text-error-600">
+                                            <i class="fas fa-times-circle mr-1"></i> Rejected
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->approver->name ?? 'N/A' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer ?? 'N/A' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ route('finance.reimbursements.show', $reimbursement->id) }}"
+                                        class="text-primary-600 hover:text-primary-900" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="11" class="px-6 py-12 text-center">
+                                    <div class="text-neutral-400">
+                                        <i class="fas fa-inbox text-4xl mb-4"></i>
+                                        <p class="text-lg font-medium">No reimbursement employee (No marked done) requests found</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </form>
+
+        <!-- Reimbursement All Employee (Marked done) Table -->
+        <p class="text-sm text-neutral-500 mb-2 ms-4">All employee reimbursement (Marked done) requests are listed below.</p>
+        <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden mb-6">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-neutral-200">
                     <thead class="bg-neutral-50">
@@ -322,18 +474,23 @@
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-neutral-200">
-                        @forelse($allReimbursements as $reimbursement)
+                        @forelse($allReimbursementsDone as $reimbursement)
                             <tr class="hover:bg-neutral-50 transition-colors duration-200">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div>
-                                        <div class="text-sm font-medium text-neutral-900">#{{ $reimbursement->id }}</div>
+                                        <div class="text-sm font-medium text-neutral-900">#RY{{ $reimbursement->id }}</div>
                                         <div class="text-sm text-neutral-500">{{ $reimbursement->created_at->format('M d, Y') }}</div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
                                         <div class="w-8 h-8 bg-success-100 rounded-full flex items-center justify-center mr-3">
-                                            <span class="text-success-600 font-semibold text-xs">{{ substr($reimbursement->employee->name, 0, 1) }}</span>
+                                            @if($reimbursement->employee->url_profile)
+                                                <img class="object-cover rounded-full"
+                                                    src="{{ $reimbursement->employee->url_profile }}" alt="{{ $reimbursement->employee->name }}">
+                                            @else
+                                                <span class="text-success-600 font-semibold text-xs">{{ substr($reimbursement->employee->name, 0, 1) }}</span>
+                                            @endif
                                         </div>
                                         <div>
                                             <div class="text-sm font-medium text-neutral-900">{{ $reimbursement->employee->name }}</div>
@@ -349,17 +506,17 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($reimbursement->status_1 === 'pending')
-                                        <span class="badge-pending">
+                                        <span class="badge-pending text-warning-600">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
                                     @elseif($reimbursement->status_1 === 'approved')
-                                        <span class="badge-approved">
+                                        <span class="badge-approved text-success-600">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
                                     @elseif($reimbursement->status_1 === 'rejected')
-                                        <span class="badge-rejected">
+                                        <span class="badge-rejected text-error-600">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
                                         </span>
@@ -367,17 +524,17 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($reimbursement->status_2 === 'pending')
-                                        <span class="badge-pending">
+                                        <span class="badge-pending text-warning-600">
                                             <i class="fas fa-clock mr-1"></i>
                                             Pending
                                         </span>
                                     @elseif($reimbursement->status_2 === 'approved')
-                                        <span class="badge-approved">
+                                        <span class="badge-approved text-success-600">
                                             <i class="fas fa-check-circle mr-1"></i>
                                             Approved
                                         </span>
                                     @elseif($reimbursement->status_2 === 'rejected')
-                                        <span class="badge-rejected">
+                                        <span class="badge-rejected text-error-600">
                                             <i class="fas fa-times-circle mr-1"></i>
                                             Rejected
                                         </span>
@@ -390,25 +547,13 @@
                                     <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer->name ?? 'N/A' }}</div>
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->customer ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('finance.reimbursements.show', $reimbursement->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if(Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending')
-                                            <a href="{{ route('finance.reimbursements.edit', $reimbursement->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('finance.reimbursements.destroy', $reimbursement->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-error-600 hover:text-error-900" title="Delete">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -417,7 +562,7 @@
                                 <td colspan="10" class="px-6 py-12 text-center">
                                     <div class="text-neutral-400">
                                         <i class="fas fa-inbox text-4xl mb-4"></i>
-                                        <p class="text-lg font-medium">No reimbursement employee requests found</p>
+                                        <p class="text-lg font-medium">No reimbursement employee (Marked done) requests found</p>
                                     </div>
                                 </td>
                             </tr>
@@ -426,11 +571,30 @@
                 </table>
             </div>
             
-            @if($allReimbursements->hasPages())
+            @if($allReimbursementsDone->hasPages())
                 <div class="px-6 py-4 border-t border-neutral-200">
-                    {{ $allReimbursements->links() }}
+                    {{ $allReimbursementsDone->links() }}
                 </div>
             @endif
         </div>
     </div>
 @endsection
+@push('scripts')
+    const selectAll = document.getElementById('select-all');
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    const bulkBtn = document.getElementById('bulk-mark-btn');
+
+    function toggleButtons() {
+        const anyChecked = document.querySelectorAll('.row-checkbox:checked').length > 0;
+        bulkBtn.disabled = !anyChecked;
+    }
+
+    selectAll?.addEventListener('change', function() {
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        toggleButtons();
+    });
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', toggleButtons);
+    });
+@endpush
