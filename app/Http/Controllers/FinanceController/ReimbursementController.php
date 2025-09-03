@@ -11,7 +11,13 @@ use App\Models\User;
 use App\Models\Reimbursement;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\ApprovalLink;
+use Illuminate\Support\Facades\DB;
+use ZipArchive;
+use Illuminate\Support\Str;
 
 class ReimbursementController extends Controller
 {
@@ -62,35 +68,83 @@ class ReimbursementController extends Controller
             });
         }
 
-        $yourReimbursements = $yourReimbursementsQuery->paginate(10, ['*'], 'your_page');
+        $yourReimbursements = $yourReimbursementsQuery->paginate(5, ['*'], 'your_page');
 
 
-        // --- Query untuk "All Reimbursements"
-        $allReimbursementsQuery = Reimbursement::with(['employee', 'approver'])
+        // --- Query untuk "All Reimbursements - Marked Down"
+        $allReimbursementsDoneQuery = Reimbursement::with(['employee', 'approver'])
             ->where('status_1', 'approved')
             ->where('status_2', 'approved')
+            ->where('marked_down', true)
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
-            $allReimbursementsQuery->where('date', '>=',
+            $allReimbursementsDoneQuery->where('date', '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $allReimbursementsQuery->where('date', '<=',
+            $allReimbursementsDoneQuery->where('date', '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
 
-        $allReimbursements = $allReimbursementsQuery->paginate(10, ['*'], 'all_page');
+        $allReimbursementsDone = $allReimbursementsDoneQuery->paginate(5, ['*'], 'all_page_done');
 
+
+        // --- Query untuk "All Reimbursements" (pakai lock agar tidak bentrok dengan user lain)
+        $allReimbursements = collect();
+        DB::transaction(function () use (&$allReimbursements, $request) {
+            $query = Reimbursement::with(['employee', 'approver'])
+                ->where('status_1', 'approved')
+                ->where('status_2', 'approved')
+                ->where('marked_down', false)
+                ->where(function ($q) {
+                    $q->whereNull('locked_by')
+                    ->orWhere(function ($q2) {
+                        $q2->where('locked_at', '<', now()->subMinutes(60));
+                    })
+                    ->orWhere(function ($q3) {
+                        $q3->where('locked_by', Auth::id())
+                            ->where('locked_at', '>=', now()->subMinutes(60)); // ✅ hanya kalau lock dan belum expired
+                    });
+                })
+                ->orderBy('created_at', 'asc');
+
+            if ($request->filled('from_date')) {
+                $query->where('date', '>=',
+                    Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+                );
+            }
+
+            if ($request->filled('to_date')) {
+                $query->where('date', '<=',
+                    Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+                );
+            }
+
+            // Ambil data & lock untuk user ini
+            $allReimbursements = $query->limit(5)->lockForUpdate()->get();
+
+            if ($allReimbursements->isNotEmpty()) {
+                Reimbursement::whereIn('id', $allReimbursements->pluck('id'))
+                    ->update([
+                        'locked_by' => Auth::id(),
+                        'locked_at' => now(),
+                    ]);
+            }
+        });
 
         // --- Hitung statistik
-        $countsAll = (clone $allReimbursementsQuery)->withFinalStatusCount()->first();
-        $totalRequests = Reimbursement::count();
-        $approvedRequests = (int) $countsAll->approved;
-        $markedRequests = (clone $allReimbursementsQuery)->where('marked_down', '!=', 0)->count();
+        $dataAll = Reimbursement::query();
+        $countsAll = $dataAll->where('status_1', 'approved')
+            ->where('status_2', 'approved');
+
+        $totalRequests = $dataAll->count();
+        $approvedRequests = (int) $countsAll->withFinalStatusCount()->first()->approved;
+        $markedRequests = (int) $countsAll->where('marked_down', true)->count();
+        $totalAllNoMark = (int) $countsAll->where('marked_down', false)->count();
 
         $countsYours = (clone $yourReimbursementsQuery)->withFinalStatusCount()->first();
         $totalYoursRequests = (int) $yourReimbursementsQuery->count();
@@ -104,9 +158,11 @@ class ReimbursementController extends Controller
         return view('Finance.reimbursements.reimbursement-show', compact(
             'yourReimbursements',
             'allReimbursements',
+            'allReimbursementsDone',
             'totalRequests',
-            'approvedRequests',
             'markedRequests',
+            'totalAllNoMark',
+            'approvedRequests',
             'manager',
             'totalYoursRequests',
             'pendingYoursRequests',
@@ -115,53 +171,356 @@ class ReimbursementController extends Controller
         ));
     }
 
-    // public function index(Request $request)
-    // {
-    //     $queryReal = Reimbursement::whereHas('employee', function ($q) {
-    //             $q->where('role', Roles::Employee->value);
-    //         });
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('Finance.reimbursements.reimbursement-request');
+    }
 
-    //     $query = (clone $queryReal)
-    //         ->where('status_1', 'approved')
-    //         ->where('status_2', 'approved')
-    //         ->with(['employee', 'approver'])
-    //         ->orderBy('created_at', 'desc');
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'customer' => 'required',
+            'total' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'invoice_path' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ], [
+            'customer.required' => 'Customer harus dipilih.',
+            'customer.exists' => 'Customer tidak valid.',
+            'total.required' => 'Total harus diisi.',
+            'total.numeric' => 'Total harus berupa angka.',
+            'total.min' => 'Total tidak boleh kurang dari 0.',
+            'date.required' => 'Tanggal harus diisi.',
+            'date.date' => 'Format tanggal tidak valid.',
+            'invoice_path.file' => 'File yang diupload tidak valid.',
+            'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
+            'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
+        ]);
 
-    //     $queryClone = (clone $query);
+        DB::transaction(function () use ($request) {
+            $reimbursement = new Reimbursement();
+            $reimbursement->employee_id = Auth::id();
+            $reimbursement->customer = $request->customer;
+            $reimbursement->total = $request->total;
+            $reimbursement->date = $request->date;
 
-    //     if ($request->filled('from_date')) {
-    //         $query->where('date_start', '>=',
-    //             Carbon::parse($request->from_date)
-    //                 ->startOfDay()
-    //                 ->timezone('Asia/Jakarta')
-    //         );
-    //     }
+            // Cek apakah user adalah leader division
+            $isLeader = \App\Models\Division::where('leader_id', Auth::id())->exists();
 
-    //     if ($request->filled('to_date')) {
-    //         $query->where('date_start', '<=',
-    //             Carbon::parse($request->to_date)
-    //                 ->endOfDay()
-    //                 ->timezone('Asia/Jakarta')
-    //         );
-    //     }
+            if ($isLeader) {
+                // Kalau leader submit → status_1 auto approved
+                $reimbursement->status_1 = 'approved';
+                $reimbursement->status_2 = 'pending';
+            } else {
+                // Kalau bukan leader → jalur normal
+                $reimbursement->status_1 = 'pending';
+                $reimbursement->status_2 = 'pending';
+            }
 
-    //     $reimbursements = $query->paginate(10);
-    //     $counts = $queryClone->withFinalStatusCount()->first();
+            if ($request->hasFile('invoice_path')) {
+                $path = $request->file('invoice_path')->store('reimbursement_invoices', 'public');
+                $reimbursement->invoice_path = $path;
+            }
 
-    //     $totalRequests = (int) $queryClone->count();
-    //     $approvedRequests = (int) $counts->approved;
+            $reimbursement->save();
 
-    //     $manager = User::where('role', Roles::Manager->value)->first();
+            $token = null;
 
-    //     return view('Finance.reimbursements.reimbursement-show', compact('reimbursements', 'totalRequests', 'approvedRequests', 'manager'));
-    // }
+            if ($isLeader) {
+                // --- Jika leader, langsung kirim ke Manager (level 2)
+                $manager = User::where('role', Roles::Manager->value)->first();
+
+                if ($manager) {
+                    $token = \Illuminate\Support\Str::random(48);
+                    ApprovalLink::create([
+                        'model_type' => get_class($reimbursement),
+                        'model_id' => $reimbursement->id,
+                        'approver_user_id' => $manager->id,
+                        'level' => 2,
+                        'scope' => 'both',
+                        'token' => hash('sha256', $token),
+                        'expires_at' => now()->addDays(3),
+                    ]);
+                }
+
+                DB::afterCommit(function () use ($reimbursement, $token) {
+                    $fresh = $reimbursement->fresh();
+                    event(new \App\Events\ReimbursementLevelAdvanced(
+                        $fresh,
+                        Auth::user()->division_id,
+                        'manager'
+                    ));
+
+                    if (!$fresh || !$token) {
+                        return;
+                    }
+
+                    $linkTanggapan = route('public.approval.show', $token);
+
+                    $manager = User::where('role', Roles::Manager->value)->first();
+                    Mail::to($manager->email)->queue(
+                        new \App\Mail\SendMessage(
+                            namaPengaju: Auth::user()->name,
+                            namaApprover: $manager->name,
+                            linkTanggapan: $linkTanggapan,
+                            emailPengaju: Auth::user()->email,
+                            attachmentPath: $reimbursement->invoice_path
+                        )
+                    );
+                });
+
+            } else {
+                // --- Kalau bukan leader, jalur normal ke approver (team lead)
+                if ($reimbursement->approver) {
+                    $token = \Illuminate\Support\Str::random(48);
+                    ApprovalLink::create([
+                        'model_type' => get_class($reimbursement),   // App\Models\reim$reimbursement
+                        'model_id' => $reimbursement->id,
+                        'approver_user_id' => $reimbursement->approver->id,
+                        'level' => 1, // level 1 berarti arahnya ke team lead
+                        'scope' => 'both',             // boleh approve & reject
+                        'token' => hash('sha256', $token), // simpan hash, kirim raw
+                        'expires_at' => now()->addDays(3),  // masa berlaku
+                    ]);
+
+                }
+
+                DB::afterCommit(function () use ($reimbursement, $request, $token) {
+                    $fresh = $reimbursement->fresh(); // ambil ulang (punya created_at dll)
+                    // dd("jalan");
+                    event(new \App\Events\ReimbursementSubmitted($fresh, Auth::user()->division_id));
+
+                    // Kalau tidak ada approver atau token, jangan kirim email
+                    if (!$fresh || !$fresh->approver || !$token) {
+                        return;
+                    }
+
+                    $linkTanggapan = route('public.approval.show', $token);
+
+                    Mail::to($reimbursement->approver->email)->queue(
+                        new \App\Mail\SendMessage(
+                            namaPengaju: Auth::user()->name,
+                            namaApprover: $reimbursement->approver->name,
+                            linkTanggapan: $linkTanggapan,
+                            emailPengaju: Auth::user()->email,
+                            attachmentPath: $reimbursement->invoice_path
+                        )
+                    );
+                });
+            }
+        });
+
+
+        return redirect()->route('finance.reimbursements.index')
+            ->with('success', 'Reimbursement request submitted successfully.');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Reimbursement $reimbursement)
+    {
+        // Check if the user has permission to edit this reimbursement
+        $user = Auth::user();
+        if ($user->id !== $reimbursement->employee_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $isLeader = \App\Models\Division::where('leader_id', $user->id)->exists();
+
+        // Only allow editing if the reimbursement is still pending
+        if (($isLeader && $reimbursement->status_2 !== 'pending') || (!$isLeader && $reimbursement->status_1 !== 'pending' || $reimbursement->status_2 !== 'pending')) {
+            return redirect()->route('finance.reimbursements.show', $reimbursement->id)
+                ->with('error', 'You cannot edit a reimbursement request that has already been processed.');
+        }
+
+        return view('Finance.reimbursements.reimbursement-edit', compact('reimbursement'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Reimbursement $reimbursement)
+    {
+        $user = Auth::user();
+        if ($user->id !== $reimbursement->employee_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $isLeader = \App\Models\Division::where('leader_id', $user->id)->exists();
+
+        if (($isLeader && $reimbursement->status_2 !== 'pending') || (!$isLeader && $reimbursement->status_1 !== 'pending' || $reimbursement->status_2 !== 'pending')) {
+            return redirect()->route('finance.reimbursements.show', $reimbursement->id)
+                ->with('error', 'You cannot update a reimbursement request that has already been processed.');
+        }
+
+        $request->validate([
+            'customer' => 'required',
+            'total' => 'required|numeric|min:0',
+            'date' => 'required|date',
+            'invoice_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ], [
+            'customer.required' => 'Customer harus dipilih.',
+            'customer.exists' => 'Customer tidak valid.',
+            'total.required' => 'Total harus diisi.',
+            'total.numeric' => 'Total harus berupa angka.',
+            'total.min' => 'Total tidak boleh kurang dari 0.',
+            'date.required' => 'Tanggal harus diisi.',
+            'date.date' => 'Format tanggal tidak valid.',
+            'invoice_path.file' => 'File yang diupload tidak valid.',
+            'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
+            'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
+        ]);
+
+        $reimbursement->customer = $request->customer;
+        $reimbursement->total = $request->total;
+        $reimbursement->date = $request->date;
+
+        if ($isLeader) {
+            // Kalau leader submit → status_1 auto approved
+            $reimbursement->status_1 = 'approved';
+            $reimbursement->status_2 = 'pending';
+        } else {
+            // Kalau bukan leader → jalur normal
+            $reimbursement->status_1 = 'pending';
+            $reimbursement->status_2 = 'pending';
+        }
+        
+        $reimbursement->note_1 = NULL;
+        $reimbursement->note_2 = NULL;
+
+        if ($request->hasFile('invoice_path')) {
+            if ($reimbursement->invoice_path) {
+                Storage::disk('public')->delete($reimbursement->invoice_path);
+            }
+            $path = $request->file('invoice_path')->store('reimbursement_invoices', 'public');
+            $reimbursement->invoice_path = $path;
+        } elseif ($request->input('remove_invoice_path')) {
+            if ($reimbursement->invoice_path) {
+                Storage::disk('public')->delete($reimbursement->invoice_path);
+                $reimbursement->invoice_path = null;
+            }
+        }
+
+        $reimbursement->save();
+
+        $token = null;
+
+        if ($isLeader) {
+            // --- Jika leader, langsung kirim ke Manager (level 2)
+            $manager = User::where('role', Roles::Manager->value)->first();
+            if ($manager) {
+                $token = \Illuminate\Support\Str::random(48);
+                ApprovalLink::create([
+                    'model_type' => get_class($reimbursement),
+                    'model_id' => $reimbursement->id,
+                    'approver_user_id' => $manager->id,
+                    'level' => 2,
+                    'scope' => 'both',
+                    'token' => hash('sha256', $token),
+                    'expires_at' => now()->addDays(3),
+                ]);
+            }
+
+            DB::afterCommit(function () use ($reimbursement, $token) {
+                $fresh = $reimbursement->fresh();
+                event(new \App\Events\ReimbursementLevelAdvanced(
+                    $fresh,
+                    Auth::user()->division_id,
+                    'manager'
+                ));
+                if (!$fresh || !$token) {
+                    return;
+                }
+                $linkTanggapan = route('public.approval.show', $token);
+                $manager = User::where('role', Roles::Manager->value)->first();
+                Mail::to($manager->email)->queue(
+                    new \App\Mail\SendMessage(
+                        namaPengaju: Auth::user()->name,
+                        namaApprover: $manager->name,
+                        linkTanggapan: $linkTanggapan,
+                        emailPengaju: Auth::user()->email,
+                        attachmentPath: $reimbursement->invoice_path
+                    )
+                );
+            });
+        } else {
+            // --- Kalau bukan leader, jalur normal ke approver (team lead)
+            if ($reimbursement->approver) {
+                $token = \Illuminate\Support\Str::random(48);
+                ApprovalLink::create([
+                    'model_type' => get_class($reimbursement),   // App\Models\reim$reimbursement
+                    'model_id' => $reimbursement->id,
+                    'approver_user_id' => $reimbursement->approver->id,
+                    'level' => 1, // level 1 berarti arahnya ke team lead
+                    'scope' => 'both',             // boleh approve & reject
+                    'token' => hash('sha256', $token), // simpan hash, kirim raw
+                    'expires_at' => now()->addDays(3),  // masa berlaku
+                ]);
+            }
+
+            DB::afterCommit(function () use ($reimbursement, $request, $token) {
+                $fresh = $reimbursement->fresh(); // ambil ulang (punya created_at dll)
+                // dd("jalan");
+                event(new \App\Events\ReimbursementSubmitted($fresh, Auth::user()->division_id));
+                // Kalau tidak ada approver atau token, jangan kirim email
+                if (!$fresh || !$fresh->approver || !$token) {
+                    return;
+                }
+                $linkTanggapan = route('public.approval.show', $token);
+                Mail::to($reimbursement->approver->email)->queue(
+                    new \App\Mail\SendMessage(
+                        namaPengaju: Auth::user()->name,
+                        namaApprover: $reimbursement->approver->name,
+                        linkTanggapan: $linkTanggapan,
+                        emailPengaju: Auth::user()->email,
+                        attachmentPath: $reimbursement->invoice_path
+                    )
+                );
+            });
+        }
+
+        return redirect()->route('finance.reimbursements.show', $reimbursement->id)
+            ->with('success', 'Reimbursement request updated successfully.');
+    }
+
+    /**
+     * Mark selected reimbursements as done (marked_down = true).
+     */
+    public function markedDone(Request $request)
+    {
+        $ids = $request->input('ids', []);
+
+        DB::transaction(function () use ($ids) {
+            $records = Reimbursement::whereIn('id', $ids)
+                ->where('marked_down', false)
+                ->where('locked_by', Auth::id())
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($records as $rec) {
+                $rec->update([
+                    'marked_down' => true,
+                    'locked_by'   => null,   // lepas lock setelah done
+                    'locked_at'   => null,
+                ]);
+            }
+        });
+
+        return redirect()->back()->with('success', 'Selected reimbursements marked as done.');
+    }
 
     /**
      * Display the specified resource.
      */
     public function show(Reimbursement $reimbursement)
     {
-        $reimbursement->load(['approver', 'customer']);
+        $reimbursement->load('approver');
         return view('Finance.reimbursements.reimbursement-detail', compact('reimbursement'));
     }
 
@@ -182,7 +541,7 @@ class ReimbursementController extends Controller
         $dateFrom = $request->input('from_date');
         $dateTo = $request->input('date_to');
 
-        $query = Reimbursement::with('employee')->where('status_1', 'approved')->where('status_2', 'approved');
+        $query = Reimbursement::with('employee')->where('status_1', 'approved')->where('status_2', 'approved')->where('marked_down', true);
 
         if ($dateFrom && $dateTo) {
             $query->where(function($q) use ($dateFrom, $dateTo) {
@@ -233,5 +592,38 @@ class ReimbursementController extends Controller
 
         // Return download
         return response()->download($zipPath)->deleteFileAfterSend(true);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Reimbursement $reimbursement)
+    {
+        // Check if the user has permission to delete this reimbursement
+        $user = Auth::user();
+        if ($user->id !== $reimbursement->employee_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $isLeader = \App\Models\Division::where('leader_id', $user->id)->exists();
+
+        // Only allow deleting if the reimbursement is still pending
+        if (($isLeader && $reimbursement->status_2 !== 'pending') || (!$isLeader && $reimbursement->status_1 !== 'pending')) {
+            return redirect()->route('finance.reimbursements.show', $reimbursement->id)
+                ->with('error', 'You cannot delete a reimbursement request that has already been processed.');
+        }
+        
+        if ($reimbursement->invoice_path) {
+            Storage::disk('public')->delete($reimbursement->invoice_path);
+        }
+
+        if (\App\Models\ApprovalLink::where('model_id', $reimbursement->id)->where('model_type', get_class($reimbursement))->exists()) {
+            \App\Models\ApprovalLink::where('model_id', $reimbursement->id)->where('model_type', get_class($reimbursement))->delete();
+        }
+
+        $reimbursement->delete();
+
+        return redirect()->route('finance.reimbursements.index')
+            ->with('success', 'Reimbursement request deleted successfully.');
     }
 }

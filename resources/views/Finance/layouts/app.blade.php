@@ -131,33 +131,30 @@
         </div>
     </div>
 
-    <script>
-        const btnNav = document.getElementById("btnNav");
+<script>
+    const btnNav = document.getElementById("btnNav");
+    btnNav.addEventListener('click', toggleSidebar);
+    
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        sidebar.classList.toggle('-translate-x-full');
+        overlay.classList.toggle('hidden');
+    }
 
-        btnNav.addEventListener('click', toggleSidebar);
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('hidden');
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.querySelector('[onclick="toggleSidebar()"]');
+        if (window.innerWidth < 1024 &&
+            !sidebar.contains(event.target) &&
+            !sidebarToggle.contains(event.target) &&
+            !sidebar.classList.contains('-translate-x-full')) {
+            toggleSidebar();
         }
+    });
 
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.querySelector('[onclick="toggleSidebar()"]');
-
-            if (window.innerWidth < 1024 &&
-                !sidebar.contains(event.target) &&
-                !sidebarToggle.contains(event.target) &&
-                !sidebar.classList.contains('-translate-x-full')) {
-                toggleSidebar();
-            }
-        });
-
-        @stack('scripts')
+@stack('scripts')
 </script>
 </body>
 </html>

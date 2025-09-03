@@ -27,6 +27,7 @@ Route::middleware(['auth', 'role:finance'])->prefix('finance')->name('finance.')
     // Reimbursements
     Route::get('reimbursements/bulk-export', [ReimbursementController::class, 'bulkExport'])->name('reimbursements.bulkExport');
     Route::get('reimbursements/{reimbursement}/export-pdf', [ReimbursementController::class, 'exportPdf'])->name('reimbursements.exportPdf');
+    Route::patch('reimbursements/marked', [ReimbursementController::class, 'markedDone'])->name('reimbursements.marked');
     Route::resource('reimbursements', ReimbursementController::class);
 
 
