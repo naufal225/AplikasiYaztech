@@ -279,7 +279,7 @@ class LeaveController extends Controller
 
         // Only allow deleting if the leave is still pending
         if (($leave->status_1 !== 'pending') && $user->role !== Roles::Admin->value) {
-            return redirect()->route('employee.leaves.show', $leave->id)
+            return redirect()->route('admin.leaves.show', $leave->id)
                 ->with('error', 'You cannot delete a leave request that has already been processed.');
         }
 
