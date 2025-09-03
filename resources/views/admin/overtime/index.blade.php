@@ -233,26 +233,35 @@
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('admin.overtimes.show', $overtime->id) }}"
-                                        class="text-primary-600 hover:text-primary-900">
+                                        class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @if(Auth::id() === $overtime->employee_id && $overtime->status === 'pending')
+                                    <!-- Fixed permission logic - only show edit/delete for own requests -->
+                                    @if($overtime->status_1 === 'pending' && Auth::id() ===
+                                    $overtime->employee_id)
                                     <a href="{{ route('admin.overtimes.edit', $overtime->id) }}"
-                                        class="text-secondary-600 hover:text-secondary-900">
+                                        class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('admin.overtimes.destroy', $overtime->id) }}" method="POST"
-                                        class="inline" onsubmit="return confirm('Are you sure?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-error-600 hover:text-error-900">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                        class="delete-overtime-btn text-error-600 hover:text-error-900"
+                                        data-overtime-id="{{ $overtime->id }}"
+                                        data-overtime-name="Overtime Request #{{ $overtime->id }}" data-table="all"
+                                        title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                     @endif
                                 </div>
                             </td>
                         </tr>
+                        @if($overtime->status_1 === 'pending' && Auth::id() === $overtime->employee_id)
+                        <form id="all-delete-form-{{ $overtime->id }}"
+                            action="{{ route('admin.overtimes.destroy', $overtime->id) }}" method="POST"
+                            style="display: none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                        @endif
                         @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center">
@@ -405,26 +414,35 @@
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('admin.overtimes.show', $overtime->id) }}"
-                                        class="text-primary-600 hover:text-primary-900">
+                                        class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @if(Auth::id() === $overtime->employee_id && $overtime->status === 'pending')
+                                    <!-- Fixed permission logic - only show edit/delete for own requests -->
+                                    @if($overtime->status_1 === 'pending' && Auth::id() ===
+                                    $overtime->employee_id)
                                     <a href="{{ route('admin.overtimes.edit', $overtime->id) }}"
-                                        class="text-secondary-600 hover:text-secondary-900">
+                                        class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('admin.overtimes.destroy', $overtime->id) }}" method="POST"
-                                        class="inline" onsubmit="return confirm('Are you sure?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-error-600 hover:text-error-900">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                        class="delete-overtime-btn text-error-600 hover:text-error-900"
+                                        data-overtime-id="{{ $overtime->id }}"
+                                        data-overtime-name="Overtime Request #{{ $overtime->id }}" data-table="all"
+                                        title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                     @endif
                                 </div>
                             </td>
                         </tr>
+                        @if($overtime->status_1 === 'pending' && Auth::id() === $overtime->employee_id)
+                        <form id="all-delete-form-{{ $overtime->id }}"
+                            action="{{ route('admin.overtimes.destroy', $overtime->id) }}" method="POST"
+                            style="display: none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                        @endif
                         @empty
                         <tr>
                             <td colspan="7" class="px-6 py-12 text-center"> {{-- Updated colspan --}}
@@ -475,9 +493,10 @@
             </div>
 
             <div class="text-center">
-                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Employee</h3>
+                <!-- Fixed modal content to reference overtimes instead of employees -->
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Overtime Request</h3>
                 <p class="mb-6 text-sm text-gray-500">
-                    Are you sure you want to delete <span id="employeeName" class="font-medium text-gray-900"></span>?
+                    Are you sure you want to delete <span id="overtimeName" class="font-medium text-gray-900"></span>?
                     This action cannot be undone.
                 </p>
             </div>
@@ -488,7 +507,7 @@
                     Cancel
                 </button>
                 <button type="button" id="confirmDeleteBtn"
-                    class="px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    class="z-40 px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                     <span id="deleteButtonText">Delete</span>
                     <svg id="deleteSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
                         viewBox="0 0 24 24">
@@ -534,6 +553,8 @@ function hideToast() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    initializeDeleteFunctionality();
+
     const exportButton = document.getElementById('exportOvertimesData');
     const exportButtonText = document.getElementById('exportButtonText');
     const exportSpinner = document.getElementById('exportSpinner');
@@ -601,6 +622,83 @@ document.addEventListener('DOMContentLoaded', function() {
             exportButton.disabled = false;
         }
     });
+});
+
+
+let overtimeIdToDelete = null;
+let deleteTableType = null;
+
+function initializeDeleteFunctionality() {
+    // Add event listeners to all delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-overtime-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const overtimeId = this.getAttribute('data-overtime-id');
+            const overtimeName = this.getAttribute('data-overtime-name');
+            const tableType = this.getAttribute('data-table');
+            confirmDelete(overtimeId, overtimeName, tableType);
+        });
+    });
+
+    // Add event listener for confirm delete button
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', executeDelete);
+    }
+
+    // Add event listener for cancel button
+    const cancelButton = document.getElementById('cancelDeleteButton');
+    if (cancelButton) {
+        cancelButton.addEventListener('click', closeDeleteModal);
+    }
+}
+
+function confirmDelete(overtimeId, overtimeName, tableType) {
+    overtimeIdToDelete = overtimeId;
+    deleteTableType = tableType;
+    document.getElementById('overtimeName').textContent = overtimeName;
+    document.getElementById('deleteConfirmModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function closeDeleteModal() {
+    overtimeIdToDelete = null;
+    deleteTableType = null;
+    document.getElementById('deleteConfirmModal').classList.add('hidden');
+    document.body.style.overflow = 'auto'; // Restore scrolling
+}
+
+function executeDelete() {
+    if (!overtimeIdToDelete || !deleteTableType) return;
+
+    // Show loading state
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    const deleteText = document.getElementById('deleteButtonText');
+    const deleteSpinner = document.getElementById('deleteSpinner');
+    const cancelButton = document.getElementById('cancelDeleteButton');
+
+    cancelButton.disabled = true;
+    deleteBtn.disabled = true;
+    deleteText.textContent = 'Deleting...';
+    deleteSpinner.classList.remove('hidden');
+
+    const formId = `${deleteTableType}-delete-form-${overtimeIdToDelete}`;
+    const form = document.getElementById(formId);
+
+    if (form) {
+        form.submit();
+    } else {
+        console.error('Delete form not found:', formId);
+        showToast('Error: Could not find delete form', 'error');
+        closeDeleteModal();
+    }
+}
+
+// Close modal when pressing Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeDeleteModal();
+    }
 });
 </script>
 @endpush

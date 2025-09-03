@@ -232,9 +232,32 @@
                                         class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    <!-- Fixed permission logic - only show edit/delete for own requests -->
+                                    @if($officialTravel->status_1 === 'pending' && Auth::id() ===
+                                    $officialTravel->employee_id)
+                                    <a href="{{ route('admin.official-travels.edit', $officialTravel->id) }}"
+                                        class="text-secondary-600 hover:text-secondary-900" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button"
+                                        class="delete-officialTravel-btn text-error-600 hover:text-error-900"
+                                        data-officialTravel-id="{{ $officialTravel->id }}"
+                                        data-officialTravel-name="officialTravel Request #{{ $officialTravel->id }}"
+                                        data-table="all" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
+                        @if($officialTravel->status_1 === 'pending' && Auth::id() === $officialTravel->employee_id)
+                        <form id="all-delete-form-{{ $officialTravel->id }}"
+                            action="{{ route('admin.official-travels.destroy', $officialTravel->id) }}" method="POST"
+                            style="display: none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                        @endif
                         @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center">
@@ -382,9 +405,32 @@
                                         class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    <!-- Fixed permission logic - only show edit/delete for own requests -->
+                                    @if($officialTravel->status_1 === 'pending' && Auth::id() ===
+                                    $officialTravel->employee_id)
+                                    <a href="{{ route('admin.official-travels.edit', $officialTravel->id) }}"
+                                        class="text-secondary-600 hover:text-secondary-900" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button"
+                                        class="delete-officialTravel-btn text-error-600 hover:text-error-900"
+                                        data-officialTravel-id="{{ $officialTravel->id }}"
+                                        data-officialTravel-name="officialTravel Request #{{ $officialTravel->id }}"
+                                        data-table="all" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
+                        @if($officialTravel->status_1 === 'pending' && Auth::id() === $officialTravel->employee_id)
+                        <form id="all-delete-form-{{ $officialTravel->id }}"
+                            action="{{ route('admin.official-travels.destroy', $officialTravel->id) }}" method="POST"
+                            style="display: none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                        @endif
                         @empty
                         <tr>
                             <td colspan="7" class="px-6 py-12 text-center">
@@ -419,7 +465,6 @@
 </main>
 
 @endsection
-
 @section('partial-modal')
 
 <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
@@ -435,9 +480,11 @@
             </div>
 
             <div class="text-center">
-                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Employee</h3>
+                <!-- Fixed modal content to reference official travels instead of employees -->
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Official Travel Request</h3>
                 <p class="mb-6 text-sm text-gray-500">
-                    Are you sure you want to delete <span id="employeeName" class="font-medium text-gray-900"></span>?
+                    Are you sure you want to delete <span id="officialTravelName"
+                        class="font-medium text-gray-900"></span>?
                     This action cannot be undone.
                 </p>
             </div>
@@ -448,7 +495,7 @@
                     Cancel
                 </button>
                 <button type="button" id="confirmDeleteBtn"
-                    class="px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    class="z-40 px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                     <span id="deleteButtonText">Delete</span>
                     <svg id="deleteSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
                         viewBox="0 0 24 24">
@@ -465,6 +512,7 @@
 </div>
 
 @endsection
+
 
 
 @push('scripts')
@@ -494,6 +542,8 @@ function hideToast() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    initializeDeleteFunctionality();
+
     const exportButton = document.getElementById('exportOfficialTravelsData');
     const exportButtonText = document.getElementById('exportButtonText');
     const exportSpinner = document.getElementById('exportSpinner');
@@ -561,6 +611,79 @@ document.addEventListener('DOMContentLoaded', function() {
             exportButton.disabled = false;
         }
     });
+});
+
+
+let officialTravelIdToDelete = null;
+
+function initializeDeleteFunctionality() {
+    // Add event listeners to all delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-officialTravel-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const officialTravelId = this.getAttribute('data-officialTravel-id');
+            const officialTravelName = this.getAttribute('data-officialTravel-name');
+            confirmDelete(officialTravelId, officialTravelName);
+        });
+    });
+
+    // Add event listener for confirm delete button
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', executeDelete);
+    }
+
+    // Add event listener for cancel button
+    const cancelButton = document.getElementById('cancelDeleteButton');
+    if (cancelButton) {
+        cancelButton.addEventListener('click', closeDeleteModal);
+    }
+}
+
+function confirmDelete(officialTravelId, officialTravelName) {
+    officialTravelIdToDelete = officialTravelId;
+    document.getElementById('officialTravelName').textContent = officialTravelName;
+    document.getElementById('deleteConfirmModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function closeDeleteModal() {
+    officialTravelIdToDelete = null;
+    document.getElementById('deleteConfirmModal').classList.add('hidden');
+    document.body.style.overflow = 'auto'; // Restore scrolling
+}
+
+function executeDelete() {
+    if (!officialTravelIdToDelete) return;
+
+    // Show loading state
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    const deleteText = document.getElementById('deleteButtonText');
+    const deleteSpinner = document.getElementById('deleteSpinner');
+    const cancelButton = document.getElementById('cancelDeleteButton');
+
+    cancelButton.disabled = true;
+    deleteBtn.disabled = true;
+    deleteText.textContent = 'Deleting...';
+    deleteSpinner.classList.remove('hidden');
+
+    const formId = `all-delete-form-${officialTravelIdToDelete}`;
+    const form = document.getElementById(formId);
+
+    if (form) {
+        form.submit();
+    } else {
+        console.error('Delete form not found:', formId);
+        showToast('Error: Could not find delete form', 'error');
+        closeDeleteModal();
+    }
+}
+
+// Close modal when pressing Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeDeleteModal();
+    }
 });
 </script>
 @endpush

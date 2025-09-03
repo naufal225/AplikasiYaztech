@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ApprovalLink;
 use App\Models\OfficialTravel;
 use App\Models\User;
+use App\Roles;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -204,11 +205,99 @@ class OfficialTravelController extends Controller
             ->with('success', 'Official travel request submitted successfully. Total days: ' . $totalDays);
     }
 
+    public function edit(OfficialTravel $officialTravel)
+    {
+        $user = Auth::user();
+        if ($user->id !== $officialTravel->employee_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') {
+            return redirect()->route('admin.official-travels.edit', $officialTravel->id)
+                ->with('error', 'You cannot edit a travel request that has already been processed.');
+        }
+
+        $officialTravel->load(['employee', 'approver']);
+
+        return view('admin.official-travel.update', compact('officialTravel'));
+    }
+
+    public function update(Request $request, OfficialTravel $officialTravel)
+    {
+        $user = Auth::user();
+        if ($user->id !== $officialTravel->employee_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') {
+            return redirect()->route('admin.official-travels.show', $officialTravel->id)
+                ->with('error', 'You cannot update a travel request that has already been processed.');
+        }
+
+        $request->validate([
+            'customer' => 'required',
+            'date_start' => 'required|date|after_or_equal:today',
+            'date_end' => 'required|date|after_or_equal:date_start',
+        ], [
+            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
+            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_start.after_or_equal' => 'Tanggal/Waktu Mulai harus hari ini atau setelahnya.',
+            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
+            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
+            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
+            'date_end.after_or_equal' => 'Tanggal/Waktu Akhir harus hari ini atau setelahnya.',
+            'customer.required' => 'Customer harus diisi.',
+        ]);
+
+        // Calculate total days
+        $start = Carbon::parse($request->date_start);
+        $end = Carbon::parse($request->date_end);
+
+        $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
+
+        $officialTravel->customer = $request->customer;
+        $officialTravel->date_start = $request->date_start;
+        $officialTravel->date_end = $request->date_end;
+        $officialTravel->status_1 = 'pending';
+        $officialTravel->status_2 = 'pending';
+        $officialTravel->note_1 = NULL;
+        $officialTravel->note_2 = NULL;
+        $officialTravel->total = $totalDays;
+        $officialTravel->save();
+
+        // Send notification email to the approver
+        if ($officialTravel->approver) {
+            $token = Str::random(48);
+            ApprovalLink::create([
+                'model_type' => get_class($officialTravel),   // App\Models\officialTravel
+                'model_id' => $officialTravel->id,
+                'approver_user_id' => $officialTravel->approver->id,
+                'level' => 1, // level 1 berarti arahnya ke team lead
+                'scope' => 'both',             // boleh approve & reject
+                'token' => hash('sha256', $token), // simpan hash, kirim raw
+                'expires_at' => now()->addDays(3),  // masa berlaku
+            ]);
+
+            $linkTanggapan = route('public.approval.show', $token);
+
+            Mail::to($officialTravel->approver->email)->send(
+                new \App\Mail\SendMessage(
+                    namaPengaju: Auth::user()->name,
+                    namaApprover: $officialTravel->approver->name,
+                    linkTanggapan: $linkTanggapan,
+                    emailPengaju: Auth::user()->email,
+                )
+            );
+        }
+
+        return redirect()->route('admin.official-travels.index')
+            ->with('success', 'Official travel request updated successfully. Total days: ' . $totalDays);
+    }
+
 
     public function export(Request $request)
     {
         try {
-            // (opsional) disable debugbar yang suka nyisipin output
             if (app()->bound('debugbar')) {
                 app('debugbar')->disable();
             }
@@ -235,5 +324,23 @@ class OfficialTravelController extends Controller
                 'error' => 'Export failed: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function destroy(OfficialTravel $officialTravel)
+    {
+        $user = Auth::user();
+        if ($user->id !== $officialTravel->employee_id && $user->role !== Roles::Admin->value) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') && $user->role !== Roles::Admin->value) {
+            return redirect()->route('admin.official-travels.show', $officialTravel->id)
+                ->with('error', 'You cannot delete a travel request that has already been processed.');
+        }
+
+        $officialTravel->delete();
+
+        return redirect()->route('admin.official-travels.index')
+            ->with('success', 'Official travel request deleted successfully.');
     }
 }
