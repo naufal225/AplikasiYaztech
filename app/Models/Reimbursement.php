@@ -17,6 +17,7 @@ class Reimbursement extends Model
         'status_2',
         'note_1',
         'note_2',
+        'marked_down',
     ];
 
     public function employee() {
@@ -25,6 +26,7 @@ class Reimbursement extends Model
 
     protected $casts = [
         'date' => 'date',
+        'marked_down' => 'boolean',
     ];
 
     public function approver()
