@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Roles;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LeaveController extends Controller
 {
@@ -74,10 +75,13 @@ class LeaveController extends Controller
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) Leave::where('employee_id', Auth::id())
+            ->whereYear('date_start', now()->year)->count();
+
         Leave::whereNull('seen_by_manager_at')
             ->update(['seen_by_manager_at' => now()]);
 
-        return view('manager.leave-request.index', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
+        return view('manager.leave-request.index', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager', 'sisaCuti'));
     }
 
     public function show(Leave $leave)

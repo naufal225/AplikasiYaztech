@@ -22,52 +22,77 @@ class LeaveController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Leave::query()
-            ->with(['employee', 'approver'])
-            ->forLeader(Auth::id())
-            ->orderByDesc('created_at')
-            ->filterFinalStatus($request->input('status'));
 
-        // Filter tanggal (opsional)
+        // Query for user's own requests (all statuses)
+        $ownRequestsQuery = Leave::with(['employee', 'approver'])
+            ->where('employee_id', Auth::id())
+            ->orderBy('created_at', 'desc');
+
+        // Query for all users' requests (excluding own unless approved)
+        $allUsersQuery = Leave::with(['employee', 'approver'])->forLeader(Auth::id())
+            ->where(function ($q) {
+                $q->where('employee_id', '!=', Auth::id())
+                    ->orWhere(function ($subQ) {
+                        $subQ->where('employee_id', Auth::id())
+                            ->where('status_1', 'approved');
+                    });
+            })
+            ->orderBy('created_at', 'desc');
+
+        // Apply filters to both queries
+        if ($request->filled('status')) {
+            $statusFilter = function ($query) use ($request) {
+                switch ($request->status) {
+                    case 'approved':
+                        $query->where('status_1', 'approved');
+                        break;
+                    case 'rejected':
+                        $query->where('status_1', 'rejected');
+                        break;
+                    case 'pending':
+                        $query->where('status_1', 'pending');
+                        break;
+                }
+            };
+
+            $ownRequestsQuery->where($statusFilter);
+            $allUsersQuery->where($statusFilter);
+        }
+
         if ($request->filled('from_date')) {
-            $from = Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta');
-            $query->where('date_start', '>=', $from);
+            $fromDate = Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta');
+            $ownRequestsQuery->where('date_start', '>=', $fromDate);
+            $allUsersQuery->where('date_start', '>=', $fromDate);
         }
+
         if ($request->filled('to_date')) {
-            $to = Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta');
-            $query->where('date_start', '<=', $to);
+            $toDate = Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta');
+            $ownRequestsQuery->where('date_start', '<=', $toDate);
+            $allUsersQuery->where('date_start', '<=', $toDate);
         }
 
-        $leaves = $query->paginate(10);
+        $ownRequests = $ownRequestsQuery->paginate(10, ['*'], 'own_page');
+        $allUsersRequests = $allUsersQuery->paginate(10, ['*'], 'all_page');
 
-        // Total (sesuai akses approver/leader, bukan semua tabel)
-        $baseForCounts = Leave::forLeader(Auth::id());
 
-        // Terapkan filter tanggal yg sama ke agregasi
-        if (isset($from))
-            $baseForCounts->where('date_start', '>=', $from);
-        if (isset($to))
-            $baseForCounts->where('date_start', '<=', $to);
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) Leave::where('employee_id', Auth::id())
+            ->whereYear('date_start', now()->year)->count();
 
-        // Satu query untuk 3 angka
-        $counts = (clone $baseForCounts)->withFinalStatusCount()->first();
+        $totalRequests = Leave::count();
+        $pendingRequests = Leave::where('status_1', 'pending')->count();
+        $approvedRequests = Leave::where('status_1', 'approved')->count();
+        $rejectedRequests = Leave::where('status_1', 'rejected')->count();
 
-        $totalRequests = (int) ($counts->total);
-        $approvedRequests = (int) ($counts->approved ?? 0);
-        $rejectedRequests = (int) ($counts->rejected ?? 0);
-        $pendingRequests = (int) ($counts->pending ?? 0);
-
-        Leave::whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
-            ->update(['seen_by_approver_at' => now()]);
-
-        $manager = User::where('role', Roles::Manager->value)->firstOr();
+        $manager = User::where('role', Roles::Manager->value)->first();
 
         return view('approver.leave-request.index', compact(
-            'leaves',
+            'ownRequests',
+            'allUsersRequests',
             'totalRequests',
             'pendingRequests',
             'approvedRequests',
             'rejectedRequests',
+            'sisaCuti',
             'manager'
         ));
     }
@@ -166,7 +191,7 @@ class LeaveController extends Controller
 
     public function edit(Leave $leave)
     {
-
+        return view('approver.leave-request.update', compact('leave'));
     }
 
     public function update(Request $request, Leave $leave)
@@ -247,7 +272,21 @@ class LeaveController extends Controller
 
     public function destroy(Leave $leave)
     {
+        // Check if the user has permission to delete this leave
+        $user = Auth::user();
+        if ($user->id !== $leave->employee_id) {
+            abort(403, 'Unauthorized action.');
+        }
 
+        // Only allow deleting if the leave is still pending
+        if (($leave->status_1 !== 'pending')) {
+            return redirect()->route('approver.leaves.show', $leave->id)
+                ->with('error', 'You cannot delete a leave request that has already been processed.');
+        }
+
+        $leave->delete();
+        return redirect()->route('approver.leaves.index')
+            ->with('success', 'Leave request deleted successfully.');
     }
 
     public function export(Request $request)
