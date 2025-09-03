@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\AdminController;
+namespace App\Http\Controllers\SuperAdminController;
 
 use App\Http\Controllers\Controller;
 use App\Mail\ResetPasswordMail;
@@ -19,7 +19,6 @@ class UserController extends Controller
     {
         $search = request('search');
         $users = User::where('name', 'like', '%' . $search . '%')
-            ->whereNotIn('role', [Roles::SuperAdmin->value])
             ->orderByRaw("
                 CASE role
                     WHEN ? THEN 1
@@ -37,7 +36,7 @@ class UserController extends Controller
             ])
             ->latest()
             ->paginate(10);
-        return view('admin.user.index', compact('users'));
+        return view('super-admin.user.index', compact('users'));
     }
 
     public function create()
@@ -45,7 +44,7 @@ class UserController extends Controller
         $divisions = Division::latest()->get();
         $roles = collect(Roles::cases())
             ->values();
-        return view('admin.user.create', compact('divisions', 'roles'));
+        return view('super-admin.user.create', compact('divisions', 'roles'));
     }
 
     public function store(Request $request)
@@ -83,7 +82,7 @@ class UserController extends Controller
 
         Mail::to($user->email)->queue(new ResetPasswordMail($user->name, $resetUrl));
 
-        return redirect()->route('admin.users.index')->with('success', 'Successfully create user.');
+        return redirect()->route('super-admin.users.index')->with('success', 'Successfully create user.');
     }
 
     public function edit(User $user)
@@ -92,7 +91,7 @@ class UserController extends Controller
         $roles = collect(Roles::cases())
             ->values();
 
-        return view('admin.user.update', compact('user', 'divisions', 'roles'));
+        return view('super-admin.user.update', compact('user', 'divisions', 'roles'));
     }
 
     public function update(User $user, Request $request)
@@ -141,7 +140,7 @@ class UserController extends Controller
             return redirect()->route('login');
         }
 
-        return redirect()->route('admin.users.index')->with('success', 'Successfully update user.');
+        return redirect()->route('super-admin.users.index')->with('success', 'Successfully update user.');
     }
 
     public function destroy(User $user)
@@ -152,24 +151,7 @@ class UserController extends Controller
 
         $user->delete();
 
-        return redirect()->route('admin.users.index')->with('success', 'Successfully delete user.');
+        return redirect()->route('super-admin.users.index')->with('success', 'Successfully delete user.');
     }
 
-    public function approve(Leave $leave)
-    {
-        $leave->update([
-            'status' => 'approved'
-        ]);
-
-        return redirect()->route('approver.leaves.index');
-    }
-
-    public function reject(Leave $leave)
-    {
-        $leave->update([
-            'status' => 'rejected'
-        ]);
-
-        return redirect()->route('approver.leaves.index');
-    }
 }
