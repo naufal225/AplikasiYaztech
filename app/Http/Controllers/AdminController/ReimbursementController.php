@@ -236,7 +236,7 @@ class ReimbursementController extends Controller
         }
     }
 
-     public function exportPdf(Reimbursement $reimbursement)
+    public function exportPdf(Reimbursement $reimbursement)
     {
         $pdf = Pdf::loadView('Employee.reimbursements.pdf', compact('reimbursement'));
         return $pdf->download('reimbursement-details.pdf');
@@ -343,7 +343,7 @@ class ReimbursementController extends Controller
             );
         }
 
-        return redirect()->route('admin.reimbursements.show', $reimbursement->id)
+        return redirect()->route('admin.reimbursements.index')
             ->with('success', 'Reimbursement request updated successfully.');
     }
 

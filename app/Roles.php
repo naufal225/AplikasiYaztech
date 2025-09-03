@@ -6,6 +6,7 @@ use Spatie\Permission\Contracts\Role;
 
 enum Roles : String
 {
+    case SuperAdmin = "superAdmin";
     case Admin = "admin";
     case Approver = "approver"; // ini team lead
     case Employee = "employee";

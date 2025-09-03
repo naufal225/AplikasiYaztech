@@ -6,6 +6,8 @@ use App\Exports\OvertimesExport;
 use App\Http\Controllers\Controller;
 use App\Models\ApprovalLink;
 use App\Models\Overtime;
+use App\Models\User;
+use App\Roles;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -107,6 +109,101 @@ class OvertimeController extends Controller
         $overtime = Overtime::findOrFail($id);
         $overtime->load(['employee', 'approver']);
         return view('admin.overtime.show', compact('overtime'));
+    }
+
+    public function edit(Overtime $overtime)
+    {
+        $user = Auth::user();
+        if ($user->id !== $overtime->employee_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') {
+            return redirect()->route('admin.overtimes.show', $overtime->id)
+                ->with('error', 'You cannot edit an overtime request that has already been processed.');
+        }
+
+        $approvers = User::where('role', Roles::Approver->value)
+            ->get();
+        return view('admin.overtime.update', compact('overtime', 'approvers'));
+    }
+
+    public function update(Request $request, Overtime $overtime)
+    {
+        $user = Auth::user();
+
+        if ($user->id !== $overtime->employee_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') {
+            return redirect()->route('admin.overtimes.show', $overtime->id)
+                ->with('error', 'You cannot update an overtime request that has already been processed.');
+        }
+
+        $request->validate([
+            'customer' => 'required',
+            'date_start' => 'required|date_format:Y-m-d\TH:i',
+            'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
+        ], [
+            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
+            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
+            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
+            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
+        ]);
+
+        $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
+        $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
+
+        $overtimeMinutes = $start->diffInMinutes($end);
+
+        $overtimeHours = $overtimeMinutes / 60;
+
+        if ($overtimeHours < 0.5) {
+            return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
+        }
+
+        // Simpan data
+        $overtime->customer = $request->customer;
+        $overtime->date_start = $request->date_start;
+        $overtime->date_end = $request->date_end;
+        $overtime->total = $overtimeMinutes; // Disimpan dalam menit
+        $overtime->status_1 = 'pending';
+        $overtime->status_2 = 'pending';
+        $overtime->note_1 = NULL;
+        $overtime->note_2 = NULL;
+        $overtime->save();
+
+        // Send notification email to the approver
+        if ($overtime->approver) {
+            $token = \Illuminate\Support\Str::random(48);
+            ApprovalLink::create([
+                'model_type' => get_class($overtime),   // App\Models\overtime
+                'model_id' => $overtime->id,
+                'approver_user_id' => $overtime->approver->id,
+                'level' => 1, // level 1 berarti arahnya ke team lead
+                'scope' => 'both',             // boleh approve & reject
+                'token' => hash('sha256', $token), // simpan hash, kirim raw
+                'expires_at' => now()->addDays(3),  // masa berlaku
+            ]);
+            $linkTanggapan = route('public.approval.show', $token);
+
+            $hours = floor($overtimeMinutes / 60);
+            $minutes = $overtimeMinutes % 60;
+
+            Mail::to($overtime->approver->email)->queue(
+                new \App\Mail\SendMessage(
+                    namaPengaju: Auth::user()->name,
+                    namaApprover: $overtime->approver->name,
+                    linkTanggapan: $linkTanggapan,
+                    emailPengaju: Auth::user()->email,
+                )
+            );
+        }
+
+        return redirect()->route('admin.overtimes.index', $overtime->id)
+            ->with('success', 'Overtime request updated successfully. Total overtime: ' . $hours . ' hours ' . $minutes . ' minutes');
     }
 
     public function create()
@@ -234,5 +331,23 @@ class OvertimeController extends Controller
                 'error' => 'Export failed: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+     public function destroy(Overtime $overtime)
+    {
+        $user = Auth::user();
+        if ($user->id !== $overtime->employee_id && $user->role !== Roles::Admin->value) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') && $user->role !== Roles::Admin->value) {
+            return redirect()->route('admin.overtimes.show', $overtime->id)
+                ->with('error', 'You cannot delete an overtime request that has already been processed.');
+        }
+
+        $overtime->delete();
+
+        return redirect()->route('admin.overtimes.index')
+            ->with('success', 'Overtime request deleted successfully.');
     }
 }
