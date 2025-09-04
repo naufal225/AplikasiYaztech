@@ -63,7 +63,7 @@
                                 @elseif($reimbursement->status_1 === 'pending' || $reimbursement->status_2 === 'pending')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
                                         <i class="mr-1 mt-1 fas fa-clock"></i>
-                                        {{ $reimbursement->status_1 === 'pending' ? 'Pending' : 'In Progress' }} Review
+                                        {{ (Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending' && !\App\Models\Division::where('leader_id', Auth::id())->exists()) || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $reimbursement->status_2 === 'pending') ? 'Pending' : 'In Progress' }} Review
                                     </span>
                                 @endif
                             </div>
@@ -189,7 +189,7 @@
                         <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                     </div>
                     <div class="p-6 space-y-3">
-                        @if((Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending') || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $reimbursement->status_2 === 'pending'))
+                        @if((Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending' && !\App\Models\Division::where('leader_id', Auth::id())->exists()) || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $reimbursement->status_2 === 'pending'))
                             <a href="{{ route('finance.reimbursements.edit', $reimbursement->id) }}" class="w-full flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
                                 <i class="fas fa-edit mr-2"></i>
                                 Edit Request
@@ -203,6 +203,7 @@
                                 </button>
                             </form>
                         @endif
+
                         <a href="{{ route('finance.reimbursements.index') }}" class="w-full flex items-center justify-center px-4 py-2 bg-neutral-600 hover:bg-neutral-700 text-white font-semibold rounded-lg transition-colors duration-200">
                             <i class="fas fa-arrow-left mr-2"></i>
                             Back to List
