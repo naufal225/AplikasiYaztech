@@ -165,47 +165,47 @@
                 </div>
             </div>
         </div>
-        <div class="space-y-6">
-            <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
-                <div class="px-6 py-4 border-b border-neutral-200">
-                    <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
-                </div>
-                <div class="p-6 space-y-3">
-                    @if(Auth::id() === $officialTravel->employee_id && $officialTravel->status_1 === 'pending')
-                    <a href="{{ route('admin.official-travels.edit', $officialTravel->id) }}"
-                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
-                        <i class="mr-2 fas fa-edit"></i>
-                        Edit Request
-                    </a>
-                    <button
-                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg delete-officialTravel-btn bg-error-600 hover:bg-error-700"
-                        data-officialTravel-id="{{ $officialTravel->id }}"
-                        data-officialTravel-name="officialTravel Request #{{ $officialTravel->id }}" title="Delete">
-                        <i class="mr-2 fas fa-trash"></i>
-                        Delete Request
-                    </button>
-                    <form id="delete-form-{{ $officialTravel->id }}"
-                        action="{{ route('admin.official-travels.destroy', $officialTravel->id) }}" method="POST"
-                        style="display: none;">
-                        @csrf
-                        @method('DELETE')
-                    </form>
-                    @endif
-                    <a href="{{ route('admin.official-travels.index') }}"
-                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
-                        <i class="mr-2 fas fa-arrow-left"></i>
-                        Back to List
-                    </a>
+    </div>
+    <div class="space-y-6">
+        <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
+            <div class="px-6 py-4 border-b border-neutral-200">
+                <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
+            </div>
+            <div class="p-6 space-y-3">
+                @if(Auth::id() === $officialTravel->employee_id && $officialTravel->status_1 === 'pending')
+                <a href="{{ route('admin.official-travels.edit', $officialTravel->id) }}"
+                    class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
+                    <i class="mr-2 fas fa-edit"></i>
+                    Edit Request
+                </a>
+                <button
+                    class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg delete-officialTravel-btn bg-error-600 hover:bg-error-700"
+                    data-officialTravel-id="{{ $officialTravel->id }}"
+                    data-officialTravel-name="officialTravel Request #{{ $officialTravel->id }}" title="Delete">
+                    <i class="mr-2 fas fa-trash"></i>
+                    Delete Request
+                </button>
+                <form id="delete-form-{{ $officialTravel->id }}"
+                    action="{{ route('admin.official-travels.destroy', $officialTravel->id) }}" method="POST"
+                    style="display: none;">
+                    @csrf
+                    @method('DELETE')
+                </form>
+                @endif
+                <a href="{{ route('admin.official-travels.index') }}"
+                    class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
+                    <i class="mr-2 fas fa-arrow-left"></i>
+                    Back to List
+                </a>
 
-                    @if ($officialTravel->status_1 === 'approved' && $officialTravel->status_2 === 'approved')
-                    <button
-                        onclick="window.location.href='{{ route('admin.official-travels.exportPdf', $officialTravel->id) }}'"
-                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
-                        <i class="mr-2 fas fa-print"></i>
-                        Print Request
-                    </button>
-                    @endif
-                </div>
+                @if ($officialTravel->status_1 === 'approved' && $officialTravel->status_2 === 'approved')
+                <button
+                    onclick="window.location.href='{{ route('admin.official-travels.exportPdf', $officialTravel->id) }}'"
+                    class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
+                    <i class="mr-2 fas fa-print"></i>
+                    Print Request
+                </button>
+                @endif
             </div>
         </div>
     </div>
