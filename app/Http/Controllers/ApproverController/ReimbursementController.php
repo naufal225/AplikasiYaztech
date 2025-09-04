@@ -29,7 +29,7 @@ class ReimbursementController extends Controller
             ->orderBy('created_at', 'desc');
 
         // Query for all users' requests (excluding own unless approved)
-        $allUsersQuery = Reimbursement::with(['employee', 'approver'])
+        $allUsersQuery = Reimbursement::with(['employee', 'approver'])->forLeader(Auth::id())
             ->where(function ($q) {
                 $q->where('employee_id', '!=', Auth::id())
                     ->orWhere(function ($subQ) {

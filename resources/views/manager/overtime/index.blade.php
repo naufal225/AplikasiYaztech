@@ -11,23 +11,33 @@
             <p class="text-neutral-600">Manage and track overtime requests</p>
         </div>
         <div class="mt-4 sm:mt-0">
-            <div class="flex flex-col gap-3 mt-4 sm:mt-0 sm:flex-row">
-                <button id="exportOvertimesData"
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
-                    <i class="mr-2 fa-solid fa-file-export"></i>
-                    <span id="exportButtonText">Export Data</span>
-                    <svg id="exportSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                </button>
+            <div class="flex flex-col items-center gap-5 mt-4 sm:mt-0 sm:flex-row">
+                <div class="mt-4 sm:mt-0">
+                    <button onclick="window.location.href='{{ route('manager.overtimes.create') }}'" class="btn-primary">
+                        <i class="mr-2 fas fa-plus"></i>
+                        New Overtime Request
+                    </button>
+                </div>
             </div>
         </div>
     </div>
+
+    <div class="">
+        <!-- Success Message -->
+        @if(session('success'))
+        <div class="flex items-center p-4 my-6 border border-green-200 bg-green-50 rounded-xl">
+            <div class="flex-shrink-0">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+            </div>
+        </div>
+        @endif
+    </div>
+
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
         <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
@@ -113,7 +123,160 @@
     <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-900">Overtime Requests</h3>
+                <h3 class="text-lg font-semibold text-gray-900">My Overtime Requests</h3>
+                <span class="px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
+                    {{ $ownRequests->total() }} requests
+                </span>
+            </div>
+        </div>
+        <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-neutral-200">
+                    <thead class="bg-neutral-50">
+                        <tr>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Request ID</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Duration</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Hours</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Status 1 - Team Lead</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Status 2 - Manager</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-neutral-200">
+                        @forelse($ownRequests as $overtime)
+                        @php
+                        $totalMinutes = $overtime->total;
+                        $hours = floor($totalMinutes / 60);
+                        $minutes = $totalMinutes % 60;
+                        @endphp
+
+                        <tr class="transition-colors duration-200 hover:bg-neutral-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <div class="text-sm font-medium text-neutral-900">#{{ $overtime->id }}</div>
+                                    <div class="text-sm text-neutral-500">{{ $overtime->created_at->format('M d, Y') }}
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-900">
+                                    {{ $overtime->date_start->format('M d, H:i') }}
+                                </div>
+                                <div class="text-sm text-neutral-500">
+                                    to {{ $overtime->date_end->format('H:i') }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-bold text-neutral-900">{{ $hours }}h {{ $minutes }}m</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($overtime->status_1 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
+                                    <i class="mr-1 fas fa-clock"></i>
+                                    Pending
+                                </span>
+                                @elseif($overtime->status_1 === 'approved')
+                                <span class="text-green-500 badge-approved">
+                                    <i class="mr-1 fas fa-check-circle"></i>
+                                    Approved
+                                </span>
+                                @elseif($overtime->status_1 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
+                                    <i class="mr-1 fas fa-times-circle"></i>
+                                    Rejected
+                                </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($overtime->status_2 === 'pending')
+                                <span class="text-yellow-500 badge-pending">
+                                    <i class="mr-1 fas fa-clock"></i>
+                                    Pending
+                                </span>
+                                @elseif($overtime->status_2 === 'approved')
+                                <span class="text-green-500 badge-approved">
+                                    <i class="mr-1 fas fa-check-circle"></i>
+                                    Approved
+                                </span>
+                                @elseif($overtime->status_2 === 'rejected')
+                                <span class="text-red-500 badge-rejected">
+                                    <i class="mr-1 fas fa-times-circle"></i>
+                                    Rejected
+                                </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                                <div class="flex items-center space-x-2">
+                                    <a href="{{ route('manager.overtimes.show', $overtime->id) }}"
+                                        class="text-primary-600 hover:text-primary-900" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <!-- Fixed permission logic - only show edit/delete for own requests -->
+                                    @if($overtime->status_1 === 'pending' && Auth::id() ===
+                                    $overtime->employee_id)
+                                    <a href="{{ route('manager.overtimes.edit', $overtime->id) }}"
+                                        class="text-secondary-600 hover:text-secondary-900" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button"
+                                        class="delete-overtime-btn text-error-600 hover:text-error-900"
+                                        data-overtime-id="{{ $overtime->id }}"
+                                        data-overtime-name="Overtime Request #{{ $overtime->id }}" data-table="all"
+                                        title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                        @if($overtime->status_1 === 'pending' && Auth::id() === $overtime->employee_id)
+                        <form id="all-delete-form-{{ $overtime->id }}"
+                            action="{{ route('manager.overtimes.destroy', $overtime->id) }}" method="POST"
+                            style="display: none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                        @endif
+                        @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <div class="text-neutral-400">
+                                    <i class="mb-4 text-4xl fas fa-inbox"></i>
+                                    <p class="text-lg font-medium">No personal overtime requests found</p>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if($ownRequests->hasPages())
+            <div class="px-6 py-4 border-t border-neutral-200">
+                {{ $ownRequests->links() }}
+            </div>
+            @endif
+        </div>
+    </div>
+    <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">All Overtime Requests</h3>
+                <span class="px-3 py-1 text-sm font-medium text-blue-800 bg-green-100 rounded-full">
+                    {{ $allUsersRequests->total() }} requests
+                </span>
             </div>
         </div>
         <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
@@ -140,17 +303,11 @@
                                 Status 2 - Manager</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Team Lead</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Manager</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Actions</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-neutral-200">
-                        @forelse($overtimes as $overtime)
+                        @forelse($allUsersRequests as $overtime)
                         @php
                         $totalMinutes = $overtime->total;
                         $hours = floor($totalMinutes / 60);
@@ -167,15 +324,26 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div
-                                        class="flex items-center justify-center w-8 h-8 mr-3 rounded-full bg-success-100">
-                                        <span class="text-xs font-semibold text-success-600">{{
-                                            substr($overtime->employee->name, 0, 1) }}</span>
+                                    <div class="flex-shrink-0 w-10 h-10">
+                                        @if($overtime->employee->url_profile)
+                                        <img class="object-cover w-10 h-10 rounded-full"
+                                            src="{{ $overtime->employee->url_profile }}"
+                                            alt="{{ $overtime->employee->name }}">
+                                        @else
+                                        <div
+                                            class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full">
+                                            <span class="text-sm font-medium text-gray-700">
+                                                {{ strtoupper(substr($overtime->employee->name, 0, 1)) }}
+                                            </span>
+                                        </div>
+                                        @endif
                                     </div>
-                                    <div>
-                                        <div class="text-sm font-medium text-neutral-900">{{ $overtime->employee->name
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-neutral-900">{{
+                                            $overtime->employee->name
                                             }}</div>
-                                        <div class="text-sm text-neutral-500">{{ $overtime->employee->email }}</div>
+                                        <div class="text-sm text-neutral-500">{{ $overtime->employee->email }}
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -227,49 +395,47 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                    <div class="text-sm font-medium text-neutral-900">{{
-                                        $overtime->approver->name ?? "N/A" }}</div>
-
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                    <div class="text-sm font-medium text-neutral-900">{{ $manager->name ?? "N/A" }}
-                                    </div>
-
-                                </div>
+                                <div class="text-sm text-neutral-900">{{ $overtime->manager->name ??
+                                    "N/A" }}</div>
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('manager.overtimes.show', $overtime->id) }}"
-                                        class="text-primary-600 hover:text-primary-900">
+                                        class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @if(Auth::id() === $overtime->employee_id && $overtime->status === 'pending')
+                                    <!-- Fixed permission logic - only show edit/delete for own requests -->
+                                    @if($overtime->status_1 === 'pending' && Auth::id() ===
+                                    $overtime->employee_id)
                                     <a href="{{ route('manager.overtimes.edit', $overtime->id) }}"
-                                        class="text-secondary-600 hover:text-secondary-900">
+                                        class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('manager.overtimes.destroy', $overtime->id) }}" method="POST"
-                                        class="inline" onsubmit="return confirm('Are you sure?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-error-600 hover:text-error-900">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                        class="delete-overtime-btn text-error-600 hover:text-error-900"
+                                        data-overtime-id="{{ $overtime->id }}"
+                                        data-overtime-name="Overtime Request #{{ $overtime->id }}" data-table="all"
+                                        title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                     @endif
                                 </div>
                             </td>
                         </tr>
+                        @if($overtime->status_1 === 'pending' && Auth::id() === $overtime->employee_id)
+                        <form id="all-delete-form-{{ $overtime->id }}"
+                            action="{{ route('manager.overtimes.destroy', $overtime->id) }}" method="POST"
+                            style="display: none;">
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                        @endif
                         @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="7" class="px-6 py-12 text-center"> {{-- Updated colspan --}}
                                 <div class="text-neutral-400">
-                                    <i class="mb-4 text-4xl fas fa-clock"></i>
+                                    <i class="mb-4 text-4xl fas fa-inbox"></i>
                                     <p class="text-lg font-medium">No overtime requests found</p>
-                                    <p class="text-sm">Submit your first overtime request to get started</p>
                                 </div>
                             </td>
                         </tr>
@@ -278,9 +444,9 @@
                 </table>
             </div>
 
-            @if($overtimes->hasPages())
+            @if($allUsersRequests->hasPages())
             <div class="px-6 py-4 border-t border-neutral-200">
-                {{ $overtimes->links() }}
+                {{ $allUsersRequests->links() }}
             </div>
             @endif
         </div>
@@ -314,9 +480,10 @@
             </div>
 
             <div class="text-center">
-                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Employee</h3>
+                <!-- Fixed modal content to reference overtimes instead of employees -->
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Overtime Request</h3>
                 <p class="mb-6 text-sm text-gray-500">
-                    Are you sure you want to delete <span id="employeeName" class="font-medium text-gray-900"></span>?
+                    Are you sure you want to delete <span id="overtimeName" class="font-medium text-gray-900"></span>?
                     This action cannot be undone.
                 </p>
             </div>
@@ -327,7 +494,7 @@
                     Cancel
                 </button>
                 <button type="button" id="confirmDeleteBtn"
-                    class="px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    class="z-40 px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                     <span id="deleteButtonText">Delete</span>
                     <svg id="deleteSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
                         viewBox="0 0 24 24">
@@ -373,73 +540,84 @@ function hideToast() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    const exportButton = document.getElementById('exportOvertimesData');
-    const exportButtonText = document.getElementById('exportButtonText');
-    const exportSpinner = document.getElementById('exportSpinner');
+    initializeDeleteFunctionality();
+});
 
-    exportButton.addEventListener('click', async function() {
-        // Show loading state
-        exportButtonText.textContent = 'Exporting...';
-        exportSpinner.classList.remove('hidden');
-        exportButton.disabled = true;
 
-        try {
-            // Get current filter values
-            const status = document.getElementById('statusFilter').value;
-            const fromDate = document.getElementById('fromDateFilter').value;
-            const toDate = document.getElementById('toDateFilter').value;
+let overtimeIdToDelete = null;
+let deleteTableType = null;
 
-            // Build export URL with filters
-            const params = new URLSearchParams();
-            if (status) params.append('status', status);
-            if (fromDate) params.append('from_date', fromDate);
-            if (toDate) params.append('to_date', toDate);
-
-            const exportUrl = `{{ route('manager.overtimes.export') }}?${params.toString()}`;
-
-            // Use fetch to get the file
-            const response = await fetch(exportUrl, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                }
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Export failed');
-            }
-
-            // Get the blob from response
-            const blob = await response.blob();
-
-            // Create download link
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `overtime-requests-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.xlsx`;
-
-            // Trigger download
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            // Clean up
-            window.URL.revokeObjectURL(url);
-
-            showToast('Export completed successfully!', 'success');
-
-        } catch (error) {
-            console.error('Export error:', error);
-            showToast('Export failed: ' + error.message, 'error');
-        } finally {
-            // Reset button state
-            exportButtonText.textContent = 'Export Data';
-            exportSpinner.classList.add('hidden');
-            exportButton.disabled = false;
-        }
+function initializeDeleteFunctionality() {
+    // Add event listeners to all delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-overtime-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const overtimeId = this.getAttribute('data-overtime-id');
+            const overtimeName = this.getAttribute('data-overtime-name');
+            const tableType = this.getAttribute('data-table');
+            confirmDelete(overtimeId, overtimeName, tableType);
+        });
     });
+
+    // Add event listener for confirm delete button
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', executeDelete);
+    }
+
+    // Add event listener for cancel button
+    const cancelButton = document.getElementById('cancelDeleteButton');
+    if (cancelButton) {
+        cancelButton.addEventListener('click', closeDeleteModal);
+    }
+}
+
+function confirmDelete(overtimeId, overtimeName, tableType) {
+    overtimeIdToDelete = overtimeId;
+    deleteTableType = tableType;
+    document.getElementById('overtimeName').textContent = overtimeName;
+    document.getElementById('deleteConfirmModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function closeDeleteModal() {
+    overtimeIdToDelete = null;
+    deleteTableType = null;
+    document.getElementById('deleteConfirmModal').classList.add('hidden');
+    document.body.style.overflow = 'auto'; // Restore scrolling
+}
+
+function executeDelete() {
+    if (!overtimeIdToDelete || !deleteTableType) return;
+
+    // Show loading state
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    const deleteText = document.getElementById('deleteButtonText');
+    const deleteSpinner = document.getElementById('deleteSpinner');
+    const cancelButton = document.getElementById('cancelDeleteButton');
+
+    cancelButton.disabled = true;
+    deleteBtn.disabled = true;
+    deleteText.textContent = 'Deleting...';
+    deleteSpinner.classList.remove('hidden');
+
+    const formId = `${deleteTableType}-delete-form-${overtimeIdToDelete}`;
+    const form = document.getElementById(formId);
+
+    if (form) {
+        form.submit();
+    } else {
+        console.error('Delete form not found:', formId);
+        showToast('Error: Could not find delete form', 'error');
+        closeDeleteModal();
+    }
+}
+
+// Close modal when pressing Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeDeleteModal();
+    }
 });
 </script>
 @endpush

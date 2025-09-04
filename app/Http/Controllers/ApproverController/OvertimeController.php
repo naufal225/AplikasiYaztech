@@ -28,7 +28,7 @@ class OvertimeController extends Controller
             ->orderBy('created_at', 'desc');
 
         // Query for all users' requests (excluding own unless approved)
-        $allUsersQuery = Overtime::with(['employee', 'approver'])
+        $allUsersQuery = Overtime::with(['employee', 'approver'])->forLeader(Auth::id())
             ->where(function ($q) {
                 $q->where('employee_id', '!=', Auth::id())
                     ->orWhere(function ($subQ) {

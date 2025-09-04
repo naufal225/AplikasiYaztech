@@ -118,7 +118,7 @@
                         </div>
                         <!-- final_status -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status 1 - Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">Status - Manager</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($leave->status_1 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -136,21 +136,6 @@
                             <label class="text-sm font-semibold text-neutral-700">Reason for leave</label>
                             <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <p class="leading-relaxed text-neutral-900">{{ $leave->reason }}</p>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status 2 - Manager</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                @if($leave->status_2 === 'pending')
-                                <i class="mr-3 fas fa-clock text-warning-600"></i>
-                                <span class="font-medium text-warning-800">Pending Review</span>
-                                @elseif($leave->status_2 === 'approved')
-                                <i class="mr-3 fas fa-check-circle text-success-600"></i>
-                                <span class="font-medium text-success-800">Approved</span>
-                                @elseif($leave->status_2 === 'rejected')
-                                <i class="mr-3 fas fa-times-circle text-error-600"></i>
-                                <span class="font-medium text-error-800">Rejected</span>
-                                @endif
                             </div>
                         </div>
                     </div>
@@ -206,7 +191,7 @@
             </div>
 
             <!-- Added approval/rejection form for pending requests -->
-            @if($leave->final_status === 'pending' && $leave->status_2 == 'pending')
+            @if($leave->status_1 === 'pending')
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
                     <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
@@ -215,7 +200,7 @@
                     <form id="approvalForm" method="POST" action="{{ route('manager.leaves.update', $leave) }}">
                         @csrf
                         @method('PUT')
-                        <input type="hidden" name="status_2" id="status_2" value="">
+                        <input type="hidden" name="status_1" id="status_1" value="">
 
                         <div class="space-y-4">
                             <div>
@@ -267,7 +252,7 @@
         // const confirmMessage = `Are you sure you want to ${actionText} this leave request?`;
 
         // if (confirm(confirmMessage)) {
-        document.getElementById('status_2').value = action;
+        document.getElementById('status_1').value = action;
         document.getElementById('approvalForm').submit();
         // }
     }

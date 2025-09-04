@@ -4,10 +4,11 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-    <!-- Main Content -->
+    <!-- Main Grid -->
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <!-- Left Column - Main Details -->
         <div class="space-y-6 lg:col-span-2">
+            <!-- Header -->
             <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
                     @if($errors->any())
@@ -33,34 +34,43 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <h1 class="text-xl font-bold text-white">Overtime Request #{{ $overtime->id }}</h1>
-                            <p class="text-sm text-primary-100">Submitted on {{
-                                Carbon\Carbon::parse($overtime->created_at)->format('M d, Y \a\t H:i') }}</p>
+                            <p class="text-sm text-primary-100">
+                                Submitted on {{ \Carbon\Carbon::parse($overtime->created_at)->format('M d, Y \a\t H:i')
+                                }}
+                            </p>
                         </div>
                         <div class="text-right">
-                            @if($overtime->final_status === 'pending')
+                            @if($overtime->status_1 === 'pending')
                             <span
                                 class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
                                 <i class="mr-1 fas fa-clock"></i>
                                 Pending Review
                             </span>
-                            @elseif($overtime->final_status === 'approved')
+                            @elseif($overtime->status_1 === 'approved' && $overtime->status_2 === 'pending')
                             <span
                                 class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
                                 <i class="mr-1 fas fa-check-circle"></i>
-                                Approved
+                                Approved by You
                             </span>
-                            @elseif($overtime->final_status === 'rejected')
+                            @elseif($overtime->status_1 === 'rejected')
                             <span
                                 class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
                                 <i class="mr-1 fas fa-times-circle"></i>
-                                Rejected
+                                Rejected by You
+                            </span>
+                            @elseif($overtime->status_1 === 'approved' && $overtime->status_2 === 'approved')
+                            <span
+                                class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
+                                <i class="mr-1 fas fa-check-circle"></i>
+                                Fully Approved
                             </span>
                             @endif
                         </div>
                     </div>
                 </div>
             </div>
-            <!-- overtime Details -->
+
+            <!-- Overtime Details -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
                     <h2 class="text-lg font-bold text-neutral-900">Overtime Details</h2>
@@ -76,7 +86,8 @@
                                     }}</span>
                             </div>
                         </div>
-                        <!-- Approver -->
+
+                        <!-- Approver (Team Lead) -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Approver</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
@@ -85,6 +96,7 @@
                                     }}</span>
                             </div>
                         </div>
+
                         <!-- Start Date -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Start Date</label>
@@ -94,6 +106,7 @@
                                     \Carbon\Carbon::parse($overtime->date_start)->format('l, M d, Y') }}</span>
                             </div>
                         </div>
+
                         <!-- End Date -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">End Date</label>
@@ -103,6 +116,7 @@
                                     \Carbon\Carbon::parse($overtime->date_end)->format('l, M d, Y') }}</span>
                             </div>
                         </div>
+
                         <!-- Duration -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Duration</label>
@@ -118,7 +132,8 @@
                                 </span>
                             </div>
                         </div>
-                        <!-- final_status -->
+
+                        <!-- Status 1 - Team Lead -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Status 1 - Team Lead</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
@@ -134,12 +149,8 @@
                                 @endif
                             </div>
                         </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Reason for overtime</label>
-                            <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <p class="leading-relaxed text-neutral-900">{{ $overtime->reason }}</p>
-                            </div>
-                        </div>
+
+                        <!-- Status 2 - Manager -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Status 2 - Manager</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
@@ -155,58 +166,78 @@
                                 @endif
                             </div>
                         </div>
-                    </div>
-                    <!-- Reason -->
 
-
-                    <!-- Added approval/rejection notes section if final_status is not pending -->
-                    @if($overtime->final_status !== 'pending' && !empty($overtime->approval_notes))
-                    <div class="mt-6 space-y-2">
-                        <label class="text-sm font-semibold text-neutral-700">
-                            @if($overtime->final_status === 'approved')
-                            Approval Notes
-                            @else
-                            Rejection Notes
-                            @endif
-                        </label>
-                        <div class="p-4 border rounded-lg
-                            @if($overtime->final_status === 'approved')
-                                bg-success-50 border-success-200
-                            @else
-                                bg-error-50 border-error-200
-                            @endif">
-                            <p class="leading-relaxed
-                                @if($overtime->final_status === 'approved')
-                                    text-success-900
-                                @else
-                                    text-error-900
-                                @endif">{{ $overtime->approval_notes }}</p>
+                        <!-- Approval/Rejection Notes -->
+                        @if($overtime->status_1 === 'approved' && $overtime->note_1)
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="text-sm font-semibold text-neutral-700">Approval Notes (Team Lead)</label>
+                            <div class="p-4 border rounded-lg bg-success-50 border-success-200">
+                                <p class="leading-relaxed text-success-900">{{ $overtime->note_1 }}</p>
+                            </div>
                         </div>
+                        @elseif($overtime->status_1 === 'rejected' && $overtime->note_1)
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="text-sm font-semibold text-neutral-700">Rejection Notes (Team Lead)</label>
+                            <div class="p-4 border rounded-lg bg-error-50 border-error-200">
+                                <p class="leading-relaxed text-error-900">{{ $overtime->note_1 }}</p>
+                            </div>
+                        </div>
+                        @endif
+
+                        @if($overtime->status_2 !== 'pending' && $overtime->note_2)
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="text-sm font-semibold text-neutral-700">
+                                {{ $overtime->status_2 === 'approved' ? 'Approval Notes (Manager)' : 'Rejection Notes
+                                (Manager)' }}
+                            </label>
+                            <div
+                                class="p-4 border rounded-lg
+                                    {{ $overtime->status_2 === 'approved' ? 'bg-success-50 border-success-200' : 'bg-error-50 border-error-200' }}">
+                                <p
+                                    class="leading-relaxed
+                                        {{ $overtime->status_2 === 'approved' ? 'text-success-900' : 'text-error-900' }}">
+                                    {{ $overtime->note_2 }}
+                                </p>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Reason -->
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="text-sm font-semibold text-neutral-700">Reason for Overtime</label>
+                            <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <p class="leading-relaxed text-neutral-900">{{ $overtime->reason }}</p>
+                            </div>
+                        </div>
+
                     </div>
-                    @endif
                 </div>
             </div>
         </div>
+
         <!-- Right Column - Sidebar -->
         <div class="space-y-6">
+            <!-- Actions -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
                     <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                 </div>
                 <div class="p-6 space-y-3">
-                    @if(Auth::id() === $overtime->employee_id && ($overtime->status_1 === 'pending'))
+                    @if(Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending')
                     <a href="{{ route('approver.overtimes.edit', $overtime->id) }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
                         <i class="mr-2 fas fa-edit"></i>
                         Edit Request
                     </a>
+
                     <button
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg delete-overtime-btn bg-error-600 hover:bg-error-700"
                         data-overtime-id="{{ $overtime->id }}"
-                        data-overtime-name="overtime Request #{{ $overtime->id }}" title="Delete">
+                        data-overtime-name="Overtime Request #{{ $overtime->id }}" title="Delete">
                         <i class="mr-2 fas fa-trash"></i>
                         Delete Request
                     </button>
+
                     <form id="delete-form-{{ $overtime->id }}"
                         action="{{ route('approver.overtimes.destroy', $overtime->id) }}" method="POST"
                         style="display: none;">
@@ -214,11 +245,13 @@
                         @method('DELETE')
                     </form>
                     @endif
+
                     <a href="{{ route('approver.overtimes.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                         <i class="mr-2 fas fa-arrow-left"></i>
                         Back to List
                     </a>
+
                     <button onclick="window.print()"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
@@ -227,17 +260,35 @@
                 </div>
             </div>
 
-            <!-- Added approval/rejection form for pending requests -->
-            @if($overtime->final_status === 'pending' && $overtime->status_1 == 'pending')
+            <!-- Review Request -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
-                    <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
+                    <h3 class="text-lg font-bold text-neutral-900">Your Review</h3>
                 </div>
                 <div class="p-6">
+                    @if($overtime->status_1 === 'approved')
+                    <div class="p-4 text-center text-green-800 rounded-lg bg-green-50">
+                        <i class="mb-2 text-xl fas fa-check-circle"></i>
+                        <p class="font-medium">You Approved This Request</p>
+                        @if($overtime->note_1)
+                        <p class="mt-2 text-sm"><strong>Notes:</strong> {{ $overtime->note_1 }}</p>
+                        @endif
+                    </div>
+                    @elseif($overtime->status_1 === 'rejected')
+                    <div class="p-4 text-center text-red-800 rounded-lg bg-red-50">
+                        <i class="mb-2 text-xl fas fa-times-circle"></i>
+                        <p class="font-medium">You Rejected This Request</p>
+                        @if($overtime->note_1)
+                        <p class="mt-2 text-sm"><strong>Reason:</strong> {{ $overtime->note_1 }}</p>
+                        @else
+                        <p class="text-sm">No reason provided.</p>
+                        @endif
+                    </div>
+                    @elseif($overtime->status_1 === 'pending')
                     <form id="approvalForm" method="POST" action="{{ route('approver.overtimes.update', $overtime) }}">
                         @csrf
                         @method('PUT')
-                        <input type="hidden" name="status_1" id="status_1" value="">
+                        <input type="hidden" name="status_1" id="status_1" value="" />
 
                         <div class="space-y-4">
                             <div>
@@ -264,30 +315,25 @@
                             </div>
                         </div>
                     </form>
+                    @else
+                    <div class="p-4 text-center text-gray-800 rounded-lg bg-gray-50">
+                        <i class="mb-2 text-xl fas fa-info-circle"></i>
+                        <p class="font-medium">Review Completed</p>
+                        <p class="text-sm">This request has been reviewed.</p>
+                    </div>
+                    @endif
                 </div>
             </div>
-            @else
-            <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
-                <div class="px-6 py-4 border-b border-neutral-200">
-                    <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
-                </div>
-                <div class="p-6">
-                    <h1>You have reviewed this request</h1>
-                </div>
-            </div>
-            @endif
         </div>
     </div>
 </div>
-
 @endsection
 
-
 @section('partial-modal')
-{{-- Updated modal to handle overtime requests instead of users --}}
+<!-- Delete Confirmation Modal -->
 <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity bg-opacity-75 " onclick="closeDeleteModal()"></div>
+        <div class="fixed inset-0 transition-opacity bg-opacity-50" onclick="closeDeleteModal()"></div>
         <div
             class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
             <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
@@ -298,7 +344,7 @@
             </div>
 
             <div class="text-center">
-                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete overtime Request</h3>
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Overtime Request</h3>
                 <p class="mb-6 text-sm text-gray-500">
                     Are you sure you want to delete <span id="overtimeName" class="font-medium text-gray-900"></span>?
                     This action cannot be undone.
@@ -307,11 +353,11 @@
 
             <div class="flex justify-center space-x-3">
                 <button type="button" id="cancelDeleteButton"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg cancel-delete-btn hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    class="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                     Cancel
                 </button>
                 <button type="button" id="confirmDeleteBtn"
-                    class="z-40 px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    class="px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                     <span id="deleteButtonText">Delete</span>
                     <svg id="deleteSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
                         viewBox="0 0 24 24">
@@ -328,88 +374,66 @@
 </div>
 @endsection
 
-
 @push('scripts')
 <script>
     let overtimeIdToDelete = null;
 
-// Initialize delete functionality when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDeleteFunctionality();
-});
-
-function initializeDeleteFunctionality() {
-    // Add event listeners to all delete buttons
-    const deleteButtons = document.querySelectorAll('.delete-overtime-btn');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const overtimeId = this.getAttribute('data-overtime-id');
-            const overtimeName = this.getAttribute('data-overtime-name');
-            confirmDelete(overtimeId, overtimeName);
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeDeleteFunctionality();
     });
 
-    // Add event listener for confirm delete button
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', executeDelete);
+    function initializeDeleteFunctionality() {
+        const deleteButtons = document.querySelectorAll('.delete-overtime-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-overtime-id');
+                const name = this.getAttribute('data-overtime-name');
+                confirmDelete(id, name);
+            });
+        });
+
+        document.getElementById('cancelDeleteButton')?.addEventListener('click', closeDeleteModal);
+        document.getElementById('confirmDeleteBtn')?.addEventListener('click', executeDelete);
     }
 
-    // Add event listener for cancel button
-    const cancelButton = document.getElementById('cancelDeleteButton');
-    if (cancelButton) {
-        cancelButton.addEventListener('click', closeDeleteModal);
-    }
-}
-
-function confirmDelete(overtimeId, overtimeName) {
-    overtimeIdToDelete = overtimeId;
-    document.getElementById('overtimeName').textContent = overtimeName;
-    document.getElementById('deleteConfirmModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
-}
-
-function closeDeleteModal() {
-    overtimeIdToDelete = null;
-    document.getElementById('deleteConfirmModal').classList.add('hidden');
-    document.body.style.overflow = 'auto'; // Restore scrolling
-}
-
-function executeDelete() {
-    if (!overtimeIdToDelete) return;
-
-    // Show loading state
-    const deleteBtn = document.getElementById('confirmDeleteBtn');
-    const deleteText = document.getElementById('deleteButtonText');
-    const deleteSpinner = document.getElementById('deleteSpinner');
-    const cancelButton = document.getElementById('cancelDeleteButton');
-
-    cancelButton.disabled = true;
-    deleteBtn.disabled = true;
-    deleteText.textContent = 'Deleting...';
-    deleteSpinner.classList.remove('hidden');
-
-    // Submit the form
-    document.getElementById(`delete-form-${overtimeIdToDelete}`).submit();
-}
-
-// Close modal when pressing Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeDeleteModal();
-    }
-});
-
- function submitApproval(action) {
-        const actionText = action === 'approved' ? 'approved' : 'rejected';
-        // const confirmMessage = `Are you sure you want to ${actionText} this overtime request?`;
-
-        // if (confirm(confirmMessage)) {
-        document.getElementById('status_1').value = action;
-        document.getElementById('approvalForm').submit();
-        // }
+    function confirmDelete(id, name) {
+        overtimeIdToDelete = id;
+        document.getElementById('overtimeName').textContent = name;
+        document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     }
 
-    
+    function closeDeleteModal() {
+        overtimeIdToDelete = null;
+        document.getElementById('deleteConfirmModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    function executeDelete() {
+        if (!overtimeIdToDelete) return;
+
+        const btn = document.getElementById('confirmDeleteBtn');
+        const text = document.getElementById('deleteButtonText');
+        const spinner = document.getElementById('deleteSpinner');
+        const cancel = document.getElementById('cancelDeleteButton');
+
+        cancel.disabled = true;
+        btn.disabled = true;
+        text.textContent = 'Deleting...';
+        spinner.classList.remove('hidden');
+
+        document.getElementById(`delete-form-${overtimeIdToDelete}`).submit();
+    }
+
+    function submitApproval(action) {
+
+            document.getElementById('status_1').value = action;
+            document.getElementById('approvalForm').submit();
+
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeDeleteModal();
+    });
 </script>
 @endpush
