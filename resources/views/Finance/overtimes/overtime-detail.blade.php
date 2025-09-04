@@ -5,9 +5,16 @@
 @section('subtitle', 'View overtime request information')
 
 @php
-    $totalMinutes = $overtime->total;
-    $hours = floor($totalMinutes / 60);
-    $minutes = $totalMinutes % 60;
+    // Parsing waktu input
+    $start = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_start, 'Asia/Jakarta');
+    $end = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_end, 'Asia/Jakarta');
+
+    // Hitung langsung dari date_start
+    $overtimeMinutes = $start->diffInMinutes($end);
+    $overtimeHours = $overtimeMinutes / 60;
+
+    $hours = floor($overtimeMinutes / 60);
+    $minutes = $overtimeMinutes % 60;
 @endphp
 
 @section('content')
@@ -40,7 +47,14 @@
             <!-- Left Column - Main Details -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Request Header -->
-                <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
+                <div class="relative bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
+                    <!-- Overlay Checklist -->
+                    @if($overtime->marked_down)
+                        <div class="absolute inset-0 flex items-center justify-center bg-white/70 z-10 rounded-xl">
+                            <i class="fas fa-check-circle bg-white rounded-full text-green-500 text-7xl drop-shadow-lg"></i>
+                        </div>
+                    @endif
+
                     <div class="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div>
@@ -62,7 +76,7 @@
                                 @elseif($overtime->status_1 === 'pending' || $overtime->status_2 === 'pending')
                                     <span class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
                                         <i class="mr-1 mt-1 fas fa-clock"></i>
-                                        {{ $overtime->status_1 === 'pending' ? 'Pending' : 'In Progress' }} Review
+                                        {{ (Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending' && !\App\Models\Division::where('leader_id', Auth::id())->exists()) || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $overtime->status_2 === 'pending') ? 'Pending' : 'In Progress' }} Review
                                     </span>
                                 @endif
                             </div>
@@ -106,14 +120,10 @@
 
                             <!-- Work Hours Breakdown -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Work Hours Breakdown</label>
-                                <div class="p-3.5 bg-blue-50 rounded-lg border border-blue-200">
-                                    <div class="grid grid-cols-1 md:grid-cols-1 gap-4 text-sm">
-                                        <div>
-                                            <span class="font-medium text-blue-800">Normal Hours:</span>
-                                            <span class="text-blue-700">09:00 - 17:00</span>
-                                        </div>
-                                    </div>
+                                <label class="text-sm font-semibold text-neutral-700">Total Costs</label>
+                                <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                                    <i class="fas fa-dollar-sign text-primary-600 mr-3"></i>
+                                    <span class="text-neutral-900 font-medium">{{ 'Rp ' . number_format($overtime->total ?? 0, 0, ',', '.') }}</span>
                                 </div>
                             </div>
 
@@ -195,14 +205,46 @@
                         <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                     </div>
                     <div class="p-6 space-y-3">
+                        @if((Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending' && !\App\Models\Division::where('leader_id', Auth::id())->exists()) || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $overtime->status_2 === 'pending'))
+                            <a href="{{ route('finance.overtimes.edit', $overtime->id) }}" class="w-full flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                <i class="fas fa-edit mr-2"></i>
+                                Edit Request
+                            </a>
+                            <form action="{{ route('finance.overtimes.destroy', $overtime->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this overtime request?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="w-full flex items-center justify-center px-4 py-2 bg-error-600 hover:bg-error-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                    <i class="fas fa-trash mr-2"></i>
+                                    Delete Request
+                                </button>
+                            </form>
+                        @endif
+
                         <a href="{{ route('finance.overtimes.index') }}" class="w-full flex items-center justify-center px-4 py-2 bg-neutral-600 hover:bg-neutral-700 text-white font-semibold rounded-lg transition-colors duration-200">
                             <i class="fas fa-arrow-left mr-2"></i>
                             Back to List
                         </a>
-                        <button onclick="window.location.href='{{ route('finance.overtimes.exportPdf', $overtime->id) }}'" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
-                            <i class="fas fa-print mr-2"></i>
-                            Print Request
-                        </button>
+
+                        @if ($overtime->status_1 == 'approved' && $overtime->status_2 == 'approved' && $overtime->marked_down)
+                            <button onclick="window.location.href='{{ route('finance.overtimes.exportPdf', $overtime->id) }}'" class="w-full flex items-center justify-center px-4 py-2 bg-secondary-600 hover:bg-secondary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                <i class="fas fa-print mr-2"></i>
+                                Print Request
+                            </button>
+                        @endif
+
+                        @if ($overtime->status_1 == 'approved' && $overtime->status_2 == 'approved' && !$overtime->marked_down && $overtime->locked_by === Auth::id() && $overtime->locked_at->addMinutes(60)->isFuture())
+                            <form action="{{ route('finance.overtimes.marked') }}" method="POST"
+                                onsubmit="return confirm('Are you sure you want to mark selected overtimes as done?')">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="ids[]" value="{{ $overtime->id }}">
+                                
+                                <button type="submit" class="w-full flex items-center justify-center px-4 py-2 bg-success-600 hover:bg-success-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                    <i class="fas fa-check mr-2"></i>
+                                    Mark as done
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
             </div>
