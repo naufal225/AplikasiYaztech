@@ -16,6 +16,7 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
 
     Route::get('/leaves/export', [LeaveController::class, 'export'])
         ->name('leaves.export');
+    Route::put('/leaves/{leave}/update-self', [LeaveController::class, 'updateSelf'])->name('leaves.updateSelf');
     Route::resource('leaves', LeaveController::class)
         ->parameters([
             "leaves" => "leave"
@@ -23,17 +24,20 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
 
     Route::get('/reimbursements/export', [ReimbursementController::class, 'export'])
         ->name('reimbursements.export');
+    Route::put('/reimbursements/{reimbursement}/update-self', [ReimbursementController::class, 'updateSelf'])->name('reimbursements.updateSelf');
     Route::resource('reimbursements', ReimbursementController::class)
-        ->parameters([
-            "reimbursements" => "reimbursement"
-        ]);
+    ->parameters([
+        "reimbursements" => "reimbursement"
+    ]);
 
     Route::get('/overtimes/export', [OvertimeController::class, 'export'])
-        ->name('overtimes.export');
+    ->name('overtimes.export');
+    Route::put('/overtimes/{overtime}/update-self', [OvertimeController::class, 'updateSelf'])->name('overtimes.updateSelf');
     Route::resource('overtimes', OvertimeController::class);
 
     Route::get('/official-travels/export', [OfficialTravelController::class, 'export'])
-        ->name('official-travels.export');
+    ->name('official-travels.export');
+    Route::put('/official-travels/{officialTravel}/update-self', [OfficialTravelController::class, 'updateSelf'])->name('official-travels.updateSelf');
     Route::resource('official-travels', OfficialTravelController::class);
 
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');

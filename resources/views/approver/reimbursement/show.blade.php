@@ -1,4 +1,4 @@
-@extends('components.approver.layout.layout-approver')
+@extends('components.manager.layout.layout-manager')
 @section('header', 'Reimbursement Detail')
 @section('subtitle', '')
 
@@ -61,6 +61,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- reimbursement Details -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
@@ -135,12 +136,15 @@
                                 @endif
                             </div>
                         </div>
+
+                        <!-- Moved reason section inside grid to fix structure -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Reason for reimbursement</label>
                             <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <p class="leading-relaxed text-neutral-900">{{ $reimbursement->reason }}</p>
                             </div>
                         </div>
+
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Status 2 - Manager</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
@@ -158,7 +162,6 @@
                         </div>
                     </div>
                     <!-- Reason -->
-
 
                     <!-- Added approval/rejection notes section if final_status is not pending -->
                     @if($reimbursement->final_status !== 'pending' && !empty($reimbursement->approval_notes))
@@ -188,6 +191,7 @@
                 </div>
             </div>
         </div>
+
         <!-- Right Column - Sidebar -->
         <div class="space-y-6">
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
@@ -195,31 +199,35 @@
                     <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
                 </div>
                 <div class="p-6 space-y-3">
-                    @if(Auth::id() === $reimbursement->employee_id && ($reimbursement->status_1 === 'pending'))
-                    <a href="{{ route('approver.reimbursements.edit', $reimbursement->id) }}"
+                    @if(Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending')
+                    <a href="{{ route('manager.reimbursements.edit', $reimbursement->id) }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
                         <i class="mr-2 fas fa-edit"></i>
                         Edit Request
                     </a>
+
                     <button
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg delete-reimbursement-btn bg-error-600 hover:bg-error-700"
                         data-reimbursement-id="{{ $reimbursement->id }}"
-                        data-reimbursement-name="reimbursement Request #{{ $reimbursement->id }}" title="Delete">
+                        data-reimbursement-name="Reimbursement Request #{{ $reimbursement->id }}" title="Delete">
                         <i class="mr-2 fas fa-trash"></i>
                         Delete Request
                     </button>
+
                     <form id="delete-form-{{ $reimbursement->id }}"
-                        action="{{ route('approver.reimbursements.destroy', $reimbursement->id) }}" method="POST"
+                        action="{{ route('manager.reimbursements.destroy', $reimbursement->id) }}" method="POST"
                         style="display: none;">
                         @csrf
                         @method('DELETE')
                     </form>
                     @endif
-                    <a href="{{ route('approver.reimbursements.index') }}"
+
+                    <a href="{{ route('manager.reimbursements.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                         <i class="mr-2 fas fa-arrow-left"></i>
                         Back to List
                     </a>
+
                     <button onclick="window.print()"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
@@ -228,25 +236,38 @@
                 </div>
             </div>
 
-            <!-- Added approval/rejection form for pending requests -->
-            @if($reimbursement->final_status === 'pending' && $reimbursement->status_1 == 'pending')
+            <!-- Review Request Card -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
-                    <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
+                    <h3 class="text-lg font-bold text-neutral-900">Manager Review</h3>
                 </div>
                 <div class="p-6">
+                    @if($reimbursement->status_1 === 'rejected')
+                    <div class="p-4 text-center text-red-800 rounded-lg bg-red-50">
+                        <i class="mb-2 text-xl fas fa-times-circle"></i>
+                        <p class="font-medium">Request Rejected by Team Lead</p>
+                        <p class="text-sm">This request cannot be reviewed by manager.</p>
+                    </div>
+                    @elseif($reimbursement->status_1 === 'pending')
+                    <div class="p-4 text-center text-yellow-800 rounded-lg bg-yellow-50">
+                        <i class="mb-2 text-xl fas fa-clock"></i>
+                        <p class="font-medium">Pending Team Lead Approval</p>
+                        <p class="text-sm">Manager review will be available after Team Lead approval.</p>
+                    </div>
+                    @elseif($reimbursement->status_1 === 'approved' && $reimbursement->status_2 === 'pending')
+                    <!-- Manager can review -->
                     <form id="approvalForm" method="POST"
-                        action="{{ route('approver.reimbursements.update', $reimbursement) }}">
+                        action="{{ route('manager.reimbursements.update', $reimbursement) }}">
                         @csrf
                         @method('PUT')
-                        <input type="hidden" name="status_1" id="status_1" value="">
+                        <input type="hidden" name="status_2" id="status_2" value="" />
 
                         <div class="space-y-4">
                             <div>
                                 <label for="approval_notes" class="block mb-2 text-sm font-semibold text-neutral-700">
                                     Notes <span class="text-neutral-500">(Optional)</span>
                                 </label>
-                                <textarea name="note_1" id="approval_notes" rows="4"
+                                <textarea name="approval_notes" id="approval_notes" rows="4"
                                     class="w-full px-3 py-2 border rounded-lg resize-none border-neutral-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                     placeholder="Add any comments or reasons for your decision..."></textarea>
                             </div>
@@ -266,18 +287,27 @@
                             </div>
                         </div>
                     </form>
+                    @elseif($reimbursement->status_2 === 'approved')
+                    <div class="p-4 text-center text-green-800 rounded-lg bg-green-50">
+                        <i class="mb-2 text-xl fas fa-check-circle"></i>
+                        <p class="font-medium">Approved by Manager</p>
+                        @if($reimbursement->approval_notes)
+                        <p class="mt-2 text-sm"><strong>Notes:</strong> {{ $reimbursement->approval_notes }}</p>
+                        @endif
+                    </div>
+                    @elseif($reimbursement->status_2 === 'rejected')
+                    <div class="p-4 text-center text-red-800 rounded-lg bg-red-50">
+                        <i class="mb-2 text-xl fas fa-times-circle"></i>
+                        <p class="font-medium">Rejected by Manager</p>
+                        @if($reimbursement->approval_notes)
+                        <p class="mt-2 text-sm"><strong>Reason:</strong> {{ $reimbursement->approval_notes }}</p>
+                        @else
+                        <p class="text-sm">No reason provided.</p>
+                        @endif
+                    </div>
+                    @endif
                 </div>
             </div>
-            @else
-            <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
-                <div class="px-6 py-4 border-b border-neutral-200">
-                    <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
-                </div>
-                <div class="p-6">
-                    <h1>You have reviewed this request</h1>
-                </div>
-            </div>
-            @endif
         </div>
     </div>
 </div>
@@ -288,7 +318,7 @@
 {{-- Updated modal to handle reimbursement requests instead of users --}}
 <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity bg-opacity-75 " onclick="closeDeleteModal()"></div>
+        <div class="fixed inset-0 transition-opacity bg-opacity-75" onclick="closeDeleteModal()"></div>
         <div
             class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
             <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
@@ -329,7 +359,6 @@
     </div>
 </div>
 @endsection
-
 
 @push('scripts')
 <script>
@@ -401,14 +430,15 @@ document.addEventListener('keydown', function(event) {
         closeDeleteModal();
     }
 });
- function submitApproval(action) {
-        const actionText = action === 'approved' ? 'approved' : 'rejected';
-        // const confirmMessage = `Are you sure you want to ${actionText} this reimbursement request?`;
 
-        // if (confirm(confirmMessage)) {
-        document.getElementById('status_1').value = action;
-        document.getElementById('approvalForm').submit();
-        // }
-    }
+function submitApproval(action) {
+    const actionText = action === 'approved' ? 'approved' : 'rejected';
+    // const confirmMessage = `Are you sure you want to ${actionText} this reimbursement request?`;
+
+    // if (confirm(confirmMessage)) {
+    document.getElementById('status_2').value = action;
+    document.getElementById('approvalForm').submit();
+    // }
+}
 </script>
 @endpush

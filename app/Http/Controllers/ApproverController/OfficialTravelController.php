@@ -28,7 +28,7 @@ class OfficialTravelController extends Controller
             ->orderBy('created_at', 'desc');
 
         // Query for all users' requests (excluding own unless approved)
-        $allUsersQuery = OfficialTravel::with(['employee', 'approver'])
+        $allUsersQuery = OfficialTravel::with(['employee', 'approver'])->forLeader(Auth::id())
             ->where(function ($q) {
                 $q->where('employee_id', '!=', Auth::id())
                     ->orWhere(function ($subQ) {

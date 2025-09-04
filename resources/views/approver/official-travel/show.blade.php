@@ -5,7 +5,7 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto">
-    <!-- Main Grid: 2 Columns on Large Screens -->
+    <!-- Main Grid -->
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <!-- Left Column - Main Details -->
         <div class="space-y-6 lg:col-span-2">
@@ -215,13 +215,31 @@
                 </div>
             </div>
 
-            <!-- Approval/Rejection Form -->
-            @if($officialTravel->final_status === 'pending' && $officialTravel->status_1 === 'pending')
+            <!-- Review Request -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
-                    <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
+                    <h3 class="text-lg font-bold text-neutral-900">Your Review</h3>
                 </div>
                 <div class="p-6">
+                    @if($officialTravel->status_1 === 'approved')
+                    <div class="p-4 text-center text-green-800 rounded-lg bg-green-50">
+                        <i class="mb-2 text-xl fas fa-check-circle"></i>
+                        <p class="font-medium">You Approved This Request</p>
+                        @if($officialTravel->note_1)
+                        <p class="mt-2 text-sm"><strong>Notes:</strong> {{ $officialTravel->note_1 }}</p>
+                        @endif
+                    </div>
+                    @elseif($officialTravel->status_1 === 'rejected')
+                    <div class="p-4 text-center text-red-800 rounded-lg bg-red-50">
+                        <i class="mb-2 text-xl fas fa-times-circle"></i>
+                        <p class="font-medium">You Rejected This Request</p>
+                        @if($officialTravel->note_1)
+                        <p class="mt-2 text-sm"><strong>Reason:</strong> {{ $officialTravel->note_1 }}</p>
+                        @else
+                        <p class="text-sm">No reason provided.</p>
+                        @endif
+                    </div>
+                    @elseif($officialTravel->status_1 === 'pending')
                     <form id="approvalForm" method="POST"
                         action="{{ route('approver.official-travels.update', $officialTravel) }}">
                         @csrf
@@ -253,26 +271,25 @@
                             </div>
                         </div>
                     </form>
+                    @else
+                    <div class="p-4 text-center text-gray-800 rounded-lg bg-gray-50">
+                        <i class="mb-2 text-xl fas fa-info-circle"></i>
+                        <p class="font-medium">Review Completed</p>
+                        <p class="text-sm">This request has been reviewed.</p>
+                    </div>
+                    @endif
                 </div>
             </div>
-            @else
-            <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
-                <div class="px-6 py-4 border-b border-neutral-200">
-                    <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
-                </div>
-                <div class="p-6">
-                    <p class="text-neutral-700">You have already reviewed this request.</p>
-                </div>
-            </div>
-            @endif
         </div>
     </div>
 </div>
 @endsection
 
 @section('partial-modal')
+<!-- Delete Confirmation Modal -->
 <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity bg-black bg-opacity-50" onclick="closeDeleteModal()"></div>
         <div
             class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
             <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
@@ -281,7 +298,6 @@
                         d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
             </div>
-
             <div class="text-center">
                 <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Official Travel Request</h3>
                 <p class="mb-6 text-sm text-gray-500">
@@ -290,10 +306,9 @@
                     This action cannot be undone.
                 </p>
             </div>
-
             <div class="flex justify-center space-x-3">
                 <button type="button" id="cancelDeleteButton"
-                    class="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg cancel-delete-btn hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    class="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
                     Cancel
                 </button>
                 <button type="button" id="confirmDeleteBtn"
@@ -316,7 +331,7 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         initializeDeleteFunctionality();
     });
 
@@ -325,10 +340,10 @@
     function initializeDeleteFunctionality() {
         const deleteButtons = document.querySelectorAll('.delete-officialTravel-btn');
         deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const officialTravelId = this.getAttribute('data-officialTravel-id');
-                const officialTravelName = this.getAttribute('data-officialTravel-name');
-                confirmDelete(officialTravelId, officialTravelName);
+            button.addEventListener('click', function () {
+                const id = this.getAttribute('data-officialTravel-id');
+                const name = this.getAttribute('data-officialTravel-name');
+                confirmDelete(id, name);
             });
         });
 
@@ -336,9 +351,9 @@
         document.getElementById('confirmDeleteBtn')?.addEventListener('click', executeDelete);
     }
 
-    function confirmDelete(officialTravelId, officialTravelName) {
-        officialTravelIdToDelete = officialTravelId;
-        document.getElementById('officialTravelName').textContent = officialTravelName;
+    function confirmDelete(id, name) {
+        officialTravelIdToDelete = id;
+        document.getElementById('officialTravelName').textContent = name;
         document.getElementById('deleteConfirmModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
@@ -352,15 +367,15 @@
     function executeDelete() {
         if (!officialTravelIdToDelete) return;
 
-        const deleteBtn = document.getElementById('confirmDeleteBtn');
-        const deleteText = document.getElementById('deleteButtonText');
-        const deleteSpinner = document.getElementById('deleteSpinner');
-        const cancelButton = document.getElementById('cancelDeleteButton');
+        const btn = document.getElementById('confirmDeleteBtn');
+        const text = document.getElementById('deleteButtonText');
+        const spinner = document.getElementById('deleteSpinner');
+        const cancel = document.getElementById('cancelDeleteButton');
 
-        cancelButton.disabled = true;
-        deleteBtn.disabled = true;
-        deleteText.textContent = 'Deleting...';
-        deleteSpinner.classList.remove('hidden');
+        cancel.disabled = true;
+        btn.disabled = true;
+        text.textContent = 'Deleting...';
+        spinner.classList.remove('hidden');
 
         const form = document.getElementById(`delete-form-${officialTravelIdToDelete}`);
         if (form) {
@@ -372,7 +387,12 @@
         }
     }
 
-    // Close modal on Escape key
+    function submitApproval(action){
+        document.getElementById('status_1').value = action;
+        document.getElementById('approvalForm').submit();
+    }
+
+    // Close modal on Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeDeleteModal();
     });
