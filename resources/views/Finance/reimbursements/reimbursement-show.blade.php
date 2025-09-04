@@ -108,6 +108,7 @@
             </div>
         </div>
 
+        <!-- Filter Form -->
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 p-6">
             <form method="GET" action="{{ route('finance.reimbursements.index') }}" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

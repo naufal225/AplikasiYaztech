@@ -27,6 +27,7 @@ class Reimbursement extends Model
     protected $casts = [
         'date' => 'date',
         'marked_down' => 'boolean',
+        'locked_at' => 'datetime',
     ];
 
     public function approver()

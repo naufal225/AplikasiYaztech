@@ -18,6 +18,7 @@ use App\Models\ApprovalLink;
 use Illuminate\Support\Facades\DB;
 use ZipArchive;
 use Illuminate\Support\Str;
+use Exception;
 
 class ReimbursementController extends Controller
 {
@@ -103,11 +104,13 @@ class ReimbursementController extends Controller
                 ->where(function ($q) {
                     $q->whereNull('locked_by')
                     ->orWhere(function ($q2) {
-                        $q2->where('locked_at', '<', now()->subMinutes(60));
+                        // lock sudah expired
+                        $q2->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) < ?', [now()]);
                     })
                     ->orWhere(function ($q3) {
+                        // lock masih aktif tapi milik user ini
                         $q3->where('locked_by', Auth::id())
-                            ->where('locked_at', '>=', now()->subMinutes(60)); // ✅ hanya kalau lock dan belum expired
+                            ->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) >= ?', [now()]);
                     });
                 })
                 ->orderBy('created_at', 'asc');
@@ -143,8 +146,8 @@ class ReimbursementController extends Controller
 
         $totalRequests = $dataAll->count();
         $approvedRequests = (int) $countsAll->withFinalStatusCount()->first()->approved;
-        $markedRequests = (int) $countsAll->where('marked_down', true)->count();
-        $totalAllNoMark = (int) $countsAll->where('marked_down', false)->count();
+        $markedRequests = (int) $countsAll->where('marked_down', true)->get()->count();
+        $totalAllNoMark = (int) $countsAll->where('marked_down', false)->get()->count();
 
         $countsYours = (clone $yourReimbursementsQuery)->withFinalStatusCount()->first();
         $totalYoursRequests = (int) $yourReimbursementsQuery->count();
@@ -492,27 +495,40 @@ class ReimbursementController extends Controller
     /**
      * Mark selected reimbursements as done (marked_down = true).
      */
+
     public function markedDone(Request $request)
     {
         $ids = $request->input('ids', []);
 
-        DB::transaction(function () use ($ids) {
-            $records = Reimbursement::whereIn('id', $ids)
-                ->where('marked_down', false)
-                ->where('locked_by', Auth::id())
-                ->lockForUpdate()
-                ->get();
+        try {
+            DB::transaction(function () use ($ids) {
+                $records = Reimbursement::whereIn('id', $ids)
+                    ->where('marked_down', false)
+                    ->where('locked_by', Auth::id())
+                    ->lockForUpdate()
+                    ->get();
 
-            foreach ($records as $rec) {
-                $rec->update([
-                    'marked_down' => true,
-                    'locked_by'   => null,   // lepas lock setelah done
-                    'locked_at'   => null,
-                ]);
-            }
-        });
+                if ($records->isEmpty()) {
+                    throw new Exception('No reimbursements available to mark as done.');
+                }
 
-        return redirect()->back()->with('success', 'Selected reimbursements marked as done.');
+                foreach ($records as $rec) {
+                    $rec->update([
+                        'marked_down' => true,
+                        'locked_by'   => null,
+                        'locked_at'   => null,
+                    ]);
+                }
+            });
+
+            return redirect()
+                ->route('finance.reimbursements.index')
+                ->with('success', 'Selected reimbursements marked as done.');
+        } catch (Exception $e) {
+            return redirect()
+                ->route('finance.reimbursements.index')
+                ->with('error', 'Failed to mark reimbursements as done: ' . $e->getMessage());
+        }
     }
 
     /**

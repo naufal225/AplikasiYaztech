@@ -32,7 +32,9 @@ Route::middleware(['auth', 'role:finance'])->prefix('finance')->name('finance.')
 
 
     // Overtimes
+    Route::get('overtimes/bulk-export', [OvertimeController::class, 'bulkExport'])->name('overtimes.bulkExport');
     Route::get('overtimes/{overtime}/export-pdf', [OvertimeController::class, 'exportPdf'])->name('overtimes.exportPdf');
+    Route::patch('overtimes/marked', [OvertimeController::class, 'markedDone'])->name('overtimes.marked');
     Route::resource('overtimes', OvertimeController::class);
 
 
