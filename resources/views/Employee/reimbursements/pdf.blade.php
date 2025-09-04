@@ -57,6 +57,28 @@
         <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
     </div>
 
+    @if($reimbursement->marked_down)
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.3);
+            z-index: 9999;
+        ">
+            <img src="{{ public_path('yaztech-logo-web.png') }}" 
+                alt="Yaztech Engineering Solusindo"
+                style="
+                    position: absolute;
+                    bottom: 20px;
+                    right: 20px;
+                    width: 12rem;
+                    opacity: 0.3;
+                ">
+        </div>
+    @endif
+
     <div class="section">
         <div class="sub-title">Reimbursement Request #RY{{ $reimbursement->id }} | {{ \Carbon\Carbon::parse($reimbursement->created_at)->format('F d, Y \a\t H:i') }}</div>
         <h3>Employee Information</h3>

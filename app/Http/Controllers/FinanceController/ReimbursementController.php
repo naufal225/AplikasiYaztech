@@ -527,7 +527,7 @@ class ReimbursementController extends Controller
         } catch (Exception $e) {
             return redirect()
                 ->route('finance.reimbursements.index')
-                ->with('error', 'Failed to mark reimbursements as done: ' . $e->getMessage());
+                ->with('error', 'Failed: ' . $e->getMessage());
         }
     }
 

@@ -1,4 +1,4 @@
-@extends('Employee.layouts.app')
+@extends('Finance.layouts.app')
 
 @section('title', 'Edit Overtime Request')
 @section('header', 'Edit Overtime Request')
@@ -9,7 +9,7 @@
     <nav class="flex mb-6" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
-                <a href="{{ route('employee.dashboard') }}"
+                <a href="{{ route('finance.dashboard') }}"
                     class="inline-flex items-center text-sm font-medium text-neutral-700 hover:text-primary-600">
                     <i class="mr-2 fas fa-home"></i>
                     Dashboard
@@ -18,14 +18,14 @@
             <li>
                 <div class="flex items-center">
                     <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
-                    <a href="{{ route('employee.overtimes.index') }}"
+                    <a href="{{ route('finance.overtimes.index') }}"
                         class="text-sm font-medium text-neutral-700 hover:text-primary-600">Overtime Requests</a>
                 </div>
             </li>
             <li>
                 <div class="flex items-center">
                     <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
-                    <a href="{{ route('employee.overtimes.show', $overtime->id) }}"
+                    <a href="{{ route('finance.overtimes.show', $overtime->id) }}"
                         class="text-sm font-medium text-neutral-700 hover:text-primary-600">Request #OY{{ $overtime->id
                         }}</a>
                 </div>
@@ -55,7 +55,7 @@
         </div>
         @endif
 
-        <form action="{{ route('employee.overtimes.update', $overtime->id) }}" method="POST" class="p-6 space-y-6">
+        <form action="{{ route('finance.overtimes.update', $overtime->id) }}" method="POST" class="p-6 space-y-6">
             @csrf
             @method('PUT')
 
