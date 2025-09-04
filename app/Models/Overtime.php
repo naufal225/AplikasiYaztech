@@ -26,6 +26,8 @@ class Overtime extends Model
     protected $casts = [
         'date_start' => 'datetime',
         'date_end' => 'datetime',
+        'marked_down' => 'boolean',
+        'locked_at' => 'datetime',
     ];
 
     public function approver()
