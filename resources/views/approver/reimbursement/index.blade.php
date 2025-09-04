@@ -1,17 +1,30 @@
 @extends('components.approver.layout.layout-approver')
 @section('header', 'Manage Reimbursements')
-@section('subtitle', 'Manage reimbursements data')
+@section('subtitle', 'Manage Reimbursements data')
 
 @section('content')
 <main class="relative z-10 flex-1 p-0 space-y-6 overflow-x-hidden overflow-y-auto bg-gray-50">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex flex-col items-center sm:flex-row sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-neutral-900">Reimbursement Requests</h1>
-            <p class="text-neutral-600">Manage and track your reimbursement requests</p>
+            <h1 class="text-2xl font-bold text-neutral-900">Reimbursements Requests</h1>
+            <p class="text-neutral-600">Manage and track reimbursements requests</p>
         </div>
+        <div class="mt-4 sm:mt-0">
+            <div class="flex flex-col items-center gap-5 mt-4 sm:mt-0 sm:flex-row">
+                <div class="mt-4 sm:mt-0">
+                    <button onclick="window.location.href='{{ route('approver.reimbursements.create') }}'"
+                        class="btn-primary">
+                        <i class="mr-2 fas fa-plus"></i>
+                        New Reimbursement Request
+                    </button>
+                </div>
 
+            </div>
+        </div>
     </div>
+
     <div class="">
+        <!-- Success Message -->
         @if(session('success'))
         <div class="flex items-center p-4 my-6 border border-green-200 bg-green-50 rounded-xl">
             <div class="flex-shrink-0">
@@ -25,6 +38,7 @@
         </div>
         @endif
     </div>
+
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 gap-6 md:grid-cols-4">
         <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
@@ -107,135 +121,481 @@
         </form>
     </div>
 
+    <!-- First Table: My Reimbursement Requests -->
     <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
             <div class="flex items-center justify-between">
-                <h3 class="text-lg font-semibold text-gray-900">Reimbursement Requests</h3>
+                <h3 class="text-lg font-semibold text-gray-900">My Reimbursement Requests</h3>
+                <span class="px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full">
+                    {{ $ownRequests->total() }} requests
+                </span>
             </div>
         </div>
-        <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-neutral-200">
-                    <thead class="bg-neutral-50">
-                        <tr>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Request ID</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Type</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Total</th> {{-- Changed from Amount --}}
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Date</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 1 - Team Lead</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 2 - Manager</th>
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Customer</th> {{-- Added Customer --}}
-                            <th
-                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-neutral-200">
-                        @forelse($reimbursements as $reimbursement)
-                        <tr class="transition-colors duration-200 hover:bg-neutral-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div>
-                                    <div class="text-sm font-medium text-neutral-900">#{{ $reimbursement->id }}</div>
-                                    <div class="text-sm text-neutral-500">{{ $reimbursement->created_at->format('M d,
-                                        Y') }}</div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-neutral-200">
+                <thead class="bg-neutral-50">
+                    <tr>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Request ID</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Total</th> {{-- Changed from Amount --}}
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Date</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Status 1 - Team Lead</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Status 2 - Manager</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Customer</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-neutral-200">
+                    @forelse($ownRequests as $reimbursement)
+                    <tr class="transition-colors duration-200 hover:bg-neutral-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-neutral-900">#{{ $reimbursement->id }}
                                 </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $reimbursement->type }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">Rp {{ number_format($reimbursement->total, 2, ',',
-                                    '.') }}</div> {{-- Changed from Amount --}}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{
-                                    \Carbon\Carbon::parse($reimbursement->date)->format('M d, Y') }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-500">{{ $reimbursement->created_at->format('M
+                                    d,
+                                    Y') }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-neutral-900">Rp {{ number_format($reimbursement->total, 2,
+                                ',',
+                                '.') }}</div> {{-- Changed from Amount --}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-neutral-900">{{
+                                \Carbon\Carbon::parse($reimbursement->date)->format('M d, Y') }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($reimbursement->status_1 === 'pending')
+                            <span class="text-yellow-500 badge-pending">
+                                <i class="mr-1 fas fa-clock"></i>
+                                Pending
+                            </span>
+                            @elseif($reimbursement->status_1 === 'approved')
+                            <span class="text-green-500 badge-approved">
+                                <i class="mr-1 fas fa-check-circle"></i>
+                                Approved
+                            </span>
+                            @elseif($reimbursement->status_1 === 'rejected')
+                            <span class="text-red-500 badge-rejected">
+                                <i class="mr-1 fas fa-times-circle"></i>
+                                Rejected
+                            </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($reimbursement->status_2 === 'pending')
+                            <span class="text-yellow-500 badge-pending">
+                                <i class="mr-1 fas fa-clock"></i>
+                                Pending
+                            </span>
+                            @elseif($reimbursement->status_2 === 'approved')
+                            <span class="text-green-500 badge-approved">
+                                <i class="mr-1 fas fa-check-circle"></i>
+                                Approved
+                            </span>
+                            @elseif($reimbursement->status_2 === 'rejected')
+                            <span class="text-red-500 badge-rejected">
+                                <i class="mr-1 fas fa-times-circle"></i>
+                                Rejected
+                            </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-neutral-900">{{ $reimbursement->customer ?? 'N/A' }}
+                            </div> {{-- Added Customer --}}
+                        </td>
+                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                            <div class="flex items-center space-x-2">
+                                <a href="{{ route('approver.reimbursements.show', $reimbursement->id) }}"
+                                    class="text-primary-600 hover:text-primary-900" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
                                 @if($reimbursement->status_1 === 'pending')
-                                <span class="text-yellow-500 badge-pending">
-                                    <i class="mr-1 fas fa-clock"></i>
-                                    Pending
-                                </span>
-                                @elseif($reimbursement->status_1 === 'approved')
-                                <span class="text-green-500 badge-approved">
-                                    <i class="mr-1 fas fa-check-circle"></i>
-                                    Approved
-                                </span>
-                                @elseif($reimbursement->status_1 === 'rejected')
-                                <span class="text-red-500 badge-rejected">
-                                    <i class="mr-1 fas fa-times-circle"></i>
-                                    Rejected
-                                </span>
+                                <a href="{{ route('approver.reimbursements.edit', $reimbursement->id) }}"
+                                    class="text-secondary-600 hover:text-secondary-900" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button"
+                                    class="delete-reimbursement-btn text-error-600 hover:text-error-900"
+                                    data-reimbursement-id="{{ $reimbursement->id }}"
+                                    data-reimbursement-name="Reimbursement Request #{{ $reimbursement->id }}"
+                                    data-table="own" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                                 @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @if($reimbursement->status_2 === 'pending')
-                                <span class="text-yellow-500 badge-pending">
-                                    <i class="mr-1 fas fa-clock"></i>
-                                    Pending
-                                </span>
-                                @elseif($reimbursement->status_2 === 'approved')
-                                <span class="text-green-500 badge-approved">
-                                    <i class="mr-1 fas fa-check-circle"></i>
-                                    Approved
-                                </span>
-                                @elseif($reimbursement->status_2 === 'rejected')
-                                <span class="text-red-500 badge-rejected">
-                                    <i class="mr-1 fas fa-times-circle"></i>
-                                    Rejected
-                                </span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $reimbursement->customer->name ?? 'N/A' }}
-                                </div> {{-- Added Customer --}}
-                            </td>
-                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                                <div class="flex items-center space-x-2">
-                                    <a href="{{ route('approver.reimbursements.show', $reimbursement->id) }}"
-                                        class="text-primary-600 hover:text-primary-900" title="View Details">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="8" class="px-6 py-12 text-center"> {{-- Updated colspan --}}
-                                <div class="text-neutral-400">
-                                    <i class="mb-4 text-4xl fas fa-inbox"></i>
-                                    <p class="text-lg font-medium">No reimbursement requests found</p>
-                                </div>
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Added hidden delete form for own requests -->
+                    @if($reimbursement->status_1 === 'pending')
+                    <form id="own-delete-form-{{ $reimbursement->id }}"
+                        action="{{ route('approver.reimbursements.destroy', $reimbursement->id) }}" method="POST"
+                        style="display: none;">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                    @endif
 
-            @if($reimbursements->hasPages())
-            <div class="px-6 py-4 border-t border-neutral-200">
-                {{ $reimbursements->links() }}
-            </div>
-            @endif
+                    @empty
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center">
+                            <div class="text-neutral-400">
+                                <i class="mb-4 text-4xl fas fa-inbox"></i>
+                                <p class="text-lg font-medium">No personal reimbursement requests found</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
+        @if($ownRequests->hasPages())
+        <div class="px-6 py-4 border-t border-neutral-200">
+            {{ $ownRequests->appends(request()->query())->links() }}
+        </div>
+        @endif
     </div>
 
+    <!-- Second Table: All Users' reimbursement Requests -->
+    <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">All Reimbursement Requests</h3>
+                <span class="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
+                    {{ $allUsersRequests->total() }} requests
+                </span>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-neutral-200">
+                <thead class="bg-neutral-50">
+                    <tr>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Request ID</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Total</th> {{-- Changed from Amount --}}
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Employee</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Date</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Status 1 - Team Lead</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Status 2 - Manager</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Customer</th> {{-- Added Customer --}}
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-neutral-200">
+                    @forelse($allUsersRequests as $reimbursement)
+                    <tr class="transition-colors duration-200 hover:bg-neutral-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div>
+                                <div class="text-sm font-medium text-neutral-900">#{{ $reimbursement->id }}</div>
+                                <div class="text-sm text-neutral-500">{{ $reimbursement->created_at->format('M d, Y') }}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 w-10 h-10">
+                                    @if($reimbursement->employee->url_profile)
+                                    <img class="object-cover w-10 h-10 rounded-full"
+                                        src="{{ $reimbursement->employee->url_profile }}"
+                                        alt="{{ $reimbursement->employee->name }}">
+                                    @else
+                                    <div class="flex items-center justify-center w-10 h-10 bg-gray-300 rounded-full">
+                                        <span class="text-sm font-medium text-gray-700">
+                                            {{ strtoupper(substr($reimbursement->employee->name, 0, 1)) }}
+                                        </span>
+                                    </div>
+                                    @endif
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-neutral-900">{{ $reimbursement->employee->name
+                                        }}</div>
+                                    <div class="text-sm text-neutral-500">{{ $reimbursement->employee->email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-neutral-900">Rp {{ number_format($reimbursement->total, 2,
+                                ',',
+                                '.') }}</div> {{-- Changed from Amount --}}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-neutral-900">{{
+                                \Carbon\Carbon::parse($reimbursement->date)->format('M d, Y') }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($reimbursement->status_1 === 'pending')
+                            <span class="text-yellow-500 badge-pending">
+                                <i class="mr-1 fas fa-clock"></i>
+                                Pending
+                            </span>
+                            @elseif($reimbursement->status_1 === 'approved')
+                            <span class="text-green-500 badge-approved">
+                                <i class="mr-1 fas fa-check-circle"></i>
+                                Approved
+                            </span>
+                            @elseif($reimbursement->status_1 === 'rejected')
+                            <span class="text-red-500 badge-rejected">
+                                <i class="mr-1 fas fa-times-circle"></i>
+                                Rejected
+                            </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($reimbursement->status_2 === 'pending')
+                            <span class="text-yellow-500 badge-pending">
+                                <i class="mr-1 fas fa-clock"></i>
+                                Pending
+                            </span>
+                            @elseif($reimbursement->status_2 === 'approved')
+                            <span class="text-green-500 badge-approved">
+                                <i class="mr-1 fas fa-check-circle"></i>
+                                Approved
+                            </span>
+                            @elseif($reimbursement->status_2 === 'rejected')
+                            <span class="text-red-500 badge-rejected">
+                                <i class="mr-1 fas fa-times-circle"></i>
+                                Rejected
+                            </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-neutral-900">{{ $reimbursement->customer ?? 'N/A' }}
+                            </div> {{-- Added Customer --}}
+                        </td>
+                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                            <div class="flex items-center space-x-2">
+                                <a href="{{ route('approver.reimbursements.show', $reimbursement->id) }}"
+                                    class="text-primary-600 hover:text-primary-900" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <!-- Fixed permission logic - only show edit/delete for own requests -->
+                                @if($reimbursement->status_1 === 'pending' && Auth::id() ===
+                                $reimbursement->employee_id)
+                                <a href="{{ route('approver.reimbursements.edit', $reimbursement->id) }}"
+                                    class="text-secondary-600 hover:text-secondary-900" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button"
+                                    class="delete-reimbursement-btn text-error-600 hover:text-error-900"
+                                    data-reimbursement-id="{{ $reimbursement->id }}"
+                                    data-reimbursement-name="Reimbursement Request #{{ $reimbursement->id }}"
+                                    data-table="all" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Added hidden delete form for all requests table -->
+                    @if($reimbursement->status_1 === 'pending' && Auth::id() === $reimbursement->employee_id)
+                    <form id="all-delete-form-{{ $reimbursement->id }}"
+                        action="{{ route('approver.reimbursements.destroy', $reimbursement->id) }}" method="POST"
+                        style="display: none;">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                    @endif
+
+                    @empty
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center"> {{-- Updated colspan --}}
+                            <div class="text-neutral-400">
+                                <i class="mb-4 text-4xl fas fa-inbox"></i>
+                                <p class="text-lg font-medium">No reimbursement requests found</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        @if($allUsersRequests->hasPages())
+        <div class="px-6 py-4 border-t border-neutral-200">
+            {{ $allUsersRequests->appends(request()->query())->links() }}
+        </div>
+        @endif
+    </div>
+    <div id="toast" class="fixed z-50 hidden top-4 right-4">
+        <div id="toastContent" class="px-6 py-4 rounded-lg shadow-lg">
+            <div class="flex items-center">
+                <span id="toastMessage"></span>
+                <button onclick="hideToast()" class="ml-4 text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
 </main>
 
 @endsection
+
+@section('partial-modal')
+
+<div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+
+        <div
+            class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+
+            <div class="text-center">
+                <!-- Fixed modal content to reference reimbursements instead of employees -->
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Reimbursement Request</h3>
+                <p class="mb-6 text-sm text-gray-500">
+                    Are you sure you want to delete <span id="reimbursementName"
+                        class="font-medium text-gray-900"></span>?
+                    This action cannot be undone.
+                </p>
+            </div>
+
+            <div class="flex justify-center space-x-3">
+                <button type="button" id="cancelDeleteButton"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg cancel-delete-btn hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    Cancel
+                </button>
+                <button type="button" id="confirmDeleteBtn"
+                    class="z-40 px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <span id="deleteButtonText">Delete</span>
+                    <svg id="deleteSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@push('scripts')
+<script>
+    function showToast(message, type = 'success') {
+    const toast = document.getElementById('toast');
+    const toastContent = document.getElementById('toastContent');
+    const toastMessage = document.getElementById('toastMessage');
+
+    toastMessage.textContent = message;
+
+    if (type === 'success') {
+        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-green-500 text-white';
+    } else {
+        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-red-500 text-white';
+    }
+
+    toast.classList.remove('hidden');
+
+    setTimeout(() => {
+        hideToast();
+    }, 5000);
+}
+
+function hideToast() {
+    document.getElementById('toast').classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDeleteFunctionality();
+});
+
+let reimbursementIdToDelete = null;
+let deleteTableType = null;
+
+function initializeDeleteFunctionality() {
+    // Add event listeners to all delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-reimbursement-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const reimbursementId = this.getAttribute('data-reimbursement-id');
+            const reimbursementName = this.getAttribute('data-reimbursement-name');
+            const tableType = this.getAttribute('data-table');
+            confirmDelete(reimbursementId, reimbursementName, tableType);
+        });
+    });
+
+    // Add event listener for confirm delete button
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', executeDelete);
+    }
+
+    // Add event listener for cancel button
+    const cancelButton = document.getElementById('cancelDeleteButton');
+    if (cancelButton) {
+        cancelButton.addEventListener('click', closeDeleteModal);
+    }
+}
+
+function confirmDelete(reimbursementId, reimbursementName, tableType) {
+    reimbursementIdToDelete = reimbursementId;
+    deleteTableType = tableType;
+    document.getElementById('reimbursementName').textContent = reimbursementName;
+    document.getElementById('deleteConfirmModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function closeDeleteModal() {
+    reimbursementIdToDelete = null;
+    deleteTableType = null;
+    document.getElementById('deleteConfirmModal').classList.add('hidden');
+    document.body.style.overflow = 'auto'; // Restore scrolling
+}
+
+function executeDelete() {
+    if (!reimbursementIdToDelete || !deleteTableType) return;
+
+    // Show loading state
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    const deleteText = document.getElementById('deleteButtonText');
+    const deleteSpinner = document.getElementById('deleteSpinner');
+    const cancelButton = document.getElementById('cancelDeleteButton');
+
+    cancelButton.disabled = true;
+    deleteBtn.disabled = true;
+    deleteText.textContent = 'Deleting...';
+    deleteSpinner.classList.remove('hidden');
+
+    const formId = `${deleteTableType}-delete-form-${reimbursementIdToDelete}`;
+    const form = document.getElementById(formId);
+
+    if (form) {
+        form.submit();
+    } else {
+        console.error('Delete form not found:', formId);
+        showToast('Error: Could not find delete form', 'error');
+        closeDeleteModal();
+    }
+}
+
+// Close modal when pressing Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeDeleteModal();
+    }
+});
+</script>
+@endpush

@@ -143,49 +143,8 @@
                 </div>
             </div>
         </div>
-        <!-- Right Column - Sidebar -->
-        <div class="space-y-6">
-            <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
-                <div class="px-6 py-4 border-b border-neutral-200">
-                    <h3 class="text-lg font-bold text-neutral-900">Actions</h3>
-                </div>
-                <div class="p-6 space-y-3">
-                    @if(Auth::id() === $leave->employee_id && ($leave->status_1 === 'pending'))
-                    <a href="{{ route('approver.leaves.edit', $leave->id) }}"
-                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
-                        <i class="mr-2 fas fa-edit"></i>
-                        Edit Request
-                    </a>
-                    <button
-                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg delete-leave-btn bg-error-600 hover:bg-error-700"
-                        data-leave-id="{{ $leave->id }}" data-leave-name="Leave Request #{{ $leave->id }}"
-                        title="Delete">
-                        <i class="mr-2 fas fa-trash"></i>
-                        Delete Request
-                    </button>
-                    <form id="delete-form-{{ $leave->id }}" action="{{ route('approver.leaves.destroy', $leave->id) }}"
-                        method="POST" style="display: none;">
-                        @csrf
-                        @method('DELETE')
-                    </form>
-                    @endif
+        <!-- Right Column - Sidebar tidka ada karena bukan manager, hanya ada di manager -->
 
-                    <a href="{{ route('approver.leaves.index') }}"
-                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
-                        <i class="mr-2 fas fa-arrow-left"></i>
-                        Back to List
-                    </a>
-
-                    @if ($leave->status_1 === 'approved')
-                    <button onclick="window.location.href='{{ route('approver.leaves.exportPdf', $leave->id) }}'"
-                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
-                        <i class="mr-2 fas fa-print"></i>
-                        Print Request
-                    </button>
-                    @endif
-                </div>
-            </div>
-        </div>
     </div>
 </div>
 
