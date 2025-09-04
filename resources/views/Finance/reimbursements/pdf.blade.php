@@ -80,7 +80,7 @@
             <div>
                 <div><span class="label">Total Amount:</span></div>
                 <div class="box">
-                    Rp {{ number_format($reimbursement->total, 0, ',', '.') }}
+                    Rp {{ number_format($reimbursement->total ?? 0, 0, ',', '.') }}
                 </div>
             </div>
             <div>

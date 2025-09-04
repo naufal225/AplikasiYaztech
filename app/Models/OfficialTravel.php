@@ -28,6 +28,8 @@ class OfficialTravel extends Model
     protected $casts = [
         'date_start' => 'date',
         'date_end' => 'date',
+        'marked_down' => 'boolean',
+        'locked_at' => 'datetime',
     ];
 
     public function approver()
