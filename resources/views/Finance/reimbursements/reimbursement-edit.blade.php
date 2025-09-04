@@ -69,12 +69,17 @@
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                     <div>
-                        <label for="total" class="block mb-2 text-sm font-semibold text-neutral-700"> {{-- Changed from amount --}}
-                            <i class="mr-2 fas fa-dollar-sign text-primary-600"></i>
-                            Total Amount (Rp) {{-- Changed from Amount --}}
+                        <label for="total_display" class="block text-sm font-semibold text-neutral-700 mb-2">
+                            <i class="fas fa-dollar-sign mr-2 text-primary-600"></i>
+                            Total Amount (Rp)
                         </label>
-                        <input type="number" id="total" name="total" class="form-input" {{-- Changed from amount --}}
-                               value="{{ old('total', $reimbursement->total) }}" min="0" step="0.01" placeholder="e.g., 150000.00" required>
+
+                        <!-- Input tampilan -->
+                        <input type="text" id="total_display" class="form-input"
+                            value="{{ old('total', $reimbursement->total) }}" placeholder="e.g., 150000" required>
+
+                        <!-- Input hidden untuk nilai asli -->
+                        <input type="hidden" id="total" name="total" value="{{ old('total', $reimbursement->total) }}">
                     </div>
 
                     <div>
@@ -133,3 +138,21 @@
         </div>
     </div>
 @endsection
+@push('scripts')
+    const displayInput = document.getElementById("total_display");
+    const hiddenInput = document.getElementById("total");
+
+    function formatRupiah(angka) {
+        return angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    displayInput.addEventListener("input", function (e) {
+        let raw = this.value.replace(/\D/g, "");
+        hiddenInput.value = raw;
+        this.value = formatRupiah(raw);
+    });
+
+    if (hiddenInput.value) {
+        displayInput.value = formatRupiah(hiddenInput.value);
+    }
+@endpush

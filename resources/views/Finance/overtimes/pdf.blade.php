@@ -78,15 +78,9 @@
                 <div class="box">{{ \Carbon\Carbon::parse($overtime->date_end)->format('l, M d, Y \a\t H:i') }}</div>
             </div>
             <div>
-                <div><span class="label">Duration:</span></div>
+                <div><span class="label">Total Amount:</span></div>
                 <div class="box">
-                    @php
-                        $totalMinutes = $overtime->total;
-                        $hours = floor($totalMinutes / 60);
-                        $minutes = $totalMinutes % 60;
-                    @endphp
-
-                    {{ $hours }} jam {{ $minutes }} menit
+                    Rp {{ number_format($overtime->total ?? 0, 0, ',', '.') }}
                 </div>
             </div>
         </div>

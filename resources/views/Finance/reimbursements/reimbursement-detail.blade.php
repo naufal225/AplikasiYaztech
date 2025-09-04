@@ -190,11 +190,11 @@
                     </div>
                     <div class="p-6 space-y-3">
                         @if((Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending') || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $reimbursement->status_2 === 'pending'))
-                            <a href="{{ route('employee.reimbursements.edit', $reimbursement->id) }}" class="w-full flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                            <a href="{{ route('finance.reimbursements.edit', $reimbursement->id) }}" class="w-full flex items-center justify-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors duration-200">
                                 <i class="fas fa-edit mr-2"></i>
                                 Edit Request
                             </a>
-                            <form action="{{ route('employee.reimbursements.destroy', $reimbursement->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this reimbursement request?')">
+                            <form action="{{ route('finance.reimbursements.destroy', $reimbursement->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this reimbursement request?')">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="w-full flex items-center justify-center px-4 py-2 bg-error-600 hover:bg-error-700 text-white font-semibold rounded-lg transition-colors duration-200">
@@ -213,6 +213,20 @@
                                 <i class="fas fa-print mr-2"></i>
                                 Print Request
                             </button>
+                        @endif
+
+                        @if ($reimbursement->status_1 == 'approved' && $reimbursement->status_2 == 'approved' && !$reimbursement->marked_down && $reimbursement->locked_by === Auth::id() && $reimbursement->locked_at->addMinutes(60)->isFuture())
+                            <form action="{{ route('finance.reimbursements.marked') }}" method="POST"
+                                onsubmit="return confirm('Are you sure you want to mark selected reimbursements as done?')">
+                                @csrf
+                                @method('PATCH')
+                                <input type="hidden" name="ids[]" value="{{ $reimbursement->id }}">
+                                
+                                <button type="submit" class="w-full flex items-center justify-center px-4 py-2 bg-success-600 hover:bg-success-700 text-white font-semibold rounded-lg transition-colors duration-200">
+                                    <i class="fas fa-check mr-2"></i>
+                                    Mark as done
+                                </button>
+                            </form>
                         @endif
                     </div>
                 </div>

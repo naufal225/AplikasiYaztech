@@ -74,31 +74,6 @@
                         <!-- Input hidden untuk nilai asli -->
                         <input type="hidden" id="total" name="total" value="{{ old('total') }}">
                     </div>
-
-                    <script>
-                        document.addEventListener("DOMContentLoaded", function () {
-                            const displayInput = document.getElementById("total_display");
-                            const hiddenInput = document.getElementById("total");
-
-                            function formatRupiah(angka) {
-                                return angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                            }
-
-                            displayInput.addEventListener("input", function (e) {
-                                // ambil angka asli (tanpa titik)
-                                let raw = this.value.replace(/\D/g, "");
-                                // simpan ke hidden input
-                                hiddenInput.value = raw;
-                                // tampilkan kembali dalam format rupiah
-                                this.value = formatRupiah(raw);
-                            });
-
-                            // kalau ada value lama dari old()
-                            if (hiddenInput.value) {
-                                displayInput.value = formatRupiah(hiddenInput.value);
-                            }
-                        });
-                    </script>
                     
                     <div>
                         <label for="date" class="block text-sm font-semibold text-neutral-700 mb-2">
@@ -149,3 +124,21 @@
         </div>
     </div>
 @endsection
+@push('scripts')
+    const displayInput = document.getElementById("total_display");
+    const hiddenInput = document.getElementById("total");
+
+    function formatRupiah(angka) {
+        return angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    displayInput.addEventListener("input", function (e) {
+        let raw = this.value.replace(/\D/g, "");
+        hiddenInput.value = raw;
+        this.value = formatRupiah(raw);
+    });
+
+    if (hiddenInput.value) {
+        displayInput.value = formatRupiah(hiddenInput.value);
+    }
+@endpush
