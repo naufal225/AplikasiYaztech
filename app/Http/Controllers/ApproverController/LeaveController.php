@@ -9,6 +9,7 @@ use App\Models\ApprovalLink;
 use App\Models\Leave;
 use App\Models\User;
 use App\Roles;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -75,8 +76,12 @@ class LeaveController extends Controller
         $allUsersRequests = $allUsersQuery->paginate(10, ['*'], 'all_page');
 
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) Leave::where('employee_id', Auth::id())
-            ->whereYear('date_start', now()->year)->count();
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20)
+            - (int) Leave::where('employee_id', Auth::id())
+                ->where('status_1', 'approved')
+                ->whereYear('date_start', now()->year)
+                ->select(DB::raw('SUM(DATEDIFF(date_end, date_start) + 1) as total_days'))
+                ->value('total_days');
 
         $totalRequests = Leave::count();
         $pendingRequests = Leave::where('status_1', 'pending')->count();
@@ -84,6 +89,10 @@ class LeaveController extends Controller
         $rejectedRequests = Leave::where('status_1', 'rejected')->count();
 
         $manager = User::where('role', Roles::Manager->value)->first();
+
+        Leave::whereNull('seen_by_approver_at')
+            ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
+            ->update(['seen_by_approver_at' => now()]);
 
         return view('approver.leave-request.index', compact(
             'ownRequests',
@@ -319,6 +328,77 @@ class LeaveController extends Controller
                 'error' => 'Export failed: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function exportPdf(Leave $leave)
+    {
+        $pdf = Pdf::loadView('Employee.leaves.pdf', compact('leave'));
+        return $pdf->download('leave-details.pdf');
+    }
+
+    public function updateSelf(Request $request, Leave $leave)
+    {
+        // Check if the user has permission to update this leave
+        $user = Auth::user();
+        if ($user->id !== $leave->employee_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Only allow updating if the leave is still pending
+        if ($leave->status_1 !== 'pending') {
+            return redirect()->back()
+                ->with('error', 'You cannot update a leave request that has already been processed.');
+        }
+
+        $request->validate([
+            'date_start' => 'required|date',
+            'date_end' => 'required|date|after_or_equal:date_start',
+            'reason' => 'required|string|max:1000',
+        ], [
+            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
+            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
+            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
+            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
+            'reason.required' => 'Alasan harus diisi.',
+            'reason.string' => 'Alasan harus berupa teks.',
+            'reason.max' => 'Alasan tidak boleh lebih dari 1000 karakter.',
+        ]);
+
+        $leave->date_start = $request->date_start;
+        $leave->date_end = $request->date_end;
+        $leave->reason = $request->reason;
+        $leave->status_1 = 'pending';
+        $leave->note_1 = NULL;
+        $leave->save();
+
+        // Send notification email to the approver
+        $manager = User::where('role', Roles::Manager->value)->first();
+        if ($manager) {
+            $token = Str::random(48);
+            ApprovalLink::create([
+                'model_type' => get_class($leave),   // App\Models\Leave
+                'model_id' => $leave->id,
+                'approver_user_id' => $manager->id,
+                'level' => 1, // level 1 berarti arahnya ke team lead
+                'scope' => 'both',             // boleh approve & reject
+                'token' => hash('sha256', $token), // simpan hash, kirim raw
+                'expires_at' => now()->addDays(3),  // masa berlaku
+            ]);
+            $linkTanggapan = route('public.approval.show', $token);
+
+            Mail::to($manager->email)->send(
+                new \App\Mail\SendMessage(
+                    namaPengaju: Auth::user()->name,
+                    namaApprover: $manager->name,
+                    linkTanggapan: $linkTanggapan,
+                    emailPengaju: Auth::user()->email
+                )
+            );
+        }
+
+        return redirect()->route('admin.leaves.index')
+            ->with('success', 'Leave request updated successfully.');
     }
 
 }
