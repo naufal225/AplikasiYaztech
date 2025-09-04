@@ -40,7 +40,14 @@
             <!-- Left Column - Main Details -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Request Header -->
-                <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
+                <div class="relative bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
+                    <!-- Overlay Checklist -->
+                    @if($reimbursement->marked_down)
+                        <div class="absolute inset-0 flex items-center justify-center bg-white/70 z-10 rounded-xl">
+                            <i class="fas fa-check-circle bg-white rounded-full text-green-500 text-7xl drop-shadow-lg"></i>
+                        </div>
+                    @endif
+                    
                     <div class="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div>
