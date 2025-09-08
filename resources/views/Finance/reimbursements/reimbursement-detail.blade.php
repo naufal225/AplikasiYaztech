@@ -87,7 +87,7 @@
                             </div>
                             <!-- Approver -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Team Lead</label>
+                                <label class="text-sm font-semibold text-neutral-700">Approver 1</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     <i class="fas fa-user-check text-info-600 mr-3"></i>
                                     <span class="text-neutral-900 font-medium truncate">{{ $reimbursement->approver->name ?? 'N/A' }}</span>
@@ -133,7 +133,7 @@
                             </div>
                             <!-- Status -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status - Team Lead</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status - Approver 1</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     @if($reimbursement->status_1 === 'pending')
                                         <i class="fas fa-clock text-warning-600 mr-3"></i>
@@ -148,7 +148,7 @@
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status - Manager</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status - Approver 2</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     @if($reimbursement->status_2 === 'pending')
                                         <i class="fas fa-clock text-warning-600 mr-3"></i>
@@ -164,14 +164,14 @@
                             </div>
                             <!-- Note -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Note - Team Lead</label>
+                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                     <span class="text-neutral-900 truncate">{{ $reimbursement->note_1 ?? '-' }}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Note - Manager</label>
+                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                     <span class="text-neutral-900 truncate">{{ $reimbursement->note_2 ?? '-' }}</span>

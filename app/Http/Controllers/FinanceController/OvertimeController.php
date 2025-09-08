@@ -139,14 +139,14 @@ class OvertimeController extends Controller
 
 
         // --- Hitung statistik
-        $dataAll = Overtime::query();
-        $countsAll = $dataAll->where('status_1', 'approved')
+        $dataAll = Overtime::query()
+            ->where('status_1', 'approved')
             ->where('status_2', 'approved');
 
-        $totalRequests = $dataAll->count();
-        $approvedRequests = (int) $countsAll->withFinalStatusCount()->first()->approved;
-        $markedRequests = (int) $countsAll->where('marked_down', true)->count();
-        $totalAllNoMark = (int) $countsAll->where('marked_down', false)->count();
+        $totalRequests = (clone $dataAll)->count();
+        $approvedRequests = (int) (clone $dataAll)->withFinalStatusCount()->first()->approved;
+        $markedRequests = (int) (clone $dataAll)->where('marked_down', true)->count();
+        $totalAllNoMark = (int) (clone $dataAll)->where('marked_down', false)->count();
 
         $countsYours = (clone $yourOvertimesQuery)->withFinalStatusCount()->first();
         $totalYoursRequests = (int) $yourOvertimesQuery->count();
@@ -223,7 +223,7 @@ class OvertimeController extends Controller
             $overtime->customer = $request->customer;
             $overtime->date_start = $start;
             $overtime->date_end = $end;
-            $overtime->total = (int) ($hours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0);
+            $overtime->total = (int) ((int) ($hours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0));
 
             // Cek apakah user adalah leader division
             $isLeader = \App\Models\Division::where('leader_id', Auth::id())->exists();

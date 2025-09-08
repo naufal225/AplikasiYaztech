@@ -57,12 +57,44 @@
         <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
     </div>
 
+    @if($officialTravel->marked_down)
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            z-index: 9999;
+        ">
+            <div style="
+                    position: absolute;
+                    bottom: 20px;
+                    left: 20px;
+                    font-size: 10px;
+                    color: #444;
+                ">
+                Request #TY{{ $officialTravel->id }} | {{ \Carbon\Carbon::parse($officialTravel->created_at)->format('F d, Y \a\t H:i') }} <br>
+                {{ $officialTravel->employee->email }}
+            </div>
+            <img src="{{ public_path('yaztech-logo-web.png') }}" 
+                alt="Yaztech Engineering Solusindo"
+                style="
+                    position: absolute;
+                    bottom: 20px;
+                    right: 20px;
+                    width: 12rem;
+                    opacity: 0.3;
+                ">
+        </div>
+    @endif
+
     <div class="section">
         <div class="sub-title">Official Travel Request #TY{{ $officialTravel->id }} | {{ \Carbon\Carbon::parse($officialTravel->created_at)->format('F d, Y \a\t H:i') }}</div>
         <h3>Employee Information</h3>
         <div><span class="label">Email:</span> <span class="value">{{ Auth::user()->email }}</span></div>
         <div><span class="label">Name:</span> <span class="value">{{ Auth::user()->name }}</span></div>
-        <div><span class="label">Team Lead:</span> <span class="value">{{ $officialTravel->approver->name ?? 'N/A' }}</span></div>
+        <div><span class="label">Approver 1:</span> <span class="value">{{ $officialTravel->approver->name ?? 'N/A' }}</span></div>
         <div><span class="label">Divisi:</span> <span class="value">{{ $officialTravel->employee->division->name ?? 'N/A' }}</span></div>
     </div>
 
@@ -92,7 +124,7 @@
         <h3>Approval Status</h3>
         <div class="grid-2">
             <div>
-                <div><span class="label">Team Lead Status:</span></div>
+                <div><span class="label">Approver 1 Status:</span></div>
                 <div class="box status-{{ $officialTravel->status_1 }}">
                     @if($officialTravel->status_1 === 'pending')
                         Pending Review
@@ -104,7 +136,7 @@
                 </div>
             </div>
             <div>
-                <div><span class="label">Manager Status:</span></div>
+                <div><span class="label">Approver 2 Status:</span></div>
                 <div class="box status-{{ $officialTravel->status_2 }}">
                     @if($officialTravel->status_2 === 'pending')
                         Pending Review
@@ -116,11 +148,11 @@
                 </div>
             </div>
             <div>
-                <div><span class="label">Team Lead Note:</span></div>
+                <div><span class="label">Approver 1 Note:</span></div>
                 <div class="box">{{ $officialTravel->note_1 ?? '-' }}</div>
             </div>
             <div>
-                <div><span class="label">Manager Note:</span></div>
+                <div><span class="label">Approver 2 Note:</span></div>
                 <div class="box">{{ $officialTravel->note_2 ?? '-' }}</div>
             </div>
         </div>

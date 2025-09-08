@@ -64,9 +64,19 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.2);
             z-index: 9999;
         ">
+            <div style="
+                    position: absolute;
+                    bottom: 20px;
+                    left: 20px;
+                    font-size: 10px;
+                    color: #444;
+                ">
+                Request #LY{{ $leave->id }} | {{ \Carbon\Carbon::parse($leave->created_at)->format('F d, Y \a\t H:i') }} <br>
+                {{ $leave->employee->email }}
+            </div>
             <img src="{{ public_path('yaztech-logo-web.png') }}" 
                 alt="Yaztech Engineering Solusindo"
                 style="

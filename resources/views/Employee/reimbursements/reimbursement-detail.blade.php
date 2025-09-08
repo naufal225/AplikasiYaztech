@@ -37,7 +37,7 @@
                     <!-- Overlay Checklist -->
                     @if($reimbursement->marked_down)
                         <div class="absolute inset-0 flex items-center justify-center bg-white/70 z-10 rounded-xl">
-                            <i class="fas fa-check-circle bg-white rounded-full text-green-500 text-7xl drop-shadow-lg"></i>
+                            <i class="fas fa-check-circle bg-white rounded-full text-green-500 text-5xl drop-shadow-lg"></i>
                         </div>
                     @endif
                     
@@ -85,7 +85,7 @@
                             </div>
                             <!-- Approver -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Team Lead</label>
+                                <label class="text-sm font-semibold text-neutral-700">Approver 1</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     <i class="fas fa-user-check text-info-600 mr-3"></i>
                                     <span class="text-neutral-900 font-medium">{{ $reimbursement->approver->name ?? 'N/A' }}</span>
@@ -131,7 +131,7 @@
                             </div>
                             <!-- Status -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status - Team Lead</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status - Approver 1</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     @if($reimbursement->status_1 === 'pending')
                                         <i class="fas fa-clock text-warning-600 mr-3"></i>
@@ -146,7 +146,7 @@
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status - Manager</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status - Approver 2</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     @if($reimbursement->status_2 === 'pending')
                                         <i class="fas fa-clock text-warning-600 mr-3"></i>
@@ -162,14 +162,14 @@
                             </div>
                             <!-- Note -->
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Note - Team Lead</label>
+                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                     <span class="text-neutral-900">{{ $reimbursement->note_1 ?? '-' }}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Note - Manager</label>
+                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                     <span class="text-neutral-900">{{ $reimbursement->note_2 ?? '-' }}</span>

@@ -130,7 +130,7 @@ class OfficialTravelController extends Controller
             $officialTravel->employee_id = Auth::id();
             $officialTravel->date_start = $start;
             $officialTravel->date_end = $end;
-            $officialTravel->total = $totalDays;
+            $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
             $officialTravel->status_1 = 'pending';
             $officialTravel->status_2 = 'pending';
             $officialTravel->save();
@@ -267,7 +267,7 @@ class OfficialTravelController extends Controller
         $officialTravel->status_2 = 'pending';
         $officialTravel->note_1 = NULL;
         $officialTravel->note_2 = NULL;
-        $officialTravel->total = $totalDays;
+        $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
         $officialTravel->save();
 
         // Send notification email to the approver
@@ -312,6 +312,10 @@ class OfficialTravelController extends Controller
         if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') && $user->role !== Roles::Admin->value) {
             return redirect()->route('employee.official-travels.show', $officialTravel->id)
                 ->with('error', 'You cannot delete a travel request that has already been processed.');
+        }
+
+        if (\App\Models\ApprovalLink::where('model_id', $officialTravel->id)->where('model_type', get_class($officialTravel))->exists()) {
+            \App\Models\ApprovalLink::where('model_id', $officialTravel->id)->where('model_type', get_class($officialTravel))->delete();
         }
 
         $officialTravel->delete();

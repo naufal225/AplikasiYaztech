@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Official Travel Request #{{ $officialTravel->id }}</title>
+    <title>Official Travel Request #TY{{ $officialTravel->id }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -57,29 +57,66 @@
         <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
     </div>
 
+    @if($officialTravel->marked_down)
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            z-index: 9999;
+        ">
+            <div style="
+                    position: absolute;
+                    bottom: 20px;
+                    left: 20px;
+                    font-size: 10px;
+                    color: #444;
+                ">
+                Request #TY{{ $officialTravel->id }} | {{ \Carbon\Carbon::parse($officialTravel->created_at)->format('F d, Y \a\t H:i') }} <br>
+                {{ $officialTravel->employee->email }}
+            </div>
+            <img src="{{ public_path('yaztech-logo-web.png') }}" 
+                alt="Yaztech Engineering Solusindo"
+                style="
+                    position: absolute;
+                    bottom: 20px;
+                    right: 20px;
+                    width: 12rem;
+                    opacity: 0.3;
+                ">
+        </div>
+    @endif
+
     <div class="section">
-        <div class="sub-title">Official Travel Request #{{ $officialTravel->id }} | {{ \Carbon\Carbon::parse($officialTravel->created_at)->format('F d, Y \a\t H:i') }}</div>
+        <div class="sub-title">Official Travel Request #TY{{ $officialTravel->id }} | {{ \Carbon\Carbon::parse($officialTravel->created_at)->format('F d, Y \a\t H:i') }}</div>
         <h3>Employee Information</h3>
         <div><span class="label">Email:</span> <span class="value">{{ $officialTravel->employee->email }}</span></div>
         <div><span class="label">Name:</span> <span class="value">{{ $officialTravel->employee->name }}</span></div>
-        <div><span class="label">Team Lead:</span> <span class="value">{{ $officialTravel->approver->name ?? 'N/A' }}</span></div>
+        <div><span class="label">Approver 1:</span> <span class="value">{{ $officialTravel->approver->name ?? 'N/A' }}</span></div>
         <div><span class="label">Divisi:</span> <span class="value">{{ $officialTravel->employee->division->name ?? 'N/A' }}</span></div>
     </div>
 
     <div class="section">
         <h3>Official Travel Details</h3>
         <div class="grid-2">
+            @php
+                $start = Carbon\Carbon::parse($officialTravel->date_start);
+                $end = Carbon\Carbon::parse($officialTravel->date_end);
+                $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
+            @endphp
             <div>
-                <div><span class="label">Start Date:</span></div>
-                <div class="box">{{ \Carbon\Carbon::parse($officialTravel->date_start)->format('l, M d, Y') }}</div>
-            </div>
-            <div>
-                <div><span class="label">End Date:</span></div>
-                <div class="box">{{ \Carbon\Carbon::parse($officialTravel->date_end)->format('l, M d, Y') }}</div>
+                <div><span class="label">Start s/d End Date:</span></div>
+                <div class="box">{{ \Carbon\Carbon::parse($officialTravel->date_start)->format('l, M d, Y \a\t H:i') }} <b>s/d</b> {{ \Carbon\Carbon::parse($officialTravel->date_end)->format('l, M d, Y \a\t H:i') }}</div>
             </div>
             <div>
                 <div><span class="label">Total Days:</span></div>
-                <div class="box">{{ $officialTravel->total . ' day' . ($officialTravel->total > 1 ? 's' : '') ?? 'N/A' }}</div>
+                <div class="box">{{ $totalDays . ' day' . ($totalDays > 1 ? 's' : '') ?? 'N/A' }}</div>
+            </div>
+            <div>
+                <div><span class="label">Total Amount:</span></div>
+                <div class="box">{{ 'Rp ' . number_format($officialTravel->total ?? 0, 0, ',', '.') }}</div>
             </div>
         </div>
     </div>
@@ -88,7 +125,7 @@
         <h3>Approval Status</h3>
         <div class="grid-2">
             <div>
-                <div><span class="label">Team Lead Status:</span></div>
+                <div><span class="label">Approver 1 Status:</span></div>
                 <div class="box status-{{ $officialTravel->status_1 }}">
                     @if($officialTravel->status_1 === 'pending')
                         Pending Review
@@ -100,7 +137,7 @@
                 </div>
             </div>
             <div>
-                <div><span class="label">Manager Status:</span></div>
+                <div><span class="label">Approver 2 Status:</span></div>
                 <div class="box status-{{ $officialTravel->status_2 }}">
                     @if($officialTravel->status_2 === 'pending')
                         Pending Review
@@ -112,11 +149,11 @@
                 </div>
             </div>
             <div>
-                <div><span class="label">Team Lead Note:</span></div>
+                <div><span class="label">Approver 1 Note:</span></div>
                 <div class="box">{{ $officialTravel->note_1 ?? '-' }}</div>
             </div>
             <div>
-                <div><span class="label">Manager Note:</span></div>
+                <div><span class="label">Approver 2 Note:</span></div>
                 <div class="box">{{ $officialTravel->note_2 ?? '-' }}</div>
             </div>
         </div>

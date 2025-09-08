@@ -65,9 +65,9 @@
             </nav>
 
             <div class="p-4 border-t border-primary-700">
-                <div class="flex items-center mb-4">
+                <a class="flex items-center mb-4" href="{{ route('finance.profile.index') }}">
                     @if(Auth::user()->url_profile)
-                        <img class="object-cover w-10 h-10 rounded-full" src="{{ Auth::user()->url_profile }}"
+                        <img class="object-cover w-10 h-10 rounded-full mr-3" src="{{ Auth::user()->url_profile }}"
                             alt="{{ Auth::user()->name }}">
                     @else
                         <div class="flex items-center justify-center w-10 h-10 mr-3 bg-primary-600 rounded-full">
@@ -80,7 +80,7 @@
                         <p class="text-sm font-medium text-white truncate">{{ Auth::user()->name }}</p>
                         <p class="text-xs text-primary-200">{{ Auth::user()->email }}</p>
                     </div>
-                </div>
+                </a>
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf
                     <button type="submit" class="flex items-center w-full px-4 py-2 transition-all duration-200 rounded-lg text-primary-100 hover:bg-primary-700 hover:text-white">
@@ -104,9 +104,9 @@
                         </button>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <div class="flex items-center px-3 py-2 rounded-full bg-secondary-600">
+                        <a class="flex items-center px-3 py-2 rounded-full bg-secondary-600" href="{{ route('finance.profile.index') }}">
                             @if(Auth::user()->url_profile)
-                                <img class="object-cover w-10 h-10 rounded-full" src="{{ Auth::user()->url_profile }}"
+                                <img class="object-cover w-10 h-10 rounded-full lg:mr-2" src="{{ Auth::user()->url_profile }}"
                                     alt="{{ Auth::user()->name }}">
                             @else
                                 <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full lg:mr-2">
@@ -116,7 +116,7 @@
                                 </div>
                             @endif
                             <span class="hidden text-sm font-medium text-white lg:block">{{ Auth::user()->name }}</span>
-                        </div>
+                        </a>
                     </div>
                 </div>
             </header>

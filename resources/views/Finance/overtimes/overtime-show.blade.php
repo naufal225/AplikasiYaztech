@@ -26,7 +26,7 @@
             <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-primary-100 text-primary-500">
-                        <i class="fas fa-receipt text-xl"></i>
+                        <i class="fas fa-clock text-xl"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm text-neutral-500">Total Requests</p>
@@ -75,7 +75,7 @@
             <div class="bg-white rounded-xl shadow-soft p-6 border border-neutral-200">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-primary-100 text-primary-500">
-                        <i class="fas fa-receipt text-xl"></i>
+                        <i class="fas fa-clock text-xl"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm text-neutral-500">Total All Requests</p>
@@ -171,7 +171,7 @@
         <!-- Divider -->
         <div class="border-t border-gray-300/80 transform scale-y-50 mb-10 mt-6"></div>
 
-        <!-- Leaves You Employee Table -->
+        <!-- Your overtime Employee Table -->
         <p class="text-sm text-neutral-500 mb-2 ms-4">Your overtime requests are listed below.</p>
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
             <div class="overflow-x-auto">
@@ -183,10 +183,10 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Duration</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Hours</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Costs</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Manager</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Approver 2</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 2</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -289,8 +289,8 @@
                                         <a href="{{ route('finance.overtimes.show', $overtime->id) }}" class="text-primary-600 hover:text-primary-900">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        
-                                        @if((Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending') || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $overtime->status_2 === 'pending'))
+
+                                        @if((Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending' && !\App\Models\Division::where('leader_id', Auth::id())->exists()) || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $overtime->status_2 === 'pending'))
                                             <a href="{{ route('finance.overtimes.edit', $overtime->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -311,6 +311,11 @@
                                     <div class="text-neutral-400">
                                         <i class="fas fa-clock text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No overtime requests found</p>
+                                        <p class="text-sm">Submit your first overtime request to get started</p>
+                                        <a href="{{ route('finance.overtimes.create') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">
+                                            <i class="fas fa-plus mr-2"></i>
+                                            New Overtime Request
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -355,10 +360,10 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Duration</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Hours</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Costs</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Manager</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Approver 2</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 2</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -483,10 +488,10 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Duration</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Hours</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Costs</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Manager</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Approver 2</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 2</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>

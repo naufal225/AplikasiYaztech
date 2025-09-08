@@ -172,7 +172,7 @@
         <!-- Divider -->
         <div class="border-t border-gray-300/80 transform scale-y-50 mb-10 mt-6"></div>
 
-        <!-- Leaves You Employee Table -->
+        <!-- Your reimbursement Employee Table -->
         <p class="text-sm text-neutral-500 mb-2 ms-4">Your reimbursement requests are listed below.</p>
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
             <div class="overflow-x-auto">
@@ -183,10 +183,10 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Employee</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Total</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Manager</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Approver 2</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 2</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Customer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -272,7 +272,8 @@
                                         <a href="{{ route('finance.reimbursements.show', $reimbursement->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if((Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending') || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $reimbursement->status_2 === 'pending'))
+
+                                        @if((Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending' && !\App\Models\Division::where('leader_id', Auth::id())->exists()) || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $reimbursement->status_2 === 'pending'))
                                             <a href="{{ route('finance.reimbursements.edit', $reimbursement->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -291,8 +292,13 @@
                             <tr>
                                 <td colspan="10" class="px-6 py-12 text-center">
                                     <div class="text-neutral-400">
-                                        <i class="fas fa-inbox text-4xl mb-4"></i>
+                                        <i class="fas fa-receipt text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No reimbursement requests found</p>
+                                        <p class="text-sm">Create your first reimbursement request to get started</p>
+                                        <a href="{{ route('finance.reimbursements.create') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">
+                                            <i class="fas fa-plus mr-2"></i>
+                                            New Reimbursement Request
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
@@ -336,10 +342,10 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Employee</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Total</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status 1 - Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status 2 - Manager</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status 1 - Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status 2 - Approver 2</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Approver 2</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Customer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Actions</th>
                         </tr>
@@ -444,7 +450,7 @@
                             <tr>
                                 <td colspan="11" class="px-6 py-12 text-center">
                                     <div class="text-neutral-400">
-                                        <i class="fas fa-inbox text-4xl mb-4"></i>
+                                        <i class="fas fa-receipt text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No reimbursement employee (No marked done) requests found</p>
                                     </div>
                                 </td>
@@ -466,10 +472,10 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Employee</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Total</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Manager</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Approver 2</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 2</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Customer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -562,7 +568,7 @@
                             <tr>
                                 <td colspan="10" class="px-6 py-12 text-center">
                                     <div class="text-neutral-400">
-                                        <i class="fas fa-inbox text-4xl mb-4"></i>
+                                        <i class="fas fa-receipt text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No reimbursement employee (Marked done) requests found</p>
                                     </div>
                                 </td>

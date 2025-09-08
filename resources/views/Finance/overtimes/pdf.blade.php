@@ -64,9 +64,19 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.2);
             z-index: 9999;
         ">
+            <div style="
+                    position: absolute;
+                    bottom: 20px;
+                    left: 20px;
+                    font-size: 10px;
+                    color: #444;
+                ">
+                Request #OY{{ $overtime->id }} | {{ \Carbon\Carbon::parse($overtime->created_at)->format('F d, Y \a\t H:i') }} <br>
+                {{ $overtime->employee->email }}
+            </div>
             <img src="{{ public_path('yaztech-logo-web.png') }}" 
                 alt="Yaztech Engineering Solusindo"
                 style="
@@ -84,7 +94,7 @@
         <h3>Employee Information</h3>
         <div><span class="label">Email:</span> <span class="value">{{ $overtime->employee->email }}</span></div>
         <div><span class="label">Name:</span> <span class="value">{{ $overtime->employee->name }}</span></div>
-        <div><span class="label">Team Lead:</span> <span class="value">{{ $overtime->approver->name ?? 'N/A' }}</span></div>
+        <div><span class="label">Approver 1:</span> <span class="value">{{ $overtime->approver->name ?? 'N/A' }}</span></div>
         <div><span class="label">Divisi:</span> <span class="value">{{ $overtime->employee->division->name ?? 'N/A' }}</span></div>
     </div>
 
@@ -93,7 +103,7 @@
         <div class="grid-2">
             <div>
                 <div><span class="label">Start s/d End Date:</span></div>
-                <div class="box">{{ \Carbon\Carbon::parse($overtime->date_start)->format('l, M d, Y \a\t H:i') }} s/d {{ \Carbon\Carbon::parse($overtime->date_end)->format('l, M d, Y \a\t H:i') }}</div>
+                <div class="box">{{ \Carbon\Carbon::parse($overtime->date_start)->format('l, M d, Y \a\t H:i') }} <b>s/d</b> {{ \Carbon\Carbon::parse($overtime->date_end)->format('l, M d, Y \a\t H:i') }}</div>
             </div>
             <div>
                 <div><span class="label">Total Overtime Hours:</span></div>
@@ -129,7 +139,7 @@
         <h3>Approval Status</h3>
         <div class="grid-2">
             <div>
-                <div><span class="label">Team Lead Status:</span></div>
+                <div><span class="label">Approver 1 Status:</span></div>
                 <div class="box status-{{ $overtime->status_1 }}">
                     @if($overtime->status_1 === 'pending')
                         Pending Review
@@ -141,7 +151,7 @@
                 </div>
             </div>
             <div>
-                <div><span class="label">Manager Status:</span></div>
+                <div><span class="label">Approver 2 Status:</span></div>
                 <div class="box status-{{ $overtime->status_2 }}">
                     @if($overtime->status_2 === 'pending')
                         Pending Review
@@ -153,11 +163,11 @@
                 </div>
             </div>
             <div>
-                <div><span class="label">Team Lead Note:</span></div>
+                <div><span class="label">Approver 1 Note:</span></div>
                 <div class="box">{{ $overtime->note_1 ?? '-' }}</div>
             </div>
             <div>
-                <div><span class="label">Manager Note:</span></div>
+                <div><span class="label">Approver 2 Note:</span></div>
                 <div class="box">{{ $overtime->note_2 ?? '-' }}</div>
             </div>
         </div>

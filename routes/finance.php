@@ -4,10 +4,11 @@ use App\Http\Controllers\FinanceController\DashboardController;
 use App\Http\Controllers\FinanceController\LeaveController;
 use App\Http\Controllers\FinanceController\ReimbursementController;
 use App\Http\Controllers\FinanceController\OvertimeController;
+use App\Http\Controllers\FinanceController\ProfileController;
 use App\Http\Controllers\FinanceController\OfficialTravelController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:finance'])->prefix('finance')->name('finance.')->group(function () {
+Route::middleware(['auth', 'role:finance'])->prefix('approver3')->name('finance.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/', function() {
         return redirect()->route('finance.dashboard');
@@ -39,6 +40,13 @@ Route::middleware(['auth', 'role:finance'])->prefix('finance')->name('finance.')
 
 
     // Official Travels
+    Route::get('official-travels/bulk-export', [OfficialTravelController::class, 'bulkExport'])->name('official-travels.bulkExport');
     Route::get('official-travels/{official_travel}/export-pdf', [OfficialTravelController::class, 'exportPdf'])->name('official-travels.exportPdf');
+    Route::patch('official-travels/marked', [OfficialTravelController::class, 'markedDone'])->name('official-travels.marked');
     Route::resource('official-travels', OfficialTravelController::class);
+
+    
+    // Profile 
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+    Route::resource('profile', ProfileController::class);
 });
