@@ -32,7 +32,14 @@
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
             <!-- Left Column - Main Details -->
             <div class="space-y-6 lg:col-span-2">
-                <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+                <div class="overflow-hidden relative bg-white border rounded-xl shadow-soft border-neutral-200">
+                    <!-- Overlay Checklist -->
+                    @if($leave->status_1 === 'approved')
+                        <div class="absolute inset-0 flex items-center justify-center bg-white/70 z-10 rounded-xl">
+                            <i class="fas fa-check-circle bg-white rounded-full text-green-500 text-5xl drop-shadow-lg"></i>
+                        </div>
+                    @endif
+
                     <div class="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
                         <div class="flex items-center justify-between">
                             <div>

@@ -119,10 +119,11 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Duration</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Days</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status - Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status - Manager</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Team Lead</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Manager</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Costs</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status - Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status - Approver 2</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 1</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 2</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Customer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
                         </tr>
@@ -136,6 +137,7 @@
                                         <div class="text-sm text-neutral-500">{{ $officialTravel->created_at->format('M d, Y') }}</div>
                                     </div>
                                 </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">
                                         {{ $officialTravel->date_start->format('M d Y') }}
@@ -144,9 +146,20 @@
                                         to {{ $officialTravel->date_end->format('M d Y') }}
                                     </div>
                                 </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-bold text-neutral-900">{{ $officialTravel->total }} day{{ $officialTravel->total > 1 ? 's' : '' }}</div>
+                                    @php
+                                        $start = Carbon\Carbon::parse($officialTravel->date_start);
+                                        $end = Carbon\Carbon::parse($officialTravel->date_end);
+                                        $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
+                                    @endphp
+                                    <div class="text-sm font-bold text-neutral-900">{{ $totalDays }} day{{ $totalDays > 1 ? 's' : '' }}</div>
                                 </td>
+
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-bold text-success-600">{{ '+Rp' . number_format($officialTravel->total ?? 0, 0, ',', '.') }}</div>
+                                </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($officialTravel->status_1 === 'pending')
                                         <span class="badge-pending text-warning-600">
@@ -165,6 +178,7 @@
                                         </span>
                                     @endif
                                 </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($officialTravel->status_2 === 'pending')
                                         <span class="badge-pending text-warning-600">
@@ -183,15 +197,19 @@
                                         </span>
                                     @endif
                                 </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A' }}</div>
                                 </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
                                 </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">{{ $officialTravel->customer ?? 'N/A' }}</div>
                                 </td>
+
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('employee.official-travels.show', $officialTravel->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
@@ -214,7 +232,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-12 text-center">
+                                <td colspan="10" class="px-6 py-12 text-center">
                                     <div class="text-neutral-400">
                                         <i class="fas fa-plane text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No official travel requests found</p>

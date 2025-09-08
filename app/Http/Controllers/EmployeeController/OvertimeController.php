@@ -122,7 +122,7 @@ class OvertimeController extends Controller
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
         }
 
-        $hours = floor($overtimeMinutes / 60);
+        $hours = round($overtimeMinutes / 60);
         $minutes = $overtimeMinutes % 60;
 
         DB::transaction(function () use ($start, $end, $overtimeMinutes, $hours, $minutes, $request) {
@@ -131,7 +131,7 @@ class OvertimeController extends Controller
             $overtime->customer = $request->customer;
             $overtime->date_start = $start;
             $overtime->date_end = $end;
-            $overtime->total = $overtimeMinutes;
+            $overtime->total = (int) ((int) ($hours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0));
             $overtime->status_1 = 'pending';
             $overtime->status_2 = 'pending';
             $overtime->save();
@@ -257,7 +257,7 @@ class OvertimeController extends Controller
 
         $overtimeMinutes = $start->diffInMinutes($end);
 
-        $overtimeHours = $overtimeMinutes / 60;
+        $overtimeHours = round($overtimeMinutes / 60);
 
         if ($overtimeHours < 0.5) {
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
@@ -267,7 +267,7 @@ class OvertimeController extends Controller
         $overtime->customer = $request->customer;
         $overtime->date_start = $request->date_start;
         $overtime->date_end = $request->date_end;
-        $overtime->total = $overtimeMinutes; // Disimpan dalam menit
+        $overtime->total = (int) ($overtimeHours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0);
         $overtime->status_1 = 'pending';
         $overtime->status_2 = 'pending';
         $overtime->note_1 = NULL;
@@ -318,6 +318,10 @@ class OvertimeController extends Controller
         if (($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') && $user->role !== Roles::Admin->value) {
             return redirect()->route('employee.overtimes.show', $overtime->id)
                 ->with('error', 'You cannot delete an overtime request that has already been processed.');
+        }
+
+        if (\App\Models\ApprovalLink::where('model_id', $overtime->id)->where('model_type', get_class($overtime))->exists()) {
+            \App\Models\ApprovalLink::where('model_id', $overtime->id)->where('model_type', get_class($overtime))->delete();
         }
 
         $overtime->delete();

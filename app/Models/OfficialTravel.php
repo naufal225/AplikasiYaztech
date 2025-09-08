@@ -19,6 +19,9 @@ class OfficialTravel extends Model
         'status_2',
         'note_1',
         'note_2',
+        'marked_down',
+        'locked_by',
+        'locked_at',
     ];
 
     public function employee() {

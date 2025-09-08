@@ -140,14 +140,14 @@ class ReimbursementController extends Controller
         });
 
         // --- Hitung statistik
-        $dataAll = Reimbursement::query();
-        $countsAll = $dataAll->where('status_1', 'approved')
+        $dataAll = Reimbursement::query()
+            ->where('status_1', 'approved')
             ->where('status_2', 'approved');
 
-        $totalRequests = $dataAll->count();
-        $approvedRequests = (int) $countsAll->withFinalStatusCount()->first()->approved;
-        $markedRequests = (int) $countsAll->where('marked_down', true)->get()->count();
-        $totalAllNoMark = (int) $countsAll->where('marked_down', false)->get()->count();
+        $totalRequests = (clone $dataAll)->count();
+        $approvedRequests = (int) (clone $dataAll)->withFinalStatusCount()->first()->approved;
+        $markedRequests = (int) (clone $dataAll)->where('marked_down', true)->count();
+        $totalAllNoMark = (int) (clone $dataAll)->where('marked_down', false)->count();
 
         $countsYours = (clone $yourReimbursementsQuery)->withFinalStatusCount()->first();
         $totalYoursRequests = (int) $yourReimbursementsQuery->count();

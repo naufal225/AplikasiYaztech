@@ -68,9 +68,16 @@
                         <p class="text-xs text-blue-700">
                             Regular working hours: 09:00 - 17:00 (8 hours)<br>
                             @php
-                            $totalMinutes = $overtime->total;
-                            $hours = floor($totalMinutes / 60);
-                            $minutes = $totalMinutes % 60;
+                                // Parsing waktu input
+                                $start = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_start, 'Asia/Jakarta');
+                                $end = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_end, 'Asia/Jakarta');
+
+                                // Hitung langsung dari date_start
+                                $overtimeMinutes = $start->diffInMinutes($end);
+                                $overtimeHours = $overtimeMinutes / 60;
+
+                                $hours = floor($overtimeMinutes / 60);
+                                $minutes = $overtimeMinutes % 60;
                             @endphp
                             Current overtime: {{ $hours }} hours {{ $minutes }} minutes
                         </p>

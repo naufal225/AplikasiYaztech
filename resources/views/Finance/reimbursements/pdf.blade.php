@@ -49,6 +49,30 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
+
+        /* Footer */
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            left: 40px;
+            right: 40px;
+            font-size: 10px;
+            color: #444;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-left {
+            text-align: left;
+        }
+        .footer-right {
+            text-align: right;
+            padding-right: 20px; /* biar tidak nempel ke pinggir */
+        }
+        .footer-right .page-number:after {
+            content: counter(page);
+        }
     </style>
 </head>
 <body>
@@ -63,9 +87,19 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.2);
             z-index: 9999;
         ">
+            <div style="
+                    position: absolute;
+                    bottom: 20px;
+                    left: 20px;
+                    font-size: 10px;
+                    color: #444;
+                ">
+                Request #RY{{ $reimbursement->id }} | {{ \Carbon\Carbon::parse($reimbursement->created_at)->format('F d, Y \a\t H:i') }} <br>
+                {{ $reimbursement->employee->email }}
+            </div>
             <img src="{{ public_path('yaztech-logo-web.png') }}" 
                 alt="Yaztech Engineering Solusindo"
                 style="
@@ -83,7 +117,7 @@
         <h3>Employee Information</h3>
         <div><span class="label">Email:</span> <span class="value">{{ $reimbursement->employee->email }}</span></div>
         <div><span class="label">Name:</span> <span class="value">{{ $reimbursement->employee->name }}</span></div>
-        <div><span class="label">Team Lead:</span> <span class="value">{{ $reimbursement->approver->name ?? 'N/A' }}</span></div>
+        <div><span class="label">Approver 1:</span> <span class="value">{{ $reimbursement->approver->name ?? 'N/A' }}</span></div>
         <div><span class="label">Divisi:</span> <span class="value">{{ $reimbursement->employee->division->name ?? 'N/A' }}</span></div>
     </div>
 
@@ -106,14 +140,14 @@
             </div>
             <div>
                 <div><span class="label">Invoice:</span></div>
-                <div class="box">
+                <div class="box" style="height:300px;">
                     @php
                         $path = storage_path('app/public/' . $reimbursement->invoice_path);
                         $type = pathinfo($path, PATHINFO_EXTENSION);
                         $data = file_get_contents($path);
                         $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
                     @endphp
-                    <img src="{{ $base64 }}" alt="Invoice" width="300">
+                    <img src="{{ $base64 }}" alt="Invoice" style="max-height:300px; max-width:100%; object-fit:fill;">
                 </div>
             </div>
         </div>
@@ -123,7 +157,7 @@
         <h3>Approval Status</h3>
         <div class="grid-2">
             <div>
-                <div><span class="label">Team Lead Status:</span></div>
+                <div><span class="label">Approver 1 Status:</span></div>
                 <div class="box status-{{ $reimbursement->status_1 }}">
                     @if($reimbursement->status_1 === 'pending')
                         Pending Review
@@ -135,7 +169,7 @@
                 </div>
             </div>
             <div>
-                <div><span class="label">Manager Status:</span></div>
+                <div><span class="label">Approver 2 Status:</span></div>
                 <div class="box status-{{ $reimbursement->status_2 }}">
                     @if($reimbursement->status_2 === 'pending')
                         Pending Review
@@ -147,11 +181,11 @@
                 </div>
             </div>
             <div>
-                <div><span class="label">Team Lead Note:</span></div>
+                <div><span class="label">Approver 1 Note:</span></div>
                 <div class="box">{{ $reimbursement->note_1 ?? '-' }}</div>
             </div>
             <div>
-                <div><span class="label">Manager Note:</span></div>
+                <div><span class="label">Approver 2 Note:</span></div>
                 <div class="box">{{ $reimbursement->note_2 ?? '-' }}</div>
             </div>
         </div>

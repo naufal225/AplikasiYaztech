@@ -1,7 +1,7 @@
 @extends('Employee.layouts.app')
-@section('title', 'Reimbursement Requests')
-@section('header', 'Reimbursement Requests')
-@section('subtitle', 'Manage your reimbursement claims')
+@section('title', 'Official Travel Requests')
+@section('header', 'Official Travel Requests')
+@section('subtitle', 'Manage your official travel requests')
 
 @section('content')
     <div class="max-w-4xl mx-auto">
@@ -29,7 +29,14 @@
         </nav>
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2 space-y-6">
-                <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
+                <div class="bg-white relative rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
+                    <!-- Overlay Checklist -->
+                    @if($officialTravel->marked_down)
+                        <div class="absolute inset-0 flex items-center justify-center bg-white/70 z-10 rounded-xl">
+                            <i class="fas fa-check-circle bg-white rounded-full text-green-500 text-5xl drop-shadow-lg"></i>
+                        </div>
+                    @endif
+
                     <div class="bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4">
                         <div class="flex items-center justify-between">
                             <div>
@@ -67,46 +74,51 @@
                                 <label class="text-sm font-semibold text-neutral-700">Employee Email</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     <i class="fas fa-envelope text-primary-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ $officialTravel->employee->email }}</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Team Lead</label>
-                                <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                                    <i class="fas fa-user-check text-info-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ $officialTravel->approver->name ?? 'N/A' }}</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Start Date</label>
-                                <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                                    <i class="fas fa-calendar-alt text-secondary-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ $officialTravel->date_start->format('l, M d, Y') }}</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">End Date</label>
-                                <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                                    <i class="fas fa-calendar-alt text-secondary-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ $officialTravel->date_end->format('l, M d, Y') }}</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Total Days</label>
-                                <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
-                                    <i class="fas fa-calendar-day text-primary-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ $officialTravel->total }} day{{ $officialTravel->total > 1 ? 's' : '' }}</span>
+                                    <span class="text-neutral-900 font-medium truncate">{{ $officialTravel->employee->email }}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Customer</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     <i class="fas fa-users text-info-600 mr-3"></i>
-                                    <span class="text-neutral-900 font-medium">{{ $officialTravel->customer ?? 'N/A' }}</span>
+                                    <span class="text-neutral-900 font-medium truncate">{{ $officialTravel->customer ?? 'N/A' }}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status - Team Lead</label>
+                                <label class="text-sm font-semibold text-neutral-700">Start Date</label>
+                                <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                                    <i class="fas fa-calendar-alt text-secondary-600 mr-3"></i>
+                                    <span class="text-neutral-900 font-medium truncate">{{ $officialTravel->date_start->format('l, M d, Y') }}</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">End Date</label>
+                                <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                                    <i class="fas fa-calendar-alt text-secondary-600 mr-3"></i>
+                                    <span class="text-neutral-900 font-medium truncate">{{ $officialTravel->date_end->format('l, M d, Y') }}</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Total Days</label>
+                                <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                                    @php
+                                        $start = Carbon\Carbon::parse($officialTravel->date_start);
+                                        $end = Carbon\Carbon::parse($officialTravel->date_end);
+                                        $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
+                                    @endphp
+                                    <i class="fas fa-calendar-day text-primary-600 mr-3"></i>
+                                    <span class="text-neutral-900 font-medium">{{ $totalDays }} day{{ $totalDays > 1 ? 's' : '' }}</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Total Costs</label>
+                                <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+                                    <i class="fas fa-dollar-sign text-primary-600 mr-3"></i>
+                                    <span class="text-neutral-900 font-medium truncate">{{ 'Rp ' . number_format($officialTravel->total ?? 0, 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Status 1 - Approver 1</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     @if($officialTravel->status_1 === 'pending')
                                         <i class="fas fa-clock text-warning-600 mr-3"></i>
@@ -121,7 +133,7 @@
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Status - Manager</label>
+                                <label class="text-sm font-semibold text-neutral-700">Status 2 - Approver 2</label>
                                 <div class="flex items-center p-3 bg-neutral-50 rounded-lg border border-neutral-200">
                                     @if($officialTravel->status_2 === 'pending')
                                         <i class="fas fa-clock text-warning-600 mr-3"></i>
@@ -136,14 +148,14 @@
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Note - Team Lead</label>
+                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                     <span class="text-neutral-900">{{ $overtime->note_1 ?? '-' }}</span>
                                 </div>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Note - Manager</label>
+                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                     <span class="text-neutral-900">{{ $overtime->note_2 ?? '-' }}</span>
