@@ -57,14 +57,14 @@ class LeaveController extends Controller
 
         if ($request->filled('from_date')) {
             $fromDate = Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta');
-            $ownRequestsQuery->where('date_start', '>=', $fromDate);
-            $allUsersQuery->where('date_start', '>=', $fromDate);
+            $ownRequestsQuery->where('created_at', '>=', $fromDate);
+            $allUsersQuery->where('created_at', '>=', $fromDate);
         }
 
         if ($request->filled('to_date')) {
             $toDate = Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta');
-            $ownRequestsQuery->where('date_start', '<=', $toDate);
-            $allUsersQuery->where('date_start', '<=', $toDate);
+            $ownRequestsQuery->where('created_at', '<=', $toDate);
+            $allUsersQuery->where('created_at', '<=', $toDate);
         }
 
         $ownRequests = $ownRequestsQuery->paginate(10, ['*'], 'own_page');

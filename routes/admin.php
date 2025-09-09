@@ -4,12 +4,14 @@ use App\Http\Controllers\AdminController\ApproverController;
 use App\Http\Controllers\AdminController\CustomerController;
 use App\Http\Controllers\AdminController\DashboardController;
 use App\Http\Controllers\AdminController\DivisionController;
+use App\Http\Controllers\AdminController\LeaveBalancesController;
 use App\Http\Controllers\AdminController\UserController;
 use App\Http\Controllers\AdminController\LeaveController;
 use App\Http\Controllers\AdminController\OfficialTravelController;
 use App\Http\Controllers\AdminController\OvertimeController;
 use App\Http\Controllers\AdminController\ProfileController;
 use App\Http\Controllers\AdminController\ReimbursementController;
+use App\Models\OfficialTravel;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -27,11 +29,14 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         ->name('leaves.export');
 
     Route::get('leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
-
+    Route::get('leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
     Route::resource('leaves', LeaveController::class)
         ->parameters([
             "leaves" => "leave"
         ]);
+
+    Route::get('/leave-balances/export', [LeaveBalancesController::class, 'exportLeaveBalances'])->name('leave-balances.export');
+    Route::resource('leave-balances', LeaveBalancesController::class);
 
     Route::get('/reimbursements/export', [ReimbursementController::class, 'export'])
         ->name('reimbursements.export');
@@ -43,10 +48,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::get('/overtimes/export', [OvertimeController::class, 'export'])
         ->name('overtimes.export');
+    Route::get('overtimes/{overtime}/export-pdf', [OvertimeController::class, 'exportPdf'])->name('overtime.exportPdf');
     Route::resource('overtimes', OvertimeController::class);
 
     Route::get('/official-travels/export', [OfficialTravelController::class, 'export'])
         ->name('official-travels.export');
+    Route::get('official-travels/{officialTravel}/export-pdf', [OfficialTravelController::class, 'exportPdf'])->name('official-travels.exportPdf');
     Route::resource('official-travels', OfficialTravelController::class);
 
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');

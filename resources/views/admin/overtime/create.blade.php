@@ -110,7 +110,7 @@
             </div>
 
             <div class="flex justify-end pt-6 space-x-4 border-t border-neutral-200">
-                <a href="{{ route('admin.overtimes.index') }}"
+                <a href="{{url()->previous() }}"
                     class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
                     <i class="mr-2 fas fa-times"></i>
                     Cancel
