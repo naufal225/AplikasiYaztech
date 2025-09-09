@@ -72,9 +72,33 @@ class LeaveController extends Controller
 
         $countsYours = (clone $yourLeavesQuery)->withFinalStatusCount()->first();
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) Leave::where('employee_id', Auth::id())
+        $tahunSekarang = now()->year;
+
+        $totalHariCuti = (int) Leave::where('employee_id', Auth::id())
             ->with(['employee', 'approver'])
-            ->orderBy('created_at', 'desc')->where('status_1', 'approved')->whereYear('date_start', now()->year)->count();
+            ->orderBy('created_at', 'desc')
+            ->where('status_1', 'approved')
+            ->where(function ($q) use ($tahunSekarang) {
+                $q->whereYear('date_start', $tahunSekarang)
+                ->orWhereYear('date_end', $tahunSekarang);
+            })
+            ->get()
+            ->sum(function ($cuti) use ($tahunSekarang) {
+                $start = \Carbon\Carbon::parse($cuti->date_start);
+                $end   = \Carbon\Carbon::parse($cuti->date_end);
+
+                // Batasi tanggal ke dalam tahun berjalan
+                if ($start->year < $tahunSekarang) {
+                    $start = \Carbon\Carbon::create($tahunSekarang, 1, 1);
+                }
+                if ($end->year > $tahunSekarang) {
+                    $end = \Carbon\Carbon::create($tahunSekarang, 12, 31);
+                }
+
+                return $start->lte($end) ? $start->diffInDays($end) + 1 : 0;
+            });
+
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
         $totalYoursRequests = (int) $yourLeavesQuery->count();
         $pendingYoursRequests = (int) $countsYours->pending;
         $approvedYoursRequests = (int) $countsYours->approved;
