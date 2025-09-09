@@ -62,7 +62,7 @@ class LeaveController extends Controller
 
         if ($request->filled('to_date')) {
             $query->where(
-                'date_start',
+                'date_end',
                 '<=',
                 Carbon::parse($request->to_date)
                     ->endOfDay()

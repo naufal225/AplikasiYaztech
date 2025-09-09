@@ -55,7 +55,7 @@ class ReimbursementController extends Controller
 
         if ($request->filled('from_date')) {
             $query->where(
-                'date_start',
+                'date',
                 '>=',
                 Carbon::parse($request->from_date)
                     ->startOfDay()
@@ -65,7 +65,7 @@ class ReimbursementController extends Controller
 
         if ($request->filled('to_date')) {
             $query->where(
-                'date_start',
+                'date',
                 '<=',
                 Carbon::parse($request->to_date)
                     ->endOfDay()
