@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\AdminController;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\HelperController;
 use App\Models\Leave;
 use App\Models\OfficialTravel;
 use App\Models\Overtime;
@@ -11,9 +12,13 @@ use App\Models\User;
 use App\Roles;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    use HelperController;
+
     public function index()
     {
         $models = [
@@ -60,7 +65,39 @@ class DashboardController extends Controller
             $officialTravelsChartData[] = OfficialTravel::whereBetween('created_at', [$start, $end])->count();
         }
 
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20)
+            - (int) Leave::where('employee_id', Auth::id())
+                ->where('status_1', 'approved')
+                ->whereYear('date_start', now()->year)
+                ->select(DB::raw('SUM(DATEDIFF(date_end, date_start) + 1) as total_days'))
+                ->value('total_days');
 
+        $recentRequests = $this->getRecentRequests(Auth::id());
+
+        $cutiPerTanggal = [];
+
+        $karyawanCuti = Leave::with(['employee:id,name,email,url_profile'])
+            ->where('status_1', 'approved')
+            ->where(function ($q) {
+                $q->whereYear('date_start', now()->year)
+                    ->orWhereYear('date_end', now()->year);
+            })
+            ->get(['id', 'employee_id', 'date_start', 'date_end']);
+
+        foreach ($karyawanCuti as $cuti) {
+            $start = \Carbon\Carbon::parse($cuti->date_start);
+            $end = \Carbon\Carbon::parse($cuti->date_end);
+            while ($start->lte($end)) {
+                $tanggal = $start->format('Y-m-d');
+                $cutiPerTanggal[$tanggal][] = [
+                    'employee' => $cuti->employee->name,
+                    'email' => $cuti->employee->email,
+                    'url_profile' => $cuti->employee->url_profile,
+                ];
+                $start->addDay();
+            }
+
+        }
         return view('admin.dashboard.index', compact([
             'total_employees',
             'total_pending',
@@ -71,8 +108,11 @@ class DashboardController extends Controller
             'leavesChartData',
             'officialTravelsChartData',
             'months',
-            'reimbursementsRupiahChartData'
+            'reimbursementsRupiahChartData',
+            'sisaCuti',
+            'recentRequests',
+            'cutiPerTanggal'
         ]));
-    }
 
+    }
 }

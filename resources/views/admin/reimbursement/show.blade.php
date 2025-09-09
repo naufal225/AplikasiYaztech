@@ -199,18 +199,19 @@
                     </a>
                     <button
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg delete-reimbursement-btn bg-error-600 hover:bg-error-700"
-                        data-reimbursement-id="{{ $reimbursement->id }}" data-reimbursement-name="reimbursement Request #{{ $reimbursement->id }}"
-                        title="Delete">
+                        data-reimbursement-id="{{ $reimbursement->id }}"
+                        data-reimbursement-name="reimbursement Request #{{ $reimbursement->id }}" title="Delete">
                         <i class="mr-2 fas fa-trash"></i>
                         Delete Request
                     </button>
-                    <form id="delete-form-{{ $reimbursement->id }}" action="{{ route('admin.reimbursements.destroy', $reimbursement->id) }}"
-                        method="POST" style="display: none;">
+                    <form id="delete-form-{{ $reimbursement->id }}"
+                        action="{{ route('admin.reimbursements.destroy', $reimbursement->id) }}" method="POST"
+                        style="display: none;">
                         @csrf
                         @method('DELETE')
                     </form>
                     @endif
-                    <a href="{{ route('admin.reimbursements.index') }}"
+                    <a href="{{ url()->previous() }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                         <i class="mr-2 fas fa-arrow-left"></i>
                         Back to List
@@ -248,7 +249,8 @@
             <div class="text-center">
                 <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete reimbursement Request</h3>
                 <p class="mb-6 text-sm text-gray-500">
-                    Are you sure you want to delete <span id="reimbursementName" class="font-medium text-gray-900"></span>?
+                    Are you sure you want to delete <span id="reimbursementName"
+                        class="font-medium text-gray-900"></span>?
                     This action cannot be undone.
                 </p>
             </div>
