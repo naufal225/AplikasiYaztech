@@ -35,7 +35,7 @@ class LeaveController extends Controller
         }
 
         if ($request->filled('to_date')) {
-            $yourLeavesQuery->where('date_start', '<=',
+            $yourLeavesQuery->where('date_end', '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
