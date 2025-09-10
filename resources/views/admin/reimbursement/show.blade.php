@@ -84,7 +84,7 @@
                         </div>
                         <!-- Approver -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-user-check text-info-600"></i>
                                 <span class="font-medium text-neutral-900">{{ $reimbursement->approver->name ?? 'N/A'
@@ -211,7 +211,7 @@
                         @method('DELETE')
                     </form>
                     @endif
-                    <a href="{{ url()->previous() }}"
+                    <a href="{{ route('admin.reimbursements.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                         <i class="mr-2 fas fa-arrow-left"></i>
                         Back to List

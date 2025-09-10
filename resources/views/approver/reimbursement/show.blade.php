@@ -1,4 +1,4 @@
-@extends('components.manager.layout.layout-manager')
+@extends('components.approver.layout.layout-approver')
 @section('header', 'Reimbursement Detail')
 @section('subtitle', '')
 
@@ -200,7 +200,7 @@
                 </div>
                 <div class="p-6 space-y-3">
                     @if(Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending')
-                    <a href="{{ route('manager.reimbursements.edit', $reimbursement->id) }}"
+                    <a href="{{ route('approver.reimbursements.edit', $reimbursement->id) }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
                         <i class="mr-2 fas fa-edit"></i>
                         Edit Request
@@ -215,14 +215,14 @@
                     </button>
 
                     <form id="delete-form-{{ $reimbursement->id }}"
-                        action="{{ route('manager.reimbursements.destroy', $reimbursement->id) }}" method="POST"
+                        action="{{ route('approver.reimbursements.destroy', $reimbursement->id) }}" method="POST"
                         style="display: none;">
                         @csrf
                         @method('DELETE')
                     </form>
                     @endif
 
-                    <a href="{{ route('manager.reimbursements.index') }}"
+                    <a href="{{ route('approver.reimbursements.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                         <i class="mr-2 fas fa-arrow-left"></i>
                         Back to List
@@ -246,7 +246,7 @@
                     <div class="p-4 text-center text-red-800 rounded-lg bg-red-50">
                         <i class="mb-2 text-xl fas fa-times-circle"></i>
                         <p class="font-medium">Request Rejected by Team Lead</p>
-                        <p class="text-sm">This request cannot be reviewed by manager.</p>
+                        <p class="text-sm">This request cannot be reviewed by manager</p>
                     </div>
                     @elseif($reimbursement->status_1 === 'pending')
                     <div class="p-4 text-center text-yellow-800 rounded-lg bg-yellow-50">
@@ -257,7 +257,7 @@
                     @elseif($reimbursement->status_1 === 'approved' && $reimbursement->status_2 === 'pending')
                     <!-- Manager can review -->
                     <form id="approvalForm" method="POST"
-                        action="{{ route('manager.reimbursements.update', $reimbursement) }}">
+                        action="{{ route('approver.reimbursements.update', $reimbursement) }}">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="status_2" id="status_2" value="" />

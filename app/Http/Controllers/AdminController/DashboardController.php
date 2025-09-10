@@ -85,8 +85,8 @@ class DashboardController extends Controller
             ->get(['id', 'employee_id', 'date_start', 'date_end']);
 
         foreach ($karyawanCuti as $cuti) {
-            $start = \Carbon\Carbon::parse($cuti->date_start);
-            $end = \Carbon\Carbon::parse($cuti->date_end);
+            $start = Carbon::parse($cuti->date_start);
+            $end = Carbon::parse($cuti->date_end);
             while ($start->lte($end)) {
                 $tanggal = $start->format('Y-m-d');
                 $cutiPerTanggal[$tanggal][] = [
