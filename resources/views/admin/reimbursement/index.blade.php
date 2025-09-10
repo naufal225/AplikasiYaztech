@@ -10,19 +10,35 @@
             <h1 class="text-2xl font-bold text-neutral-900">Reimbursements Requests</h1>
             <p class="text-neutral-600">Manage and track reimbursements requests</p>
         </div>
+        <!-- Di sekitar baris 20-40, di dalam div.flex untuk tombol -->
         <div class="mt-4 sm:mt-0">
             <div class="flex flex-col items-center gap-5 mt-4 sm:mt-0 sm:flex-row">
-                <div class="mt-4 sm:mt-0">
+                <div class="p-4 mt-4 sm:mt-0 ">
                     <button onclick="window.location.href='{{ route('admin.reimbursements.create') }}'"
                         class="btn-primary">
                         <i class="mr-2 fas fa-plus"></i>
                         New Reimbursement Request
                     </button>
                 </div>
+                <!-- Tambahkan tombol Export PDF (All) di sini -->
+                <button id="exportAllReimbursementRequestsPdf"
+                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 hover:scale-105">
+                    <i class="mr-2 fa-solid fa-file-pdf"></i>
+                    <span id="exportPdfButtonText">Export PDF</span>
+                    <svg id="exportPdfSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </button>
+                <!-- Tombol Export Data (Excel) yang sudah ada -->
                 <button id="exportReimbursementRequests"
                     class="inline-flex items-center px-4 py-2 text-sm font-medium text-white transition-all duration-200 transform rounded-lg shadow-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 hover:scale-105">
                     <i class="mr-2 fa-solid fa-file-export"></i>
-                    <span id="exportButtonText">Export Data</span>
+                    <span id="exportButtonText">Export Excel</span>
                     <svg id="exportSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
                         viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
@@ -250,8 +266,8 @@
                     <!-- Added hidden delete form for own requests -->
                     @if($reimbursement->status_1 === 'pending')
                     <form id="own-delete-form-{{ $reimbursement->id }}"
-                          action="{{ route('admin.reimbursements.destroy', $reimbursement->id) }}"
-                          method="POST" style="display: none;">
+                        action="{{ route('admin.reimbursements.destroy', $reimbursement->id) }}" method="POST"
+                        style="display: none;">
                         @csrf
                         @method('DELETE')
                     </form>
@@ -397,7 +413,8 @@
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 <!-- Fixed permission logic - only show edit/delete for own requests -->
-                                @if($reimbursement->status_1 === 'pending' && Auth::id() === $reimbursement->employee_id)
+                                @if($reimbursement->status_1 === 'pending' && Auth::id() ===
+                                $reimbursement->employee_id)
                                 <a href="{{ route('admin.reimbursements.edit', $reimbursement->id) }}"
                                     class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                     <i class="fas fa-edit"></i>
@@ -416,8 +433,8 @@
                     <!-- Added hidden delete form for all requests table -->
                     @if($reimbursement->status_1 === 'pending' && Auth::id() === $reimbursement->employee_id)
                     <form id="all-delete-form-{{ $reimbursement->id }}"
-                          action="{{ route('admin.reimbursements.destroy', $reimbursement->id) }}"
-                          method="POST" style="display: none;">
+                        action="{{ route('admin.reimbursements.destroy', $reimbursement->id) }}" method="POST"
+                        style="display: none;">
                         @csrf
                         @method('DELETE')
                     </form>
@@ -474,7 +491,8 @@
                 <!-- Fixed modal content to reference reimbursements instead of employees -->
                 <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Reimbursement Request</h3>
                 <p class="mb-6 text-sm text-gray-500">
-                    Are you sure you want to delete <span id="reimbursementName" class="font-medium text-gray-900"></span>?
+                    Are you sure you want to delete <span id="reimbursementName"
+                        class="font-medium text-gray-900"></span>?
                     This action cannot be undone.
                 </p>
             </div>
@@ -535,6 +553,76 @@ document.addEventListener('DOMContentLoaded', function() {
     const exportButton = document.getElementById('exportReimbursementRequests');
     const exportButtonText = document.getElementById('exportButtonText');
     const exportSpinner = document.getElementById('exportSpinner');
+
+    const exportPdfButton = document.getElementById('exportAllReimbursementRequestsPdf');
+    const exportPdfButtonText = document.getElementById('exportPdfButtonText');
+    const exportPdfSpinner = document.getElementById('exportPdfSpinner');
+
+      if (exportPdfButton) {
+        exportPdfButton.addEventListener('click', async function() {
+            // Show loading state
+            exportPdfButtonText.textContent = 'Exporting...';
+            exportPdfSpinner.classList.remove('hidden');
+            exportPdfButton.disabled = true;
+
+            try {
+                // Get current filter values
+                const status = document.getElementById('statusFilter')?.value || '';
+                const fromDate = document.getElementById('fromDateFilter')?.value || '';
+                const toDate = document.getElementById('toDateFilter')?.value || '';
+
+                // Build export URL with filters
+                const params = new URLSearchParams();
+                if (status) params.append('status', status);
+                if (fromDate) params.append('from_date', fromDate);
+                if (toDate) params.append('to_date', toDate);
+
+                const exportPdfUrl = `{{ route('admin.reimbursements.export.pdf.all') }}?${params.toString()}`;
+
+                // Use fetch to get the file
+                const response = await fetch(exportPdfUrl, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({})); // Handle non-JSON errors
+                    throw new Error(errorData.message || `Export failed with status ${response.status}`);
+                }
+
+                // Get the blob from response (it's a ZIP file)
+                const blob = await response.blob();
+
+                // Create download link
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                link.href = url;
+                link.download = `reimbursement-requests-all-${timestamp}.zip`; // Expecting a ZIP
+
+                // Trigger download
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Clean up
+                window.URL.revokeObjectURL(url);
+
+                showToast('PDF Export (All) completed successfully!', 'success');
+            } catch (error) {
+                console.error('Export PDF (All) error:', error);
+                showToast('Export PDF (All) failed: ' + error.message, 'error');
+            } finally {
+                // Reset button state
+                exportPdfButtonText.textContent = 'Export PDF (All)';
+                exportPdfSpinner.classList.add('hidden');
+                exportPdfButton.disabled = false;
+            }
+        });
+    }
 
     exportButton.addEventListener('click', async function() {
         // Show loading state

@@ -3,6 +3,8 @@
 namespace App\Exports;
 
 use App\Models\Reimbursement;
+use App\Models\User;
+use App\Roles;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -54,7 +56,8 @@ class ReimbursementsExport implements FromCollection, WithHeadings, WithMapping,
             'Total',
             'Status 1',
             'Status 2',
-            'Approver Name',
+            'Approver 1',
+            'Approver 2',
             'Applied Date',
             'Updated Date',
         ];
@@ -74,6 +77,7 @@ class ReimbursementsExport implements FromCollection, WithHeadings, WithMapping,
             ucfirst((string) $reimbursement->status_1),
             ucfirst((string) $reimbursement->status_2),
             optional($reimbursement->approver)->name ?? 'N/A',
+            optional(User::where('role', Roles::Manager->value)->first())->name ?? 'N/A',
             $reimbursement->created_at?->format('M d, Y H:i') ?? '-',
             $reimbursement->updated_at?->format('M d, Y H:i') ?? '-',
         ];

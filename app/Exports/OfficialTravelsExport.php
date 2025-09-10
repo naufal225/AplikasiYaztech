@@ -3,6 +3,8 @@
 namespace App\Exports;
 
 use App\Models\OfficialTravel;
+use App\Models\User;
+use App\Roles;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -55,7 +57,7 @@ class OfficialTravelsExport implements FromCollection, WithHeadings, WithMapping
             'Total',
             'Status 1',
             'Status 2',
-            'Approver Name',
+            'Approver 1',
             'Applied Date',
             'Updated Date',
         ];
@@ -79,6 +81,7 @@ class OfficialTravelsExport implements FromCollection, WithHeadings, WithMapping
             ucfirst((string) $officialTravel->status_1),
             ucfirst((string) $officialTravel->status_2),
             optional($officialTravel->approver)->name ?? 'N/A',
+            optional(User::where('role', Roles::Manager->value)->first())->name ?? 'N/A',
             $officialTravel->created_at?->format('M d, Y H:i') ?? '-',
             $officialTravel->updated_at?->format('M d, Y H:i') ?? '-',
         ];
