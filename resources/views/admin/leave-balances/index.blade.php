@@ -12,7 +12,7 @@
         </div>
         <div class="flex-shrink-0">
             <button type="button" onclick="exportLeaveBalances()"
-                class="w-full px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md md:w-auto hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                class="w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md md:w-auto hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
                 <i class="mr-2 fas fa-file-pdf"></i>
                 Export PDF
             </button>

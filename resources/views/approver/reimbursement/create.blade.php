@@ -1,4 +1,4 @@
-@extends('components.manager.layout.layout-manager')
+@extends('components.approver.layout.layout-approver')
 
 @section('header', 'Request Reimbursement')
 @section('subtitle', 'Submit a new reimbursement claim')
@@ -9,7 +9,7 @@
         <nav class="flex mb-6" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
-                    <a href="{{ route('manager.dashboard') }}" class="inline-flex items-center text-sm font-medium text-neutral-700 hover:text-primary-600">
+                    <a href="{{ route('approver.dashboard') }}" class="inline-flex items-center text-sm font-medium text-neutral-700 hover:text-primary-600">
                         <i class="mr-2 fas fa-home"></i>
                         Dashboard
                     </a>
@@ -17,7 +17,7 @@
                 <li>
                     <div class="flex items-center">
                         <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
-                        <a href="{{ route('manager.reimbursements.index') }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Reimbursement Requests</a>
+                        <a href="{{ route('approver.reimbursements.index') }}" class="text-sm font-medium text-neutral-700 hover:text-primary-600">Reimbursement Requests</a>
                     </div>
                 </li>
                 <li aria-current="page">
@@ -45,7 +45,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('manager.reimbursements.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
+            <form action="{{ route('approver.reimbursements.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
                 @csrf
 
                 <div>
@@ -135,7 +135,7 @@
                 </div>
 
                 <div class="flex justify-end pt-6 space-x-4 border-t border-neutral-200">
-                    <a href="{{ route(name: 'manager.reimbursements.index') }}" class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
+                    <a href="{{ route(name: 'approver.reimbursements.index') }}" class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
                         <i class="mr-2 fas fa-times"></i>
                         Cancel
                     </a>

@@ -156,6 +156,7 @@ class LeaveController extends Controller
                     'token' => hash('sha256', $token), // simpan hash, kirim raw
                     'expires_at' => now()->addDays(3),  // masa berlaku
                 ]);
+                $tokenRaw = $token;
             }
 
             // pastikan broadcast SETELAH commit
@@ -165,9 +166,9 @@ class LeaveController extends Controller
                 // event(new \App\Events\LeaveSubmitted($fresh, Auth::user()->division_id));
                 event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, 'manager'));
 
-                if (!$fresh || !$fresh->approver || !$tokenRaw) {
-                    return;
-                }
+                // if (!$fresh || !$fresh->approver || !$tokenRaw) {
+                //     return;
+                // }
 
                 $linkTanggapan = route('public.approval.show', $tokenRaw); // pastikan route param sesuai
 

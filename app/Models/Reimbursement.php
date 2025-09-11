@@ -20,6 +20,7 @@ class Reimbursement extends Model
         'marked_down',
         'locked_by',
         'locked_at',
+        'reimbursement_type_id'
     ];
 
     public function employee() {
@@ -47,5 +48,9 @@ class Reimbursement extends Model
     public function getApproverAttribute()
     {
         return $this->employee?->division?->leader; // bisa null-safe
+    }
+
+    public function type() {
+        return $this->belongsTo(ReimbursementType::class, 'reimbursement_type_id');
     }
 }
