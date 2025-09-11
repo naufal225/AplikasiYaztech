@@ -86,7 +86,7 @@ class LeaveController extends Controller
         $manager = User::where('role', Roles::Manager->value)->first();
 
         Leave::whereNull('seen_by_manager_at')
-            ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
+            // ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_manager_at' => now()]);
 
         return view('manager.leave-request.index', compact(

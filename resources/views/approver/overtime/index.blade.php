@@ -13,7 +13,8 @@
         <div class="mt-4 sm:mt-0">
             <div class="flex flex-col items-center gap-5 mt-4 sm:mt-0 sm:flex-row">
                 <div class="mt-4 sm:mt-0">
-                    <button onclick="window.location.href='{{ route('approver.overtimes.create') }}'" class="btn-primary">
+                    <button onclick="window.location.href='{{ route('approver.overtimes.create') }}'"
+                        class="btn-primary">
                         <i class="mr-2 fas fa-plus"></i>
                         New Overtime Request
                     </button>
@@ -145,6 +146,9 @@
                                 Hours</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Costs</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Status 1 - Team Lead</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
@@ -157,9 +161,16 @@
                     <tbody class="bg-white divide-y divide-neutral-200">
                         @forelse($ownRequests as $overtime)
                         @php
-                        $totalMinutes = $overtime->total;
-                        $hours = floor($totalMinutes / 60);
-                        $minutes = $totalMinutes % 60;
+                        // Parsing waktu input
+                        $start = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_start, 'Asia/Jakarta');
+                        $end = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_end, 'Asia/Jakarta');
+
+                        // Hitung langsung dari date_start
+                        $overtimeMinutes = $start->diffInMinutes($end);
+                        $overtimeHours = $overtimeMinutes / 60;
+
+                        $hours = floor($overtimeMinutes / 60);
+                        $minutes = $overtimeMinutes % 60;
                         @endphp
 
                         <tr class="transition-colors duration-200 hover:bg-neutral-50">
@@ -180,6 +191,10 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-bold text-neutral-900">{{ $hours }}h {{ $minutes }}m</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-bold text-success-600">{{ '+Rp' .
+                                    number_format($overtime->total ?? 0, 0, ',', '.') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($overtime->status_1 === 'pending')
@@ -251,7 +266,7 @@
                         @endif
                         @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="7" class="px-6 py-12 text-center">
                                 <div class="text-neutral-400">
                                     <i class="mb-4 text-4xl fas fa-inbox"></i>
                                     <p class="text-lg font-medium">No personal overtime requests found</p>
@@ -297,6 +312,9 @@
                                 Hours</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Costs</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Status 1 - Team Lead</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
@@ -309,9 +327,16 @@
                     <tbody class="bg-white divide-y divide-neutral-200">
                         @forelse($allUsersRequests as $overtime)
                         @php
-                        $totalMinutes = $overtime->total;
-                        $hours = floor($totalMinutes / 60);
-                        $minutes = $totalMinutes % 60;
+                        // Parsing waktu input
+                        $start = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_start, 'Asia/Jakarta');
+                        $end = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_end, 'Asia/Jakarta');
+
+                        // Hitung langsung dari date_start
+                        $overtimeMinutes = $start->diffInMinutes($end);
+                        $overtimeHours = $overtimeMinutes / 60;
+
+                        $hours = floor($overtimeMinutes / 60);
+                        $minutes = $overtimeMinutes % 60;
                         @endphp
 
                         <tr class="transition-colors duration-200 hover:bg-neutral-50">
@@ -359,6 +384,10 @@
                                 <div class="text-sm font-bold text-neutral-900">{{ $hours }}h {{ $minutes }}m</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-bold text-success-600">{{ '+Rp' .
+                                    number_format($overtime->total ?? 0, 0, ',', '.') }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 @if($overtime->status_1 === 'pending')
                                 <span class="text-yellow-500 badge-pending">
                                     <i class="mr-1 fas fa-clock"></i>
@@ -394,10 +423,6 @@
                                 </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $overtime->approver->name ??
-                                    "N/A" }}</div>
-                            </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('approver.overtimes.show', $overtime->id) }}"
@@ -432,7 +457,7 @@
                         @endif
                         @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center"> {{-- Updated colspan --}}
+                            <td colspan="8" class="px-6 py-12 text-center"> {{-- Updated colspan --}}
                                 <div class="text-neutral-400">
                                     <i class="mb-4 text-4xl fas fa-inbox"></i>
                                     <p class="text-lg font-medium">No overtime requests found</p>

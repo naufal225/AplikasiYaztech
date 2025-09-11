@@ -166,8 +166,10 @@ class UserController extends Controller
         ]);
 
         // jika pindah divisi padahal dia leader, copot dia
-        if (($user->division_id != $validated['division_id'] && $user->division->leader_id == $user->id)) {
-            $user->division->update(['leader_id' => null]);
+        if (($user->division_id != $validated['division_id'] && $user->division != null && $user->division->leader_id !== null)) {
+            if($user->division->leader_id == $user->id) {
+                $user->division->update(['leader_id' => null]);
+            }
         }
 
         if ($validated['role'] === Roles::Approver->value) {
