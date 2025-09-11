@@ -81,3 +81,5 @@ require __DIR__.'/approver.php';
 require __DIR__.'/employee.php';
 require __DIR__.'/manager.php';
 require __DIR__.'/finance.php';
+require __DIR__.'/channels.php';
+

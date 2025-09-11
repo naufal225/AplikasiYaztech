@@ -9,6 +9,7 @@ use App\Models\ApprovalLink;
 use App\Models\Reimbursement;
 use App\Models\User;
 use App\Roles;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -409,8 +410,14 @@ class ReimbursementController extends Controller
             ->with('success', 'Reimbursement request updated successfully.');
     }
 
+    public function exportPdf(Reimbursement $reimbursement)
+    {
+        $pdf = Pdf::loadView('admin.reimbursement.pdf', compact('reimbursement'));
+        return $pdf->download('reimbursement-details.pdf');
+    }
 
 
+    // tidak terpakai, buat jaga jaga aja
     public function export(Request $request)
     {
         try {

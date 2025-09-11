@@ -204,7 +204,7 @@
                     </a>
 
                     <!-- Print -->
-                    <button onclick="window.print()"
+                    <button onclick="window.location.href='{{ route('approver.leaves.exportPdf', $leave->id) }}'"
                             class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
                         Print Request
@@ -212,7 +212,7 @@
                 </div>
             </div>
 
-            <!-- Manager Review Status -->
+            <!-- Review Status -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
                     <h3 class="text-lg font-bold text-neutral-900">Manager Review</h3>

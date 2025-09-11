@@ -19,7 +19,7 @@ Route::middleware(['auth', 'role:approver'])->prefix('approver')->name('approver
 
     Route::get('/leaves/export', [LeaveController::class, 'export'])
         ->name('leaves.export');
-    Route::get('leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
+    Route::get('/leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
 
     Route::put('/leaves/{leave}/update-self', [LeaveController::class, 'updateSelf'])->name('leaves.updateSelf');
 
@@ -35,6 +35,8 @@ Route::middleware(['auth', 'role:approver'])->prefix('approver')->name('approver
 
     Route::get('/reimbursements/export', [ReimbursementController::class, 'export'])
         ->name('reimbursements.export');
+
+    Route::get('/reimbursements/{reimbursement}/export-pdf', [ReimbursementController::class, 'exportPdf'])->name('reimbursements.exportPdf');
 
     Route::put('/reimbursements/{reimbursement}/update-self', [ReimbursementController::class, 'updateSelf'])->name('reimbursements.updateSelf');
 

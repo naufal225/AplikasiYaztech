@@ -228,7 +228,7 @@
                         Back to List
                     </a>
 
-                    <button onclick="window.print()"
+                    <button onclick="window.location.href='{{ route('approver.reimbursements.exportPdf', $reimbursement->id) }}'"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
                         Print Request
@@ -242,32 +242,37 @@
                     <h3 class="text-lg font-bold text-neutral-900">Manager Review</h3>
                 </div>
                 <div class="p-6">
-                    @if($reimbursement->status_1 === 'rejected')
+                    @if($reimbursement->status_1 === 'approved')
+                    <div class="p-4 text-center text-green-800 rounded-lg bg-green-50">
+                        <i class="mb-2 text-xl fas fa-check-circle"></i>
+                        <p class="font-medium">You Approved This Request</p>
+                        @if($reimbursement->note_1)
+                        <p class="mt-2 text-sm"><strong>Notes:</strong> {{ $reimbursement->note_1 }}</p>
+                        @endif
+                    </div>
+                    @elseif($reimbursement->status_1 === 'rejected')
                     <div class="p-4 text-center text-red-800 rounded-lg bg-red-50">
                         <i class="mb-2 text-xl fas fa-times-circle"></i>
-                        <p class="font-medium">Request Rejected by Team Lead</p>
-                        <p class="text-sm">This request cannot be reviewed by manager</p>
+                        <p class="font-medium">You Rejected This Request</p>
+                        @if($reimbursement->note_1)
+                        <p class="mt-2 text-sm"><strong>Reason:</strong> {{ $reimbursement->note_1 }}</p>
+                        @else
+                        <p class="text-sm">No reason provided.</p>
+                        @endif
                     </div>
                     @elseif($reimbursement->status_1 === 'pending')
-                    <div class="p-4 text-center text-yellow-800 rounded-lg bg-yellow-50">
-                        <i class="mb-2 text-xl fas fa-clock"></i>
-                        <p class="font-medium">Pending Team Lead Approval</p>
-                        <p class="text-sm">Manager review will be available after Team Lead approval.</p>
-                    </div>
-                    @elseif($reimbursement->status_1 === 'approved' && $reimbursement->status_2 === 'pending')
-                    <!-- Manager can review -->
                     <form id="approvalForm" method="POST"
                         action="{{ route('approver.reimbursements.update', $reimbursement) }}">
                         @csrf
                         @method('PUT')
-                        <input type="hidden" name="status_2" id="status_2" value="" />
+                        <input type="hidden" name="status_1" id="status_1" value="" />
 
                         <div class="space-y-4">
                             <div>
                                 <label for="approval_notes" class="block mb-2 text-sm font-semibold text-neutral-700">
                                     Notes <span class="text-neutral-500">(Optional)</span>
                                 </label>
-                                <textarea name="approval_notes" id="approval_notes" rows="4"
+                                <textarea name="note_1" id="approval_notes" rows="4"
                                     class="w-full px-3 py-2 border rounded-lg resize-none border-neutral-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                     placeholder="Add any comments or reasons for your decision..."></textarea>
                             </div>
@@ -287,23 +292,11 @@
                             </div>
                         </div>
                     </form>
-                    @elseif($reimbursement->status_2 === 'approved')
-                    <div class="p-4 text-center text-green-800 rounded-lg bg-green-50">
-                        <i class="mb-2 text-xl fas fa-check-circle"></i>
-                        <p class="font-medium">Approved by Manager</p>
-                        @if($reimbursement->approval_notes)
-                        <p class="mt-2 text-sm"><strong>Notes:</strong> {{ $reimbursement->approval_notes }}</p>
-                        @endif
-                    </div>
-                    @elseif($reimbursement->status_2 === 'rejected')
-                    <div class="p-4 text-center text-red-800 rounded-lg bg-red-50">
-                        <i class="mb-2 text-xl fas fa-times-circle"></i>
-                        <p class="font-medium">Rejected by Manager</p>
-                        @if($reimbursement->approval_notes)
-                        <p class="mt-2 text-sm"><strong>Reason:</strong> {{ $reimbursement->approval_notes }}</p>
-                        @else
-                        <p class="text-sm">No reason provided.</p>
-                        @endif
+                    @else
+                    <div class="p-4 text-center text-gray-800 rounded-lg bg-gray-50">
+                        <i class="mb-2 text-xl fas fa-info-circle"></i>
+                        <p class="font-medium">Review Completed</p>
+                        <p class="text-sm">This request has been reviewed.</p>
                     </div>
                     @endif
                 </div>
@@ -431,14 +424,9 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-function submitApproval(action) {
-    const actionText = action === 'approved' ? 'approved' : 'rejected';
-    // const confirmMessage = `Are you sure you want to ${actionText} this reimbursement request?`;
-
-    // if (confirm(confirmMessage)) {
-    document.getElementById('status_2').value = action;
-    document.getElementById('approvalForm').submit();
-    // }
-}
+function submitApproval(action){
+        document.getElementById('status_1').value = action;
+        document.getElementById('approvalForm').submit();
+    }
 </script>
 @endpush

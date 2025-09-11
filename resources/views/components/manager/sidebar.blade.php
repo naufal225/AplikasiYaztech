@@ -19,26 +19,21 @@
         </a>
 
         @php
-        $divisionId = Auth::user()->division_id;
         $unseenLeaveCount = 0;
         $unseenOfficialTravelCount = 0;
         $unseenOvertimeCount = 0;
         $unseenReimbursementCount = 0;
         $unseenLeaveCount = \App\Models\Leave::whereNull('seen_by_manager_at')
         ->where('status_1','pending')
-        ->whereHas('employee', fn($q)=>$q->where('division_id', $divisionId))
         ->count();
         $unseenOfficialTravelCount = \App\Models\OfficialTravel::whereNull('seen_by_manager_at')
         ->where('status_1','pending')
-        ->whereHas('employee', fn($q)=>$q->where('division_id', $divisionId))
         ->count();
         $unseenOvertimeCount = \App\Models\Overtime::whereNull('seen_by_manager_at')
         ->where('status_1','pending')
-        ->whereHas('employee', fn($q)=>$q->where('division_id', $divisionId))
         ->count();
         $unseenReimbursementCount = \App\Models\Reimbursement::whereNull('seen_by_manager_at')
         ->where('status_1','pending')
-        ->whereHas('employee', fn($q)=>$q->where('division_id', $divisionId))
         ->count();
 
         @endphp
