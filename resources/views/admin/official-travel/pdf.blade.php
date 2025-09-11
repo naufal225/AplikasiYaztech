@@ -244,14 +244,7 @@
                     <div class="box">Rp {{ number_format($travelRatePerDay * $durationDays, 0, ',', '.') }}</div>
                 </td>
             </tr>
-            <tr>
-                <td class="label-col">Total Amount:</td>
-                <td class="data-col">
-                    <div class="box">
-                        <b>Rp {{ number_format($travel->total ?? 0, 0, ',', '.') }}</b>
-                    </div>
-                </td>
-            </tr>
+            
         </table>
     </div>
 
