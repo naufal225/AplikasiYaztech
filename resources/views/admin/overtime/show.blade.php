@@ -66,121 +66,116 @@ $minutes = $overtimeMinutes % 60;
             </div>
 
             <!-- Overtime Details -->
-            <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
-                <div class="px-6 py-4 border-b border-neutral-200">
-                    <h2 class="text-lg font-bold text-neutral-900">Overtime Details</h2>
-                </div>
-                <div class="p-6">
-                    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <!-- Employee Email -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Employee Email</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium truncate text-neutral-900">{{ $overtime->employee->email
-                                    }}</span>
+              <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
+                    <div class="px-6 py-4 border-b border-neutral-200">
+                        <h2 class="text-lg font-bold text-neutral-900">Overtime Details</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                            <!-- Employee Email -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Employee Email</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-envelope text-primary-600"></i>
+                                    <span class="font-medium truncate text-neutral-900">{{ $overtime->employee->email }}</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Customer -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Customer</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-users text-info-600"></i>
-                                <span class="font-medium truncate text-neutral-900">{{ $overtime->customer ?? 'N/A'
-                                    }}</span>
+                            <!-- Customer -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Customer</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-users text-info-600"></i>
+                                    <span class="font-medium truncate text-neutral-900">{{ $overtime->customer ?? 'N/A' }}</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Total Hours -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Total Overtime Hours</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-hourglass-half text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $hours }} jam {{ $minutes }} menit</span>
+                            <!-- Total Hours -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Total Overtime Hours</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-hourglass-half text-primary-600"></i>
+                                    <span class="font-medium text-neutral-900">{{ $hours }} jam {{ $minutes }} menit</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Work Hours Breakdown -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Total Costs</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-dollar-sign text-primary-600"></i>
-                                <span class="font-medium truncate text-neutral-900">{{ 'Rp ' .
-                                    number_format($overtime->total ?? 0, 0, ',', '.') }}</span>
+                            <!-- Work Hours Breakdown -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Total Costs</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-dollar-sign text-primary-600"></i>
+                                    <span class="font-medium truncate text-neutral-900">{{ 'Rp ' . number_format($overtime->total ?? 0, 0, ',', '.') }}</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Start Date & Time -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Start Date & Time</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-calendar-day text-secondary-600"></i>
-                                <span class="font-medium truncate text-neutral-900">{{
-                                    $overtime->date_start->translatedFormat('d/m/Y \a\t H:i') }}</span>
+                            <!-- Start Date & Time -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Start Date & Time</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-calendar-day text-secondary-600"></i>
+                                    <span class="font-medium truncate text-neutral-900">{{ $overtime->date_start->translatedFormat('d/m/Y \a\t H:i') }}</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- End Date & Time -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">End Date & Time</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-calendar-day text-secondary-600"></i>
-                                <span class="font-medium truncate text-neutral-900">{{
-                                    $overtime->date_end->translatedFormat('d/m/Y \a\t H:i') }}</span>
+                            <!-- End Date & Time -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">End Date & Time</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-calendar-day text-secondary-600"></i>
+                                    <span class="font-medium truncate text-neutral-900">{{ $overtime->date_end->translatedFormat('d/m/Y \a\t H:i') }}</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Status -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status 1 - Approver 1</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                @if($overtime->status_1 === 'pending')
-                                <i class="mr-3 fas fa-clock text-warning-600"></i>
-                                <span class="font-medium text-warning-800">Pending Review</span>
-                                @elseif($overtime->status_1 === 'approved')
-                                <i class="mr-3 fas fa-check-circle text-success-600"></i>
-                                <span class="font-medium text-success-800">Approved</span>
-                                @elseif($overtime->status_1 === 'rejected')
-                                <i class="mr-3 fas fa-times-circle text-error-600"></i>
-                                <span class="font-medium text-error-800">Rejected</span>
-                                @endif
+                            <!-- Status -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Status 1 - Approver 1</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    @if($overtime->status_1 === 'pending')
+                                        <i class="mr-3 fas fa-clock text-warning-600"></i>
+                                        <span class="font-medium text-warning-800">Pending Review</span>
+                                    @elseif($overtime->status_1 === 'approved')
+                                        <i class="mr-3 fas fa-check-circle text-success-600"></i>
+                                        <span class="font-medium text-success-800">Approved</span>
+                                    @elseif($overtime->status_1 === 'rejected')
+                                        <i class="mr-3 fas fa-times-circle text-error-600"></i>
+                                        <span class="font-medium text-error-800">Rejected</span>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status 2 - Approver 2</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                @if($overtime->status_2 === 'pending')
-                                <i class="mr-3 fas fa-clock text-warning-600"></i>
-                                <span class="font-medium text-warning-800">Pending Review</span>
-                                @elseif($overtime->status_2 === 'approved')
-                                <i class="mr-3 fas fa-check-circle text-success-600"></i>
-                                <span class="font-medium text-success-800">Approved</span>
-                                @elseif($overtime->status_2 === 'rejected')
-                                <i class="mr-3 fas fa-times-circle text-error-600"></i>
-                                <span class="font-medium text-error-800">Rejected</span>
-                                @endif
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Status 2 - Approver 2</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    @if($overtime->status_2 === 'pending')
+                                        <i class="mr-3 fas fa-clock text-warning-600"></i>
+                                        <span class="font-medium text-warning-800">Pending Review</span>
+                                    @elseif($overtime->status_2 === 'approved')
+                                        <i class="mr-3 fas fa-check-circle text-success-600"></i>
+                                        <span class="font-medium text-success-800">Approved</span>
+                                    @elseif($overtime->status_2 === 'rejected')
+                                        <i class="mr-3 fas fa-times-circle text-error-600"></i>
+                                        <span class="font-medium text-error-800">Rejected</span>
+                                    @endif
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- Note -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                <span class="text-neutral-900">{{ $overtime->note_1 ?? '-' }}</span>
+                            <!-- Note -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                    <span class="text-neutral-900">{{ $overtime->note_1 ?? '-' }}</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                <span class="text-neutral-900">{{ $overtime->note_2 ?? '-' }}</span>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                    <span class="text-neutral-900">{{ $overtime->note_2 ?? '-' }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
         </div>
 
         <!-- Right Column - Sidebar -->

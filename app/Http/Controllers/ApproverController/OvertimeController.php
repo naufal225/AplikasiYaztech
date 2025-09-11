@@ -309,82 +309,41 @@ class OvertimeController extends Controller
 
 
 
-    public function update(Request $request, Overtime $overtime)
+   public function update(Request $request, Overtime $overtime)
     {
-        $user = Auth::user();
-
-        if ($user->id !== $overtime->employee_id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        if ($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') {
-            return redirect()->route('approver.overtimes.show', $overtime->id)
-                ->with('error', 'You cannot update an overtime request that has already been processed.');
-        }
-
-        $request->validate([
-            'customer' => 'required',
-            'date_start' => 'required|date_format:Y-m-d\TH:i',
-            'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
+        $validated = $request->validate([
+            'status_1' => 'string|in:approved,rejected',
+            'status_2' => 'string|in:approved,rejected',
+            'note_1' => 'nullable|string',
+            'note_2' => 'nullable|string',
         ], [
-            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
-            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
-            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
-            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
-            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
+            'status_1.string' => 'Status must be a valid string.',
+            'status_1.in' => 'Status must approved or rejected.',
+
+            'status_2.string' => 'Status must be a valid string.',
+            'status_2.in' => 'Status must approved or rejected.',
+
+            'note_1.string' => 'Note must be a valid string.',
+            'note_2.string' => 'Note must be a valid string.',
         ]);
 
-        $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
-        $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
+        $status = '';
 
-        $overtimeMinutes = $start->diffInMinutes($end);
-
-        $overtimeHours = round($overtimeMinutes / 60);
-
-        if ($overtimeHours < 0.5) {
-            return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
-        }
-
-        // Simpan data
-        $overtime->customer = $request->customer;
-        $overtime->date_start = $request->date_start;
-        $overtime->date_end = $request->date_end;
-        $overtime->total = (int) ($overtimeHours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0);
-        $overtime->status_1 = 'pending';
-        $overtime->status_2 = 'pending';
-        $overtime->note_1 = NULL;
-        $overtime->note_2 = NULL;
-        $overtime->save();
-
-        // Send notification email to the approver
-        if ($overtime->approver) {
-            $token = \Illuminate\Support\Str::random(48);
-            ApprovalLink::create([
-                'model_type' => get_class($overtime),   // App\Models\overtime
-                'model_id' => $overtime->id,
-                'approver_user_id' => $overtime->approver->id,
-                'level' => 1, // level 1 berarti arahnya ke team lead
-                'scope' => 'both',             // boleh approve & reject
-                'token' => hash('sha256', $token), // simpan hash, kirim raw
-                'expires_at' => now()->addDays(3),  // masa berlaku
+        if ($request->has('status_1')) {
+            $overtime->update([
+                'status_1' => $validated['status_1'],
+                'note_1' => $validated['note_1'] ?? ""
             ]);
-            $linkTanggapan = route('public.approval.show', $token);
-
-            $hours = floor($overtimeMinutes / 60);
-            $minutes = $overtimeMinutes % 60;
-
-            Mail::to($overtime->approver->email)->queue(
-                new \App\Mail\SendMessage(
-                    namaPengaju: Auth::user()->name,
-                    namaApprover: $overtime->approver->name,
-                    linkTanggapan: $linkTanggapan,
-                    emailPengaju: Auth::user()->email,
-                )
-            );
+            $status = $validated['status_1'];
+        } else if ($request->has('status_2')) {
+            $overtime->update([
+                'status_2' => $validated['status_2'],
+                'note_2' => $validated['note_2'] ?? ""
+            ]);
+            $status = $validated['status_2'];
         }
 
-        return redirect()->route('approver.overtimes.show', $overtime->id)
-            ->with('success', 'Overtime request updated successfully. Total overtime: ' . $hours . ' hours ' . $minutes . ' minutes');
+        return redirect()->route('approver.overtimes.index')->with('success', 'Overtime request ' . $status . ' successfully.');
     }
 
 

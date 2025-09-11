@@ -2,6 +2,19 @@
 @section('header', 'Overtime Detail')
 @section('subtitle', '')
 
+@php
+// Parsing waktu input
+$start = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_start, 'Asia/Jakarta');
+$end = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_end, 'Asia/Jakarta');
+
+// Hitung langsung dari date_start
+$overtimeMinutes = $start->diffInMinutes($end);
+$overtimeHours = $overtimeMinutes / 60;
+
+$hours = floor($overtimeMinutes / 60);
+$minutes = $overtimeMinutes % 60;
+@endphp
+
 @section('content')
 <div class="max-w-4xl mx-auto">
     <!-- Main Grid -->
@@ -77,65 +90,68 @@
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <!-- Email -->
+                        <!-- Employee Email -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Email</label>
+                            <label class="text-sm font-semibold text-neutral-700">Employee Email</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $overtime->employee->email ?? 'N/A'
+                                <span class="font-medium truncate text-neutral-900">{{ $overtime->employee->email
                                     }}</span>
                             </div>
                         </div>
 
-                        <!-- Approver (Team Lead) -->
+                        <!-- Customer -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Approver</label>
+                            <label class="text-sm font-semibold text-neutral-700">Customer</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-user-check text-info-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $overtime->approver->name ?? 'N/A'
+                                <i class="mr-3 fas fa-users text-info-600"></i>
+                                <span class="font-medium truncate text-neutral-900">{{ $overtime->customer ?? 'N/A'
                                     }}</span>
                             </div>
                         </div>
 
-                        <!-- Start Date -->
+                        <!-- Total Hours -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Start Date</label>
+                            <label class="text-sm font-semibold text-neutral-700">Total Overtime Hours</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-calendar-alt text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{
-                                    \Carbon\Carbon::parse($overtime->date_start)->format('l, M d, Y') }}</span>
+                                <i class="mr-3 fas fa-hourglass-half text-primary-600"></i>
+                                <span class="font-medium text-neutral-900">{{ $hours }} jam {{ $minutes }} menit</span>
                             </div>
                         </div>
 
-                        <!-- End Date -->
+                        <!-- Work Hours Breakdown -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">End Date</label>
+                            <label class="text-sm font-semibold text-neutral-700">Total Costs</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-calendar-alt text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{
-                                    \Carbon\Carbon::parse($overtime->date_end)->format('l, M d, Y') }}</span>
+                                <i class="mr-3 fas fa-dollar-sign text-primary-600"></i>
+                                <span class="font-medium truncate text-neutral-900">{{ 'Rp ' .
+                                    number_format($overtime->total ?? 0, 0, ',', '.') }}</span>
                             </div>
                         </div>
 
-                        <!-- Duration -->
+                        <!-- Start Date & Time -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Duration</label>
+                            <label class="text-sm font-semibold text-neutral-700">Start Date & Time</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-clock text-secondary-600"></i>
-                                <span class="font-medium text-neutral-900">
-                                    {{ (int)
-                                    \Carbon\Carbon::parse($overtime->date_start)->diffInDays(\Carbon\Carbon::parse($overtime->date_end,
-                                    ), false) + 1 }}
-                                    {{ (int)
-                                    \Carbon\Carbon::parse($overtime->date_start)->diffInDays(\Carbon\Carbon::parse($overtime->date_end,
-                                    ), false) + 1 === 1 ? 'day' : 'days' }}
-                                </span>
+                                <i class="mr-3 fas fa-calendar-day text-secondary-600"></i>
+                                <span class="font-medium truncate text-neutral-900">{{
+                                    $overtime->date_start->translatedFormat('d/m/Y \a\t H:i') }}</span>
                             </div>
                         </div>
 
-                        <!-- Status 1 - Team Lead -->
+                        <!-- End Date & Time -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status 1 - Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">End Date & Time</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-calendar-day text-secondary-600"></i>
+                                <span class="font-medium truncate text-neutral-900">{{
+                                    $overtime->date_end->translatedFormat('d/m/Y \a\t H:i') }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Status 1 - Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($overtime->status_1 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -149,10 +165,8 @@
                                 @endif
                             </div>
                         </div>
-
-                        <!-- Status 2 - Manager -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status 2 - Manager</label>
+                            <label class="text-sm font-semibold text-neutral-700">Status 2 - Approver 2</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($overtime->status_2 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -167,49 +181,21 @@
                             </div>
                         </div>
 
-                        <!-- Approval/Rejection Notes -->
-                        @if($overtime->status_1 === 'approved' && $overtime->note_1)
-                        <div class="space-y-2 md:col-span-2">
-                            <label class="text-sm font-semibold text-neutral-700">Approval Notes (Team Lead)</label>
-                            <div class="p-4 border rounded-lg bg-success-50 border-success-200">
-                                <p class="leading-relaxed text-success-900">{{ $overtime->note_1 }}</p>
+                        <!-- Note -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                <span class="text-neutral-900">{{ $overtime->note_1 ?? '-' }}</span>
                             </div>
                         </div>
-                        @elseif($overtime->status_1 === 'rejected' && $overtime->note_1)
-                        <div class="space-y-2 md:col-span-2">
-                            <label class="text-sm font-semibold text-neutral-700">Rejection Notes (Team Lead)</label>
-                            <div class="p-4 border rounded-lg bg-error-50 border-error-200">
-                                <p class="leading-relaxed text-error-900">{{ $overtime->note_1 }}</p>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                <span class="text-neutral-900">{{ $overtime->note_2 ?? '-' }}</span>
                             </div>
                         </div>
-                        @endif
-
-                        @if($overtime->status_2 !== 'pending' && $overtime->note_2)
-                        <div class="space-y-2 md:col-span-2">
-                            <label class="text-sm font-semibold text-neutral-700">
-                                {{ $overtime->status_2 === 'approved' ? 'Approval Notes (Manager)' : 'Rejection Notes
-                                (Manager)' }}
-                            </label>
-                            <div
-                                class="p-4 border rounded-lg
-                                    {{ $overtime->status_2 === 'approved' ? 'bg-success-50 border-success-200' : 'bg-error-50 border-error-200' }}">
-                                <p
-                                    class="leading-relaxed
-                                        {{ $overtime->status_2 === 'approved' ? 'text-success-900' : 'text-error-900' }}">
-                                    {{ $overtime->note_2 }}
-                                </p>
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Reason -->
-                        <div class="space-y-2 md:col-span-2">
-                            <label class="text-sm font-semibold text-neutral-700">Reason for Overtime</label>
-                            <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <p class="leading-relaxed text-neutral-900">{{ $overtime->reason }}</p>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
@@ -246,17 +232,17 @@
                     </form>
                     @endif
 
-                    <a href="{{ route('approver.overtimes.index') }}"
-                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
-                        <i class="mr-2 fas fa-arrow-left"></i>
-                        Back to List
-                    </a>
-
                     <button onclick="window.print()"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
                         Print Request
                     </button>
+
+                    <a href="{{ route('approver.overtimes.index') }}"
+                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
+                        <i class="mr-2 fas fa-arrow-left"></i>
+                        Back to List
+                    </a>
                 </div>
             </div>
 

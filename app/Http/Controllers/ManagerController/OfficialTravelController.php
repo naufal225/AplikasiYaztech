@@ -100,7 +100,7 @@ class OfficialTravelController extends Controller
             ->orWhere('status_2', 'rejected')->count();
 
         OfficialTravel::whereNull('seen_by_manager_at')
-            ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
+            // ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_manager_at' => now()]);
 
         return view('manager.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
