@@ -240,6 +240,11 @@
                             <div class="text-neutral-400">
                                 <i class="mb-4 text-4xl fas fa-inbox"></i>
                                 <p class="text-lg font-medium">No personal leave requests found</p>
+                                <a href="{{ route('admin.leaves.create') }}"
+                                    class="inline-flex items-center px-4 py-2 mt-4 text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
+                                    <i class="mr-2 fas fa-plus"></i>
+                                    New Leave Request
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -415,7 +420,7 @@
 {{-- Updated modal to handle leave requests instead of users --}}
 <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity bg-opacity-75 " onclick="closeDeleteModal()"></div>
+        <div class="fixed inset-0 transition-opacity " onclick="closeDeleteModal()"></div>
         <div
             class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
             <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">

@@ -230,6 +230,11 @@
                             <div class="text-neutral-400">
                                 <i class="mb-4 text-4xl fas fa-inbox"></i>
                                 <p class="text-lg font-medium">No personal leave requests found</p>
+                                  <a href="{{ route('approver.leaves.create') }}"
+                                    class="inline-flex items-center px-4 py-2 mt-4 text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
+                                    <i class="mr-2 fas fa-plus"></i>
+                                    New Leave Request
+                                </a>
                             </div>
                         </td>
                     </tr>

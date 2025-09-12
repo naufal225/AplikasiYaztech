@@ -230,6 +230,11 @@
                             <div class="text-neutral-400">
                                 <i class="mb-4 text-4xl fas fa-inbox"></i>
                                 <p class="text-lg font-medium">No personal leave requests found</p>
+                                <a href="{{ route('manager.leaves.create') }}"
+                                    class="inline-flex items-center px-4 py-2 mt-4 text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
+                                    <i class="mr-2 fas fa-plus"></i>
+                                    New Leave Request
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -371,8 +376,8 @@
 
     {{-- Fixed duplicate form IDs by adding unique prefixes for each table --}}
     @foreach($ownRequests as $leave)
-    <form id="own-delete-form-{{ $leave->id }}" action="{{ route('manager.leaves.destroy', $leave->id) }}"
-        method="POST" style="display: none;">
+    <form id="own-delete-form-{{ $leave->id }}" action="{{ route('manager.leaves.destroy', $leave->id) }}" method="POST"
+        style="display: none;">
         @csrf
         @method('DELETE')
     </form>
@@ -380,8 +385,8 @@
 
     @foreach($allUsersRequests as $leave)
     @if(Auth::id() === $leave->employee_id)
-    <form id="all-delete-form-{{ $leave->id }}" action="{{ route('manager.leaves.destroy', $leave->id) }}"
-        method="POST" style="display: none;">
+    <form id="all-delete-form-{{ $leave->id }}" action="{{ route('manager.leaves.destroy', $leave->id) }}" method="POST"
+        style="display: none;">
         @csrf
         @method('DELETE')
     </form>

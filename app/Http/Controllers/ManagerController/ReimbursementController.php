@@ -107,7 +107,9 @@ class ReimbursementController extends Controller
             // ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_manager_at' => now()]);
 
-        return view('manager.reimbursement.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+        return view('manager.reimbursement.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
 
     }
 
@@ -228,13 +230,13 @@ class ReimbursementController extends Controller
         if ($request->has('status_1')) {
             $reimbursement->update([
                 'status_1' => $validated['status_1'],
-                'note_1' => $validated['note_1'] ?? ""
+                'note_1' => $validated['note_1'] ?? null
             ]);
             $status = $validated['status_1'];
         } else if ($request->has('status_2')) {
             $reimbursement->update([
                 'status_2' => $validated['status_2'],
-                'note_2' => $validated['note_2'] ?? ""
+                'note_2' => $validated['note_2'] ?? null
             ]);
             $status = $validated['status_2'];
         }

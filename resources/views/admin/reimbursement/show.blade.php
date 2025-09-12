@@ -79,7 +79,7 @@
                             <label class="text-sm font-semibold text-neutral-700">Email</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ Auth::user()->email }}</span>
+                                <span class="font-medium text-neutral-900">{{ $reimbursement->employee->email }}</span>
                             </div>
                         </div>
                         <!-- Approver -->
@@ -135,7 +135,7 @@
                         </div>
                         <!-- Status -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status - Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">Status - Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($reimbursement->status_1 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -150,7 +150,7 @@
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status - Manager</label>
+                            <label class="text-sm font-semibold text-neutral-700">Status - Approver 2</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($reimbursement->status_2 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -166,14 +166,14 @@
                         </div>
                         <!-- Note -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Note - Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                 <span class="text-neutral-900">{{ $reimbursement->note_1 ?? '-' }}</span>
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Note - Manager</label>
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                 <span class="text-neutral-900">{{ $reimbursement->note_2 ?? '-' }}</span>
@@ -211,13 +211,8 @@
                         @method('DELETE')
                     </form>
                     @endif
-                    <a href="{{ route('admin.reimbursements.index') }}"
-                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
-                        <i class="mr-2 fas fa-arrow-left"></i>
-                        Back to List
-                    </a>
 
-                    @if ($reimbursement->status_1 == 'approved' && $reimbursement->status_2 == 'approved')
+                    @if ($reimbursement->status_1 == 'approved' && $reimbursement->status_2 == 'approved' && $reimbursement->employee_id == Auth::id())
                     <button
                         onclick="window.location.href='{{ route('admin.reimbursements.exportPdf', $reimbursement->id) }}'"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
@@ -225,6 +220,12 @@
                         Print Request
                     </button>
                     @endif
+
+                    <a href="{{ route('admin.reimbursements.index') }}"
+                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
+                        <i class="mr-2 fas fa-arrow-left"></i>
+                        Back to List
+                    </a>
                 </div>
             </div>
         </div>

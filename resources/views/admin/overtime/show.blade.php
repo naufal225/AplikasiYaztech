@@ -207,7 +207,7 @@ $minutes = $overtimeMinutes % 60;
                     </form>
                     @endif
 
-                    @if ($overtime->status_1 == 'approved' && $overtime->status_2 == 'approved')
+                    @if ($overtime->status_1 == 'approved' && $overtime->status_2 == 'approved' && $overtime->employee_id == Auth::id())
                     <button onclick="window.location.href='{{ route('admin.overtimes.exportPdf', $overtime->id) }}'"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>

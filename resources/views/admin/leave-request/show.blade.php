@@ -32,7 +32,14 @@
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <!-- Left Column - Main Details -->
         <div class="space-y-6 lg:col-span-2">
-            <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+            <div class="relative overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+                <!-- Overlay Checklist -->
+                @if($leave->status_1 === 'approved')
+                <div class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 rounded-xl">
+                    <i class="text-5xl text-green-500 bg-white rounded-full fas fa-check-circle drop-shadow-lg"></i>
+                </div>
+                @endif
+
                 <div class="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
                     <div class="flex items-center justify-between">
                         <div>
@@ -76,7 +83,7 @@
                             <label class="text-sm font-semibold text-neutral-700">Email</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ Auth::user()->email }}</span>
+                                <span class="font-medium text-neutral-900">{{ $leave->employee->email }}</span>
                             </div>
                         </div>
 
@@ -190,19 +197,20 @@
                     </form>
                     @endif
 
-                    <a href="{{ route('admin.leaves.index') }}"
-                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
-                        <i class="mr-2 fas fa-arrow-left"></i>
-                        Back to List
-                    </a>
-
-                    @if ($leave->status_1 === 'approved')
+                    @if ($leave->status_1 === 'approved' && $leave->employee_id == Auth::id())
                     <button onclick="window.location.href='{{ route('admin.leaves.exportPdf', $leave->id) }}'"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
                         Print Request
                     </button>
                     @endif
+
+                    <a href="{{ route('admin.leaves.index') }}"
+                        class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
+                        <i class="mr-2 fas fa-arrow-left"></i>
+                        Back to List
+                    </a>
+
                 </div>
             </div>
         </div>

@@ -228,7 +228,7 @@
                     </form>
                     @endif
 
-                    @if ($officialTravel->status_1 === 'approved' && $officialTravel->status_2 === 'approved')
+                    @if ($officialTravel->status_1 === 'approved' && $officialTravel->status_2 === 'approved' && $officialTravel->employee_id == Auth::id())
                     <button
                         onclick="window.location.href='{{ route('admin.official-travels.exportPdf', $officialTravel->id) }}'"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">

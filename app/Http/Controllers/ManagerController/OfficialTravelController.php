@@ -103,7 +103,9 @@ class OfficialTravelController extends Controller
             // ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_manager_at' => now()]);
 
-        return view('manager.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+        return view('manager.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
 
@@ -156,7 +158,7 @@ class OfficialTravelController extends Controller
             $officialTravel->employee_id = Auth::id();
             $officialTravel->date_start = $start;
             $officialTravel->date_end = $end;
-            $officialTravel->total = $totalDays;
+            $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
             $officialTravel->status_1 = 'pending';
             $officialTravel->status_2 = 'pending';
             $officialTravel->save();
@@ -232,7 +234,7 @@ class OfficialTravelController extends Controller
         }
 
         if ($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') {
-            return redirect()->route('approver.official-travels.show', $officialTravel->id)
+            return redirect()->route('manager.official-travels.show', $officialTravel->id)
                 ->with('error', 'You cannot update a travel request that has already been processed.');
         }
 
@@ -264,7 +266,7 @@ class OfficialTravelController extends Controller
         $officialTravel->status_2 = 'pending';
         $officialTravel->note_1 = NULL;
         $officialTravel->note_2 = NULL;
-        $officialTravel->total = $totalDays;
+        $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
         $officialTravel->save();
 
         // Send notification email to the approver
@@ -292,7 +294,7 @@ class OfficialTravelController extends Controller
             );
         }
 
-        return redirect()->route('manager.official-travels.index')
+        return redirect()->route('manager.official-travels.show', $officialTravel->id)
             ->with('success', 'Official travel request updated successfully. Total days: ' . $totalDays);
     }
 
@@ -319,18 +321,36 @@ class OfficialTravelController extends Controller
         if ($request->has('status_1')) {
             $officialTravel->update([
                 'status_1' => $validated['status_1'],
-                'note_1' => $validated['note_1'] ?? ""
+                'note_1' => $validated['note_1'] ?? null
             ]);
             $status = $validated['status_1'];
         } else if ($request->has('status_2')) {
             $officialTravel->update([
                 'status_2' => $validated['status_2'],
-                'note_2' => $validated['note_2'] ?? ""
+                'note_2' => $validated['note_2'] ?? null
             ]);
             $status = $validated['status_2'];
         }
 
         return redirect()->route('manager.official-travels.index')->with('success', 'Official travel request ' . $status . ' successfully.');
+    }
+
+    public function destroy(OfficialTravel $officialTravel)
+    {
+        $user = Auth::user();
+        if ($user->id !== $officialTravel->employee_id && $user->role !== Roles::Admin->value) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending')) {
+            return redirect()->route('manager.official-travels.show', $officialTravel->id)
+                ->with('error', 'You cannot delete a travel request that has already been processed.');
+        }
+
+        $officialTravel->delete();
+
+        return redirect()->route('manager.official-travels.index')
+            ->with('success', 'Official travel request deleted successfully.');
     }
 
 }

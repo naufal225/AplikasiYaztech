@@ -107,7 +107,9 @@ class OfficialTravelController extends Controller
             ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_approver_at' => now()]);
 
-        return view('approver.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+        return view('approver.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
 
@@ -130,7 +132,7 @@ class OfficialTravelController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+  public function store(Request $request)
     {
         $validated = $request->validate([
             'customer' => 'required',
@@ -164,7 +166,7 @@ class OfficialTravelController extends Controller
             $officialTravel->employee_id = Auth::id();
             $officialTravel->date_start = $start;
             $officialTravel->date_end = $end;
-            $officialTravel->total = $totalDays;
+            $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
             $officialTravel->status_1 = 'pending';
             $officialTravel->status_2 = 'pending';
             $officialTravel->save();
@@ -232,7 +234,7 @@ class OfficialTravelController extends Controller
         return view('approver.official-travel.update', compact('officialTravel'));
     }
 
-    public function updateSelf(Request $request, OfficialTravel $officialTravel)
+   public function updateSelf(Request $request, OfficialTravel $officialTravel)
     {
         $user = Auth::user();
         if ($user->id !== $officialTravel->employee_id) {
@@ -272,7 +274,7 @@ class OfficialTravelController extends Controller
         $officialTravel->status_2 = 'pending';
         $officialTravel->note_1 = NULL;
         $officialTravel->note_2 = NULL;
-        $officialTravel->total = $totalDays;
+        $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
         $officialTravel->save();
 
         // Send notification email to the approver
@@ -300,7 +302,7 @@ class OfficialTravelController extends Controller
             );
         }
 
-        return redirect()->route('approver.official-travels.index')
+        return redirect()->route('approver.official-travels.show', $officialTravel->id)
             ->with('success', 'Official travel request updated successfully. Total days: ' . $totalDays);
     }
 
@@ -389,7 +391,7 @@ class OfficialTravelController extends Controller
 
             $officialTravel->update([
                 'status_2' => $validated['status_2'],
-                'note_2' => $validated['note_2'] ?? ''
+                'note_2' => $validated['note_2'] ?? null
             ]);
 
             $statusMessage = $validated['status_2'];
