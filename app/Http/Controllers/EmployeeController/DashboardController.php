@@ -23,45 +23,52 @@ class DashboardController extends Controller
 
         $employeeCount = User::where('role', Roles::Employee->value)->count();
 
-        $queryLeave = Leave::where('employee_id', $user->id)
+        // Query untuk list data (pakai orderBy)
+        $queryLeave = Leave::where('employee_id', $userId)
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
 
         $queryClone = (clone $queryLeave);
 
-        $queryReimbursement = Reimbursement::where('employee_id', $user->id)
+        $queryReimbursement = Reimbursement::where('employee_id', $userId)
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
 
-        $queryOvertime = Overtime::where('employee_id', $user->id)
+        $queryOvertime = Overtime::where('employee_id', $userId)
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
 
-        $queryTravel = OfficialTravel::where('employee_id', $user->id)
+        $queryTravel = OfficialTravel::where('employee_id', $userId)
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
 
-        // Get counts for pending requests
-        $pendingLeaves = $queryLeave->withFinalStatusCount()->first()->pending;
-        $pendingReimbursements = $queryReimbursement->withFinalStatusCount()->first()->pending;
-        $pendingOvertimes = $queryOvertime->withFinalStatusCount()->first()->pending;
-        $pendingTravels = $queryTravel->withFinalStatusCount()->first()->pending;
+        // 🔹 Query khusus untuk count (tanpa orderBy)
+        $leaveCounts = Leave::where('employee_id', $userId)->withFinalStatusCount()->first();
+        $reimCounts  = Reimbursement::where('employee_id', $userId)->withFinalStatusCount()->first();
+        $overtimeCounts = Overtime::where('employee_id', $userId)->withFinalStatusCount()->first();
+        $travelCounts   = OfficialTravel::where('employee_id', $userId)->withFinalStatusCount()->first();
 
-        // Get counts for approve requests
-        $approvedLeaves = $queryLeave->withFinalStatusCount()->first()->approved;
-        $approvedReimbursements = $queryReimbursement->withFinalStatusCount()->first()->approved;
-        $approvedOvertimes = $queryOvertime->withFinalStatusCount()->first()->approved;
-        $approvedTravels = $queryTravel->withFinalStatusCount()->first()->approved;
+        // Ambil hasil count (pakai null coalescing untuk aman)
+        $pendingLeaves        = $leaveCounts->pending ?? 0;
+        $approvedLeaves       = $leaveCounts->approved ?? 0;
+        $rejectedLeaves       = $leaveCounts->rejected ?? 0;
 
-        // Get counts for rejected requests
-        $rejectedLeaves = $queryLeave->withFinalStatusCount()->first()->rejected;
-        $rejectedReimbursements = $queryReimbursement->withFinalStatusCount()->first()->rejected;
-        $rejectedOvertimes = $queryOvertime->withFinalStatusCount()->first()->rejected;
-        $rejectedTravels = $queryTravel->withFinalStatusCount()->first()->rejected;
+        $pendingReimbursements  = $reimCounts->pending ?? 0;
+        $approvedReimbursements = $reimCounts->approved ?? 0;
+        $rejectedReimbursements = $reimCounts->rejected ?? 0;
+
+        $pendingOvertimes  = $overtimeCounts->pending ?? 0;
+        $approvedOvertimes = $overtimeCounts->approved ?? 0;
+        $rejectedOvertimes = $overtimeCounts->rejected ?? 0;
+
+        $pendingTravels  = $travelCounts->pending ?? 0;
+        $approvedTravels = $travelCounts->approved ?? 0;
+        $rejectedTravels = $travelCounts->rejected ?? 0;
 
         // Get recent requests (combined from all types)
         $recentRequests = $this->getRecentRequests($userId);
 
+        // Hitung total cuti tahun berjalan
         $tahunSekarang = now()->year;
 
         $totalHariCuti = $queryClone
@@ -75,7 +82,6 @@ class DashboardController extends Controller
                 $start = \Carbon\Carbon::parse($cuti->date_start);
                 $end   = \Carbon\Carbon::parse($cuti->date_end);
 
-                // Batasi tanggal ke dalam tahun berjalan
                 if ($start->year < $tahunSekarang) {
                     $start = \Carbon\Carbon::create($tahunSekarang, 1, 1);
                 }
@@ -88,6 +94,7 @@ class DashboardController extends Controller
 
         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
 
+        // Data cuti semua karyawan untuk kalender
         $karyawanCuti = Leave::with(['employee:id,name,email,url_profile'])
             ->where('status_1', 'approved')
             ->where(function ($q) {
@@ -97,10 +104,9 @@ class DashboardController extends Controller
             ->get(['id','employee_id','date_start','date_end']);
 
         $cutiPerTanggal = [];
-
         foreach ($karyawanCuti as $cuti) {
             $start = \Carbon\Carbon::parse($cuti->date_start);
-            $end = \Carbon\Carbon::parse($cuti->date_end);
+            $end   = \Carbon\Carbon::parse($cuti->date_end);
             while ($start->lte($end)) {
                 $tanggal = $start->format('Y-m-d');
                 $cutiPerTanggal[$tanggal][] = [
@@ -113,10 +119,11 @@ class DashboardController extends Controller
         }
 
         return view('Employee.index', compact(
-            'employeeCount', 'pendingLeaves', 'pendingReimbursements', 'pendingOvertimes',
-            'pendingTravels', 'recentRequests', 'approvedLeaves', 'approvedReimbursements',
-            'approvedOvertimes', 'approvedTravels', 'rejectedLeaves', 'rejectedReimbursements',
-            'rejectedOvertimes', 'rejectedTravels', 'sisaCuti', 'cutiPerTanggal'
+            'employeeCount',
+            'pendingLeaves', 'pendingReimbursements', 'pendingOvertimes', 'pendingTravels',
+            'approvedLeaves', 'approvedReimbursements', 'approvedOvertimes', 'approvedTravels',
+            'rejectedLeaves', 'rejectedReimbursements', 'rejectedOvertimes', 'rejectedTravels',
+            'recentRequests', 'sisaCuti', 'cutiPerTanggal'
         ));
     }
 

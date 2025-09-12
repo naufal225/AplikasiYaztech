@@ -23,26 +23,28 @@ class ReimbursementController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+
+        // Query utama untuk list data (ada orderBy)
         $query = Reimbursement::where('employee_id', $user->id)
             ->with(['approver'])
             ->orderBy('created_at', 'desc');
-        $queryClone = (clone $query);
 
+        // Apply filters ke query utama
         if ($request->filled('status')) {
             $status = $request->status;
 
             $query->where(function ($q) use ($status) {
                 if ($status === 'rejected') {
                     $q->where('status_1', 'rejected')
-                        ->orWhere('status_2', 'rejected');
+                    ->orWhere('status_2', 'rejected');
                 } elseif ($status === 'approved') {
                     $q->where('status_1', 'approved')
-                        ->where('status_2', 'approved');
+                    ->where('status_2', 'approved');
                 } elseif ($status === 'pending') {
                     $q->where(function ($sub) {
-                        $sub->where('status_1', 'pending')
-                            ->orWhere('status_2', 'pending');
-                    })
+                            $sub->where('status_1', 'pending')
+                                ->orWhere('status_2', 'pending');
+                        })
                         ->where('status_1', '!=', 'rejected')
                         ->where('status_2', '!=', 'rejected')
                         ->where(function ($sub) {
@@ -57,9 +59,7 @@ class ReimbursementController extends Controller
             $query->where(
                 'date',
                 '>=',
-                Carbon::parse($request->from_date)
-                    ->startOfDay()
-                    ->timezone('Asia/Jakarta')
+                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
@@ -67,23 +67,74 @@ class ReimbursementController extends Controller
             $query->where(
                 'date',
                 '<=',
-                Carbon::parse($request->to_date)
-                    ->endOfDay()
-                    ->timezone('Asia/Jakarta')
+                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
 
-        $reimbursements = $query->paginate(10);
-        $counts = $queryClone->withFinalStatusCount()->first();
+        // Data untuk tabel
+        $reimbursements = $query->paginate(10)->withQueryString();
 
-        $totalRequests = (int) $queryClone->count();
-        $pendingRequests = (int) $counts->pending;
-        $approvedRequests = (int) $counts->approved;
-        $rejectedRequests = (int) $counts->rejected;
+        // 🔹 Query baru untuk aggregate (tanpa orderBy)
+        $countsQuery = Reimbursement::where('employee_id', $user->id);
+
+        if ($request->filled('status')) {
+            $status = $request->status;
+            $countsQuery->where(function ($q) use ($status) {
+                if ($status === 'rejected') {
+                    $q->where('status_1', 'rejected')
+                    ->orWhere('status_2', 'rejected');
+                } elseif ($status === 'approved') {
+                    $q->where('status_1', 'approved')
+                    ->where('status_2', 'approved');
+                } elseif ($status === 'pending') {
+                    $q->where(function ($sub) {
+                            $sub->where('status_1', 'pending')
+                                ->orWhere('status_2', 'pending');
+                        })
+                        ->where('status_1', '!=', 'rejected')
+                        ->where('status_2', '!=', 'rejected')
+                        ->where(function ($sub) {
+                            $sub->where('status_1', '!=', 'approved')
+                                ->orWhere('status_2', '!=', 'approved');
+                        });
+                }
+            });
+        }
+
+        if ($request->filled('from_date')) {
+            $countsQuery->where(
+                'date',
+                '>=',
+                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        if ($request->filled('to_date')) {
+            $countsQuery->where(
+                'date',
+                '<=',
+                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        // 🔹 Hitung aggregate
+        $counts = $countsQuery->withFinalStatusCount()->first();
+
+        $totalRequests    = (int) $countsQuery->count();
+        $pendingRequests  = (int) ($counts->pending ?? 0);
+        $approvedRequests = (int) ($counts->approved ?? 0);
+        $rejectedRequests = (int) ($counts->rejected ?? 0);
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
-        return view('Employee.reimbursements.reimbursement-show', compact('reimbursements', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
+        return view('Employee.reimbursements.reimbursement-show', compact(
+            'reimbursements',
+            'totalRequests',
+            'pendingRequests',
+            'approvedRequests',
+            'rejectedRequests',
+            'manager'
+        ));
     }
 
     /**
@@ -91,7 +142,8 @@ class ReimbursementController extends Controller
      */
     public function create()
     {
-        return view('Employee.reimbursements.reimbursement-request');
+        $types = \App\Models\ReimbursementType::all();
+        return view('Employee.reimbursements.reimbursement-request', compact('types'));
     }
 
     /**
@@ -103,6 +155,7 @@ class ReimbursementController extends Controller
             'customer' => 'required',
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
+            'reimbursement_type_id' => 'required|exists:reimbursement_types,id',
             'invoice_path' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ], [
             'customer.required' => 'Customer harus dipilih.',
@@ -112,15 +165,19 @@ class ReimbursementController extends Controller
             'total.min' => 'Total tidak boleh kurang dari 0.',
             'date.required' => 'Tanggal harus diisi.',
             'date.date' => 'Format tanggal tidak valid.',
+            'invoice_path.required' => 'Bukti pengeluaran harus diupload.',
             'invoice_path.file' => 'File yang diupload tidak valid.',
             'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
             'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
+            'reimbursement_type_id.required' => 'Tipe reimbursement harus dipilih.',
+            'reimbursement_type_id.exists' => 'Tipe reimbursement tidak valid.',
         ]);
 
         DB::transaction(function () use ($request) {
             $reimbursement = new Reimbursement();
             $reimbursement->employee_id = Auth::id();
             $reimbursement->customer = $request->customer;
+            $reimbursement->reimbursement_type_id = $request->reimbursement_type_id;
             $reimbursement->total = $request->total;
             $reimbursement->date = $request->date;
             $reimbursement->status_1 = 'pending';
@@ -220,7 +277,8 @@ class ReimbursementController extends Controller
                 ->with('error', 'You cannot edit a reimbursement request that has already been processed.');
         }
 
-        return view('Employee.reimbursements.reimbursement-edit', compact('reimbursement'));
+        $types = \App\Models\ReimbursementType::all();
+        return view('Employee.reimbursements.reimbursement-edit', compact('reimbursement', 'types'));
     }
 
     /**
@@ -243,6 +301,7 @@ class ReimbursementController extends Controller
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
             'invoice_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'reimbursement_type_id' => 'required|exists:reimbursement_types,id',
         ], [
             'customer.required' => 'Customer harus dipilih.',
             'customer.exists' => 'Customer tidak valid.',
@@ -254,11 +313,15 @@ class ReimbursementController extends Controller
             'invoice_path.file' => 'File yang diupload tidak valid.',
             'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
             'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
+            'invoice_path.required' => 'Bukti pengeluaran harus diupload.',
+            'reimbursement_type_id.required' => 'Tipe reimbursement harus dipilih.',
+            'reimbursement_type_id.exists' => 'Tipe reimbursement tidak valid.',
         ]);
 
         $reimbursement->customer = $request->customer;
         $reimbursement->total = $request->total;
         $reimbursement->date = $request->date;
+        $reimbursement->reimbursement_type_id = $request->reimbursement_type_id;
         $reimbursement->status_1 = 'pending';
         $reimbursement->status_2 = 'pending';
         $reimbursement->note_1 = NULL;

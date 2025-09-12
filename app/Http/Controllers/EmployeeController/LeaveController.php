@@ -25,11 +25,13 @@ class LeaveController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+
+        // Query utama untuk list data
         $query = Leave::where('employee_id', $user->id)
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
-        $queryClone = (clone $query);
 
+        // Filter status
         if ($request->filled('status')) {
             $status = $request->status;
 
@@ -42,21 +44,20 @@ class LeaveController extends Controller
                     $q->where(function ($sub) {
                         $sub->where('status_1', 'pending');
                     })
-                        ->where('status_1', '!=', 'rejected')
-                        ->where(function ($sub) {
-                            $sub->where('status_1', '!=', 'approved');
-                        });
+                    ->where('status_1', '!=', 'rejected')
+                    ->where(function ($sub) {
+                        $sub->where('status_1', '!=', 'approved');
+                    });
                 }
             });
         }
 
+        // Filter tanggal
         if ($request->filled('from_date')) {
             $query->where(
                 'date_start',
                 '>=',
-                Carbon::parse($request->from_date)
-                    ->startOfDay()
-                    ->timezone('Asia/Jakarta')
+                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
@@ -64,20 +65,38 @@ class LeaveController extends Controller
             $query->where(
                 'date_end',
                 '<=',
-                Carbon::parse($request->to_date)
-                    ->endOfDay()
-                    ->timezone('Asia/Jakarta')
+                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
 
-        $leaves = $query->paginate(10);
-        $counts = $queryClone->withFinalStatusCount()->first();
+        // Data untuk tabel (pagination)
+        $leaves = $query->paginate(10)->withQueryString();
 
+        // 🔹 Query baru khusus untuk aggregate (tanpa orderBy)
+        $countsQuery = Leave::where('employee_id', $user->id);
+        if ($request->filled('status')) {
+            $countsQuery->filterFinalStatus($request->status); // pakai scope dari HasDualStatus
+        }
+        if ($request->filled('from_date')) {
+            $countsQuery->where(
+                'date_start',
+                '>=',
+                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+        if ($request->filled('to_date')) {
+            $countsQuery->where(
+                'date_end',
+                '<=',
+                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        $counts = $countsQuery->withFinalStatusCount()->first();
+
+        // Hitung total cuti
         $tahunSekarang = now()->year;
-
-        $totalHariCuti = (int) Leave::where('employee_id', Auth::id())
-            ->with(['employee', 'approver'])
-            ->orderBy('created_at', 'desc')
+        $totalHariCuti = Leave::where('employee_id', $user->id)
             ->where('status_1', 'approved')
             ->where(function ($q) use ($tahunSekarang) {
                 $q->whereYear('date_start', $tahunSekarang)
@@ -85,29 +104,38 @@ class LeaveController extends Controller
             })
             ->get()
             ->sum(function ($cuti) use ($tahunSekarang) {
-                $start = \Carbon\Carbon::parse($cuti->date_start);
-                $end   = \Carbon\Carbon::parse($cuti->date_end);
+                $start = Carbon::parse($cuti->date_start);
+                $end   = Carbon::parse($cuti->date_end);
 
-                // Batasi tanggal ke dalam tahun berjalan
                 if ($start->year < $tahunSekarang) {
-                    $start = \Carbon\Carbon::create($tahunSekarang, 1, 1);
+                    $start = Carbon::create($tahunSekarang, 1, 1);
                 }
                 if ($end->year > $tahunSekarang) {
-                    $end = \Carbon\Carbon::create($tahunSekarang, 12, 31);
+                    $end = Carbon::create($tahunSekarang, 12, 31);
                 }
 
                 return $start->lte($end) ? $start->diffInDays($end) + 1 : 0;
             });
 
         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
-        $totalRequests = (int) $queryClone->count();
-        $pendingRequests = (int) $counts->pending;
-        $approvedRequests = (int) $counts->approved;
-        $rejectedRequests = (int) $counts->rejected;
+
+        // 🔹 Ambil count aman
+        $totalRequests     = (int) Leave::where('employee_id', $user->id)->count();
+        $pendingRequests   = (int) ($counts->pending ?? 0);
+        $approvedRequests  = (int) ($counts->approved ?? 0);
+        $rejectedRequests  = (int) ($counts->rejected ?? 0);
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
-        return view('Employee.leaves.leave-show', compact('leaves', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager', 'sisaCuti'));
+        return view('Employee.leaves.leave-show', compact(
+            'leaves',
+            'totalRequests',
+            'pendingRequests',
+            'approvedRequests',
+            'rejectedRequests',
+            'manager',
+            'sisaCuti'
+        ));
     }
 
     /**

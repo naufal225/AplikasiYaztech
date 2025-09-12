@@ -177,7 +177,6 @@
         <table class="layout">
             <tr>
                 <!-- Employee Information -->
-                <!-- Employee Information -->
                 <td>
                     <h3>Employee Information</h3>
                     <table class="info-table" style="width: 100%; border-collapse: collapse; margin-top: 4px;">
@@ -249,6 +248,12 @@
                 <td class="label-col">Customer:</td>
                 <td class="data-col">
                     <div class="box">{{ $reimbursement->customer ?? 'N/A' }}</div>
+                </td>
+            </tr>
+            <tr>
+                <td class="label-col">Type Reimbursement:</td>
+                <td class="data-col">
+                    <div class="box">{{ $reimbursement->type->name ?? 'N/A' }}</div>
                 </td>
             </tr>
             <tr>

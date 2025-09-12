@@ -27,9 +27,11 @@ class ReimbursementController extends Controller
      */
     public function index(Request $request)
     {
+        $userId = Auth::id();
+
         // --- Query untuk "Your Reimbursements"
-        $yourReimbursementsQuery = Reimbursement::with(['employee', 'approver'])
-            ->where('employee_id', Auth::id())
+        $yourReimbursementsQuery = Reimbursement::with(['employee', 'approver' , 'type'])
+            ->where('employee_id', $userId)
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
@@ -46,34 +48,32 @@ class ReimbursementController extends Controller
 
         if ($request->filled('status')) {
             $status = $request->status;
-
             $yourReimbursementsQuery->where(function ($q) use ($status) {
                 if ($status === 'rejected') {
                     $q->where('status_1', 'rejected')
-                        ->orWhere('status_2', 'rejected');
+                    ->orWhere('status_2', 'rejected');
                 } elseif ($status === 'approved') {
                     $q->where('status_1', 'approved')
-                        ->where('status_2', 'approved');
+                    ->where('status_2', 'approved');
                 } elseif ($status === 'pending') {
                     $q->where(function ($sub) {
                         $sub->where('status_1', 'pending')
                             ->orWhere('status_2', 'pending');
                     })
-                        ->where('status_1', '!=', 'rejected')
-                        ->where('status_2', '!=', 'rejected')
-                        ->where(function ($sub) {
-                            $sub->where('status_1', '!=', 'approved')
-                                ->orWhere('status_2', '!=', 'approved');
-                        });
+                    ->where('status_1', '!=', 'rejected')
+                    ->where('status_2', '!=', 'rejected')
+                    ->where(function ($sub) {
+                        $sub->where('status_1', '!=', 'approved')
+                            ->orWhere('status_2', '!=', 'approved');
+                    });
                 }
             });
         }
 
-        $yourReimbursements = $yourReimbursementsQuery->paginate(5, ['*'], 'your_page');
+        $yourReimbursements = $yourReimbursementsQuery->paginate(5, ['*'], 'your_page')->withQueryString();
 
-
-        // --- Query untuk "All Reimbursements - Marked Down"
-        $allReimbursementsDoneQuery = Reimbursement::with(['employee', 'approver'])
+        // --- Query untuk "All Reimbursements Done (Marked Down)"
+        $allReimbursementsDoneQuery = Reimbursement::with(['employee', 'approver', 'type'])
             ->where('status_1', 'approved')
             ->where('status_2', 'approved')
             ->where('marked_down', true)
@@ -91,69 +91,64 @@ class ReimbursementController extends Controller
             );
         }
 
-        $allReimbursementsDone = $allReimbursementsDoneQuery->paginate(5, ['*'], 'all_page_done');
+        $allReimbursementsDone = $allReimbursementsDoneQuery->paginate(5, ['*'], 'all_page_done')->withQueryString();
 
-
-        // --- Query untuk "All Reimbursements" (pakai lock agar tidak bentrok dengan user lain)
+        // --- Query untuk "All Reimbursements Not Marked (lockable)"
         $allReimbursements = collect();
-        DB::transaction(function () use (&$allReimbursements, $request) {
-            $query = Reimbursement::with(['employee', 'approver'])
+        DB::transaction(function () use (&$allReimbursements, $request, $userId) {
+            $query = Reimbursement::with(['employee', 'approver', 'type'])
                 ->where('status_1', 'approved')
                 ->where('status_2', 'approved')
                 ->where('marked_down', false)
-                ->where(function ($q) {
+                ->where(function ($q) use ($userId) {
                     $q->whereNull('locked_by')
                     ->orWhere(function ($q2) {
-                        // lock sudah expired
                         $q2->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) < ?', [now()]);
                     })
-                    ->orWhere(function ($q3) {
-                        // lock masih aktif tapi milik user ini
-                        $q3->where('locked_by', Auth::id())
+                    ->orWhere(function ($q3) use ($userId) {
+                        $q3->where('locked_by', $userId)
                             ->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) >= ?', [now()]);
                     });
                 })
                 ->orderBy('created_at', 'asc');
 
-            if ($request->filled('from_date')) {
+            if (request()->filled('from_date')) {
                 $query->where('date', '>=',
-                    Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+                    Carbon::parse(request()->from_date)->startOfDay()->timezone('Asia/Jakarta')
                 );
             }
 
-            if ($request->filled('to_date')) {
+            if (request()->filled('to_date')) {
                 $query->where('date', '<=',
-                    Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+                    Carbon::parse(request()->to_date)->endOfDay()->timezone('Asia/Jakarta')
                 );
             }
 
-            // Ambil data & lock untuk user ini
             $allReimbursements = $query->limit(5)->lockForUpdate()->get();
 
             if ($allReimbursements->isNotEmpty()) {
                 Reimbursement::whereIn('id', $allReimbursements->pluck('id'))
                     ->update([
-                        'locked_by' => Auth::id(),
+                        'locked_by' => $userId,
                         'locked_at' => now(),
                     ]);
             }
         });
 
-        // --- Hitung statistik
-        $dataAll = Reimbursement::query()
-            ->where('status_1', 'approved')
+        // --- Statistik
+        $dataAll = Reimbursement::where('status_1', 'approved')
             ->where('status_2', 'approved');
 
-        $totalRequests = (clone $dataAll)->count();
-        $approvedRequests = (int) (clone $dataAll)->withFinalStatusCount()->first()->approved;
-        $markedRequests = (int) (clone $dataAll)->where('marked_down', true)->count();
-        $totalAllNoMark = (int) (clone $dataAll)->where('marked_down', false)->count();
+        $totalRequests = $dataAll->count();
+        $approvedRequests = optional($dataAll->withFinalStatusCount()->first())->approved ?? 0;
+        $markedRequests = (clone $dataAll)->where('marked_down', true)->count();
+        $totalAllNoMark = (clone $dataAll)->where('marked_down', false)->count();
 
-        $countsYours = (clone $yourReimbursementsQuery)->withFinalStatusCount()->first();
-        $totalYoursRequests = (int) $yourReimbursementsQuery->count();
-        $pendingYoursRequests = (int) $countsYours->pending;
-        $approvedYoursRequests = (int) $countsYours->approved;
-        $rejectedYoursRequests = (int) $countsYours->rejected;
+        $countsYours = optional((clone $yourReimbursementsQuery)->withFinalStatusCount()->first());
+        $totalYoursRequests = $yourReimbursementsQuery->count();
+        $pendingYoursRequests = $countsYours->pending ?? 0;
+        $approvedYoursRequests = $countsYours->approved ?? 0;
+        $rejectedYoursRequests = $countsYours->rejected ?? 0;
 
         // --- Manager
         $manager = User::where('role', Roles::Manager->value)->first();
@@ -179,7 +174,8 @@ class ReimbursementController extends Controller
      */
     public function create()
     {
-        return view('Finance.reimbursements.reimbursement-request');
+        $types = \App\Models\ReimbursementType::all();
+        return view('Finance.reimbursements.reimbursement-request', compact('types'));
     }
 
     /**
@@ -191,6 +187,7 @@ class ReimbursementController extends Controller
             'customer' => 'required',
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
+            'reimbursement_type_id' => 'required|exists:reimbursement_types,id',
             'invoice_path' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ], [
             'customer.required' => 'Customer harus dipilih.',
@@ -203,12 +200,15 @@ class ReimbursementController extends Controller
             'invoice_path.file' => 'File yang diupload tidak valid.',
             'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
             'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
+            'reimbursement_type_id.required' => 'Tipe reimbursement harus dipilih.',
+            'reimbursement_type_id.exists' => 'Tipe reimbursement tidak valid.',
         ]);
 
         DB::transaction(function () use ($request) {
             $reimbursement = new Reimbursement();
             $reimbursement->employee_id = Auth::id();
             $reimbursement->customer = $request->customer;
+            $reimbursement->reimbursement_type_id = $request->reimbursement_type_id;
             $reimbursement->total = $request->total;
             $reimbursement->date = $request->date;
 
@@ -342,7 +342,8 @@ class ReimbursementController extends Controller
                 ->with('error', 'You cannot edit a reimbursement request that has already been processed.');
         }
 
-        return view('Finance.reimbursements.reimbursement-edit', compact('reimbursement'));
+        $types = \App\Models\ReimbursementType::all();
+        return view('Finance.reimbursements.reimbursement-edit', compact('reimbursement', 'types'));
     }
 
     /**
@@ -367,6 +368,7 @@ class ReimbursementController extends Controller
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
             'invoice_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'reimbursement_type_id' => 'required|exists:reimbursement_types,id',
         ], [
             'customer.required' => 'Customer harus dipilih.',
             'customer.exists' => 'Customer tidak valid.',
@@ -378,10 +380,13 @@ class ReimbursementController extends Controller
             'invoice_path.file' => 'File yang diupload tidak valid.',
             'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
             'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
+            'reimbursement_type_id.required' => 'Tipe reimbursement harus dipilih.',
+            'reimbursement_type_id.exists' => 'Tipe reimbursement tidak valid.',
         ]);
 
         $reimbursement->customer = $request->customer;
         $reimbursement->total = $request->total;
+        $reimbursement->reimbursement_type_id = $request->reimbursement_type_id;
         $reimbursement->date = $request->date;
 
         if ($isLeader) {

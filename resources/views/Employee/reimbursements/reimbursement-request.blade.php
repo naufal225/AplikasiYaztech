@@ -48,19 +48,34 @@
             
             <form action="{{ route('employee.reimbursements.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
                 @csrf
-
-                <div>
-                    <label for="customer" class="block text-sm font-semibold text-neutral-700 mb-2">
-                        <i class="fas fa-users mr-2 text-primary-600"></i>
-                        Customer
-                    </label>
-                    
-                    <!-- Input tampilan -->
-                    <input type="text" name="customer" id="customer" class="form-input"
-                        value="{{ old('customer') }}" placeholder="e.g., John Doe" required>
-                </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="customer" class="block text-sm font-semibold text-neutral-700 mb-2">
+                            <i class="fas fa-users mr-2 text-primary-600"></i>
+                            Customer
+                        </label>
+                        
+                        <!-- Input tampilan -->
+                        <input type="text" name="customer" id="customer" class="form-input"
+                            value="{{ old('customer') }}" placeholder="e.g., John Doe" required>
+                    </div>
+
+                    <div>
+                        <label for="reimbursement_type_id" class="block text-sm font-semibold text-neutral-700 mb-2">
+                            <i class="fas fa-list mr-2 text-primary-600"></i>
+                            Type Reimbursement
+                        </label>
+                        <select name="reimbursement_type_id" id="reimbursement_type_id" class="form-select" required>
+                            <option value="">-- Select Type --</option>
+                            @foreach($types as $type)
+                                <option value="{{ $type->id }}" {{ old('reimbursement_type_id') == $type->id ? 'selected' : '' }}>
+                                    {{ $type->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    
                     <div>
                         <label for="total_display" class="block text-sm font-semibold text-neutral-700 mb-2">
                             <i class="fas fa-dollar-sign mr-2 text-primary-600"></i>
@@ -128,7 +143,6 @@
                             <ul class="text-xs text-primary-700 space-y-1">
                                 <li>• All claims must be submitted within 30 days of the expense date.</li>
                                 <li>• Original receipts or digital copies are required for all claims.</li>
-                                <li>• Claims over Rp 1.000.000 require additional Approver 2 approval.</li>
                                 <li>• Personal expenses are not eligible for reimbursement.</li>
                             </ul>
                         </div>

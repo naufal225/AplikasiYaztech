@@ -23,27 +23,28 @@ class OfficialTravelController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+
+        // Query utama untuk list data (ada orderBy)
         $query = OfficialTravel::where('employee_id', $user->id)
             ->with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
-        $queryClone = (clone $query);
 
-        // Apply filters
+        // Apply filters ke query utama
         if ($request->filled('status')) {
             $status = $request->status;
 
             $query->where(function ($q) use ($status) {
                 if ($status === 'rejected') {
                     $q->where('status_1', 'rejected')
-                        ->orWhere('status_2', 'rejected');
+                    ->orWhere('status_2', 'rejected');
                 } elseif ($status === 'approved') {
                     $q->where('status_1', 'approved')
-                        ->where('status_2', 'approved');
+                    ->where('status_2', 'approved');
                 } elseif ($status === 'pending') {
                     $q->where(function ($sub) {
-                        $sub->where('status_1', 'pending')
-                            ->orWhere('status_2', 'pending');
-                    })
+                            $sub->where('status_1', 'pending')
+                                ->orWhere('status_2', 'pending');
+                        })
                         ->where('status_1', '!=', 'rejected')
                         ->where('status_2', '!=', 'rejected')
                         ->where(function ($sub) {
@@ -70,17 +71,71 @@ class OfficialTravelController extends Controller
             );
         }
 
-        $officialTravels = $query->paginate(10);
-        $counts = $queryClone->withFinalStatusCount()->first();
+        // Data tabel (ada pagination)
+        $officialTravels = $query->paginate(10)->withQueryString();
 
-        $totalRequests = (int) $queryClone->count();
-        $pendingRequests = (int) $counts->pending;
-        $approvedRequests = (int) $counts->approved;
-        $rejectedRequests = (int) $counts->rejected;
+        // 🔹 Query baru khusus aggregate (tanpa orderBy)
+        $countsQuery = OfficialTravel::where('employee_id', $user->id);
+
+        if ($request->filled('status')) {
+            // pake scope yang sama atau ulangi filter disini kalau perlu
+            $status = $request->status;
+            $countsQuery->where(function ($q) use ($status) {
+                if ($status === 'rejected') {
+                    $q->where('status_1', 'rejected')
+                    ->orWhere('status_2', 'rejected');
+                } elseif ($status === 'approved') {
+                    $q->where('status_1', 'approved')
+                    ->where('status_2', 'approved');
+                } elseif ($status === 'pending') {
+                    $q->where(function ($sub) {
+                            $sub->where('status_1', 'pending')
+                                ->orWhere('status_2', 'pending');
+                        })
+                        ->where('status_1', '!=', 'rejected')
+                        ->where('status_2', '!=', 'rejected')
+                        ->where(function ($sub) {
+                            $sub->where('status_1', '!=', 'approved')
+                                ->orWhere('status_2', '!=', 'approved');
+                        });
+                }
+            });
+        }
+
+        if ($request->filled('from_date')) {
+            $countsQuery->where(
+                'date_start',
+                '>=',
+                Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        if ($request->filled('to_date')) {
+            $countsQuery->where(
+                'date_end',
+                '<=',
+                Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+            );
+        }
+
+        // 🔹 Jalankan aggregate aman
+        $counts = $countsQuery->withFinalStatusCount()->first();
+
+        $totalRequests    = (int) $countsQuery->count();
+        $pendingRequests  = (int) ($counts->pending ?? 0);
+        $approvedRequests = (int) ($counts->approved ?? 0);
+        $rejectedRequests = (int) ($counts->rejected ?? 0);
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
-        return view('Employee.travels.travel-show', compact('officialTravels', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
+        return view('Employee.travels.travel-show', compact(
+            'officialTravels',
+            'totalRequests',
+            'pendingRequests',
+            'approvedRequests',
+            'rejectedRequests',
+            'manager'
+        ));
     }
 
     /**
