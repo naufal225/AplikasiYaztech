@@ -27,9 +27,11 @@ class OvertimeController extends Controller
      */
     public function index(Request $request)
     {
+        $userId = Auth::id();
+
         // --- Query untuk "Your Overtimes"
         $yourOvertimesQuery = Overtime::with(['employee', 'approver'])
-            ->where('employee_id', Auth::id())
+            ->where('employee_id', $userId)
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
@@ -46,14 +48,13 @@ class OvertimeController extends Controller
 
         if ($request->filled('status')) {
             $status = $request->status;
-
             $yourOvertimesQuery->where(function ($q) use ($status) {
                 if ($status === 'rejected') {
                     $q->where('status_1', 'rejected')
-                        ->orWhere('status_2', 'rejected');
+                    ->orWhere('status_2', 'rejected');
                 } elseif ($status === 'approved') {
                     $q->where('status_1', 'approved')
-                        ->where('status_2', 'approved');
+                    ->where('status_2', 'approved');
                 } elseif ($status === 'pending') {
                     $q->where(function ($sub) {
                         $sub->where('status_1', 'pending')
@@ -69,10 +70,9 @@ class OvertimeController extends Controller
             });
         }
 
-        $yourOvertimes = $yourOvertimesQuery->paginate(5, ['*'], 'your_page');
+        $yourOvertimes = $yourOvertimesQuery->paginate(5, ['*'], 'your_page')->withQueryString();
 
-
-        // --- Query untuk "All Overtimes - Marked Down"
+        // --- Query untuk "All Overtimes Done (Marked Down)"
         $allOvertimesDoneQuery = Overtime::with(['employee', 'approver'])
             ->where('status_1', 'approved')
             ->where('status_2', 'approved')
@@ -91,69 +91,64 @@ class OvertimeController extends Controller
             );
         }
 
-        $allOvertimesDone = $allOvertimesDoneQuery->paginate(5, ['*'], 'all_page_done');
+        $allOvertimesDone = $allOvertimesDoneQuery->paginate(5, ['*'], 'all_page_done')->withQueryString();
 
-
-        // --- Query untuk "All Overtimes" (pakai lock)
+        // --- Query untuk "All Overtimes Not Marked (lockable)"
         $allOvertimes = collect();
-        DB::transaction(function () use (&$allOvertimes, $request) {
+        DB::transaction(function () use (&$allOvertimes, $request, $userId) {
             $query = Overtime::with(['employee', 'approver'])
                 ->where('status_1', 'approved')
                 ->where('status_2', 'approved')
                 ->where('marked_down', false)
-                ->where(function ($q) {
+                ->where(function ($q) use ($userId) {
                     $q->whereNull('locked_by')
                     ->orWhere(function ($q2) {
                         $q2->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) < ?', [now()]);
                     })
-                    ->orWhere(function ($q3) {
-                        $q3->where('locked_by', Auth::id())
+                    ->orWhere(function ($q3) use ($userId) {
+                        $q3->where('locked_by', $userId)
                             ->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) >= ?', [now()]);
                     });
                 })
                 ->orderBy('created_at', 'asc');
 
-            if ($request->filled('from_date')) {
+            if (request()->filled('from_date')) {
                 $query->where('date_start', '>=',
-                    Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+                    Carbon::parse(request()->from_date)->startOfDay()->timezone('Asia/Jakarta')
                 );
             }
 
-            if ($request->filled('to_date')) {
+            if (request()->filled('to_date')) {
                 $query->where('date_end', '<=',
-                    Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+                    Carbon::parse(request()->to_date)->endOfDay()->timezone('Asia/Jakarta')
                 );
             }
 
-            // Ambil data & lock untuk user ini
             $allOvertimes = $query->limit(5)->lockForUpdate()->get();
 
             if ($allOvertimes->isNotEmpty()) {
                 Overtime::whereIn('id', $allOvertimes->pluck('id'))
                     ->update([
-                        'locked_by' => Auth::id(),
+                        'locked_by' => $userId,
                         'locked_at' => now(),
                     ]);
             }
         });
 
-
-        // --- Hitung statistik
-        $dataAll = Overtime::query()
-            ->where('status_1', 'approved')
+        // --- Statistik
+        $dataAll = Overtime::where('status_1', 'approved')
             ->where('status_2', 'approved');
 
-        $totalRequests = (clone $dataAll)->count();
-        $approvedRequests = (int) (clone $dataAll)->withFinalStatusCount()->first()->approved;
-        $markedRequests = (int) (clone $dataAll)->where('marked_down', true)->count();
-        $totalAllNoMark = (int) (clone $dataAll)->where('marked_down', false)->count();
+        $totalRequests = $dataAll->count();
+        $approvedRequests = optional($dataAll->withFinalStatusCount()->first())->approved ?? 0;
+        $markedRequests = (clone $dataAll)->where('marked_down', true)->count();
+        $totalAllNoMark = (clone $dataAll)->where('marked_down', false)->count();
 
-        $countsYours = (clone $yourOvertimesQuery)->withFinalStatusCount()->first();
-        $totalYoursRequests = (int) $yourOvertimesQuery->count();
-        $pendingYoursRequests = (int) $countsYours->pending;
-        $approvedYoursRequests = (int) $countsYours->approved;
-        $rejectedYoursRequests = (int) $countsYours->rejected;
-
+        $countsYours = optional((clone $yourOvertimesQuery)->withFinalStatusCount()->first());
+        $totalYoursRequests = $yourOvertimesQuery->count();
+        $pendingYoursRequests = $countsYours->pending ?? 0;
+        $approvedYoursRequests = $countsYours->approved ?? 0;
+        $rejectedYoursRequests = $countsYours->rejected ?? 0;
 
         // --- Manager
         $manager = User::where('role', Roles::Manager->value)->first();
