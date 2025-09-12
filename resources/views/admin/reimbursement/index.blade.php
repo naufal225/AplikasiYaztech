@@ -310,9 +310,9 @@
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                             Request ID</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Total</th> {{-- Changed from Amount --}}
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                             Employee</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                            Total</th> {{-- Changed from Amount --}}
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                             Date</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">

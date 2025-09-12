@@ -106,8 +106,10 @@ class OvertimeController extends Controller
         Overtime::whereNull('seen_by_approver_at')
             ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_approver_at' => now()]);
+        $manager = User::where('role', Roles::Manager->value)->first();
 
-        return view('approver.overtime.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+
+        return view('approver.overtime.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
 
@@ -165,7 +167,7 @@ class OvertimeController extends Controller
 
         $overtimeMinutes = $start->diffInMinutes($end);
 
-        $overtimeHours = $overtimeMinutes / 60;
+        $overtimeHours = round($overtimeMinutes / 60);
 
         if ($overtimeHours < 0.5) {
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
@@ -175,7 +177,7 @@ class OvertimeController extends Controller
         $overtime->customer = $request->customer;
         $overtime->date_start = $request->date_start;
         $overtime->date_end = $request->date_end;
-        $overtime->total = $overtimeMinutes; // Disimpan dalam menit
+        $overtime->total = (int) ($overtimeHours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0);
         $overtime->status_1 = 'pending';
         $overtime->status_2 = 'pending';
         $overtime->note_1 = NULL;
@@ -209,7 +211,7 @@ class OvertimeController extends Controller
             );
         }
 
-        return redirect()->route('approver.overtimes.index', $overtime->id)
+        return redirect()->route('approver.overtimes.show', $overtime->id)
             ->with('success', 'Overtime request updated successfully. Total overtime: ' . $hours . ' hours ' . $minutes . ' minutes');
     }
 
@@ -309,7 +311,7 @@ class OvertimeController extends Controller
 
 
 
-   public function update(Request $request, Overtime $overtime)
+    public function update(Request $request, Overtime $overtime)
     {
         $validated = $request->validate([
             'status_1' => 'string|in:approved,rejected',
@@ -332,13 +334,13 @@ class OvertimeController extends Controller
         if ($request->has('status_1')) {
             $overtime->update([
                 'status_1' => $validated['status_1'],
-                'note_1' => $validated['note_1'] ?? ""
+                'note_1' => $validated['note_1'] ?? null
             ]);
             $status = $validated['status_1'];
         } else if ($request->has('status_2')) {
             $overtime->update([
                 'status_2' => $validated['status_2'],
-                'note_2' => $validated['note_2'] ?? ""
+                'note_2' => $validated['note_2'] ?? null
             ]);
             $status = $validated['status_2'];
         }

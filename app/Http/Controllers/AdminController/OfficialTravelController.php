@@ -105,7 +105,10 @@ class OfficialTravelController extends Controller
         $rejectedRequests = OfficialTravel::where('status_1', 'rejected')
             ->orWhere('status_2', 'rejected')->count();
 
-        return view('admin.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+
+        return view('admin.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
     public function show($id)
@@ -157,7 +160,7 @@ class OfficialTravelController extends Controller
             $officialTravel->employee_id = Auth::id();
             $officialTravel->date_start = $start;
             $officialTravel->date_end = $end;
-            $officialTravel->total = $totalDays;
+            $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
             $officialTravel->status_1 = 'pending';
             $officialTravel->status_2 = 'pending';
             $officialTravel->save();
@@ -265,7 +268,7 @@ class OfficialTravelController extends Controller
         $officialTravel->status_2 = 'pending';
         $officialTravel->note_1 = NULL;
         $officialTravel->note_2 = NULL;
-        $officialTravel->total = $totalDays;
+        $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
         $officialTravel->save();
 
         // Send notification email to the approver
@@ -293,10 +296,9 @@ class OfficialTravelController extends Controller
             );
         }
 
-        return redirect()->route('admin.official-travels.index')
+        return redirect()->route('admin.official-travels.show', $officialTravel->id)
             ->with('success', 'Official travel request updated successfully. Total days: ' . $totalDays);
     }
-
 
     public function export(Request $request)
     {
@@ -347,13 +349,13 @@ class OfficialTravelController extends Controller
             ->with('success', 'Official travel request deleted successfully.');
     }
 
-     public function exportPdf(OfficialTravel $officialTravel)
+    public function exportPdf(OfficialTravel $officialTravel)
     {
-        $pdf = Pdf::loadView('Employee.travels.pdf', compact('officialTravel'));
+        $pdf = Pdf::loadView('admin.travels.pdf', compact('officialTravel'));
         return $pdf->download('official-travel-details.pdf');
     }
 
-     public function exportPdfAllData(Request $request)
+    public function exportPdfAllData(Request $request)
     {
         try {
             // Authorization: Only Admin
@@ -372,7 +374,7 @@ class OfficialTravelController extends Controller
             }
 
             // Bangun query dasar untuk semua official travel
-            $query = OfficialTravel::with(['employee', 'approver', 'employee.division']);
+            $query = OfficialTravel::with(['employee', 'approver', 'admin.division']);
 
             // Terapkan filter status
             if ($request->filled('status')) {

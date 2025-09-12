@@ -106,7 +106,9 @@ class ReimbursementController extends Controller
         $rejectedRequests = Reimbursement::where('status_1', 'rejected')
             ->orWhere('status_2', 'rejected')->count();
 
-        return view('admin.reimbursement.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+        return view('admin.reimbursement.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
     public function show($id)

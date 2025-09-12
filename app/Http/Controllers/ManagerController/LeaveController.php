@@ -7,6 +7,7 @@ use App\Models\ApprovalLink;
 use App\Models\Leave;
 use App\Models\User;
 use App\Roles;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -236,13 +237,13 @@ class LeaveController extends Controller
         if ($request->has('status_1')) {
             $leave->update([
                 'status_1' => $validated['status_1'],
-                'note_1' => $validated['note_1'] ?? ""
+                'note_1' => $validated['note_1'] ?? null
             ]);
             $status = $validated['status_1'];
         } else if ($request->has('status_2')) {
             $leave->update([
                 'status_2' => $validated['status_2'],
-                'note_2' => $validated['note_2'] ?? ""
+                'note_2' => $validated['note_2'] ?? null
             ]);
             $status = $validated['status_2'];
         }
@@ -315,4 +316,11 @@ class LeaveController extends Controller
         return redirect()->route('approver.leaves.index')
             ->with('success', 'Leave request updated successfully.');
     }
+
+    public function exportPdf(Leave $leave)
+    {
+        $pdf = Pdf::loadView('Employee.leaves.pdf', compact('leave'));
+        return $pdf->download('leave-details.pdf');
+    }
 }
+

@@ -17,6 +17,7 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
     Route::get('/leaves/export', [LeaveController::class, 'export'])
         ->name('leaves.export');
     Route::put('/leaves/{leave}/update-self', [LeaveController::class, 'updateSelf'])->name('leaves.updateSelf');
+    Route::get('/leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
     Route::resource('leaves', LeaveController::class)
         ->parameters([
             "leaves" => "leave"

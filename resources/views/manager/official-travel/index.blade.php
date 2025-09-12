@@ -121,6 +121,7 @@
         </form>
     </div>
 
+    <!-- My Official Travel Requests Table -->
     <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
             <div class="flex items-center justify-between">
@@ -146,10 +147,22 @@
                                 Days</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 1 - Team Lead</th>
+                                Costs</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 2 - Manager</th>
+                                Status - Approver 1</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Status - Approver 2</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Approver 1</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Approver 2</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Customer</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Actions</th>
@@ -160,36 +173,43 @@
                         <tr class="transition-colors duration-200 hover:bg-neutral-50">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div>
-                                    <div class="text-sm font-medium text-neutral-900">#{{ $officialTravel->id }}</div>
+                                    <div class="text-sm font-medium text-neutral-900">#TY{{ $officialTravel->id }}</div>
                                     <div class="text-sm text-neutral-500">{{ $officialTravel->created_at->format('M d,
                                         Y') }}</div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">
-                                    {{ $officialTravel->date_start->format('M d') }}
+                                <div class="text-sm text-neutral-900">{{ $officialTravel->date_start->format('M d Y') }}
                                 </div>
-                                <div class="text-sm text-neutral-500">
-                                    to {{ $officialTravel->date_end->format('M d') }}
-                                </div>
+                                <div class="text-sm text-neutral-500">to {{ $officialTravel->date_end->format('M d Y')
+                                    }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-bold text-neutral-900">{{ $officialTravel->total }} day{{
-                                    $officialTravel->total > 1 ? 's' : '' }}</div>
+                                @php
+                                $start = \Carbon\Carbon::parse($officialTravel->date_start);
+                                $end = \Carbon\Carbon::parse($officialTravel->date_end);
+                                $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
+                                @endphp
+                                <div class="text-sm font-bold text-neutral-900">{{ $totalDays }} day{{ $totalDays > 1 ?
+                                    's' : '' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-bold text-success-600">{{ '+Rp' .
+                                    number_format($officialTravel->total ?? 0, 0, ',', '.') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($officialTravel->status_1 === 'pending')
-                                <span class="text-yellow-500 badge-pending">
+                                <span class="badge-pending text-warning-600">
                                     <i class="mr-1 fas fa-clock"></i>
                                     Pending
                                 </span>
                                 @elseif($officialTravel->status_1 === 'approved')
-                                <span class="text-green-500 badge-approved">
+                                <span class="badge-approved text-success-600">
                                     <i class="mr-1 fas fa-check-circle"></i>
                                     Approved
                                 </span>
                                 @elseif($officialTravel->status_1 === 'rejected')
-                                <span class="text-red-500 badge-rejected">
+                                <span class="badge-rejected text-error-600">
                                     <i class="mr-1 fas fa-times-circle"></i>
                                     Rejected
                                 </span>
@@ -197,21 +217,31 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($officialTravel->status_2 === 'pending')
-                                <span class="text-yellow-500 badge-pending">
+                                <span class="badge-pending text-warning-600">
                                     <i class="mr-1 fas fa-clock"></i>
                                     Pending
                                 </span>
                                 @elseif($officialTravel->status_2 === 'approved')
-                                <span class="text-green-500 badge-approved">
+                                <span class="badge-approved text-success-600">
                                     <i class="mr-1 fas fa-check-circle"></i>
                                     Approved
                                 </span>
                                 @elseif($officialTravel->status_2 === 'rejected')
-                                <span class="text-red-500 badge-rejected">
+                                <span class="badge-rejected text-error-600">
                                     <i class="mr-1 fas fa-times-circle"></i>
                                     Rejected
                                 </span>
                                 @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A' }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-900">{{ $officialTravel->customer ?? 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
@@ -219,38 +249,36 @@
                                         class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <!-- Fixed permission logic - only show edit/delete for own requests -->
-                                    @if($officialTravel->status_1 === 'pending' && Auth::id() ===
-                                    $officialTravel->employee_id)
+                                    @if(Auth::id() === $officialTravel->employee_id && $officialTravel->status_1 ===
+                                    'pending')
                                     <a href="{{ route('manager.official-travels.edit', $officialTravel->id) }}"
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    <!-- Tombol Delete dengan atribut data -->
                                     <button type="button"
                                         class="delete-officialTravel-btn text-error-600 hover:text-error-900"
                                         data-officialTravel-id="{{ $officialTravel->id }}"
-                                        data-officialTravel-name="officialTravel Request #{{ $officialTravel->id }}"
-                                        data-table="all" title="Delete">
+                                        data-officialTravel-name="Official Travel Request #TY{{ $officialTravel->id }}"
+                                        data-table="own" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                     @endif
                                 </div>
                             </td>
                         </tr>
-                        @if($officialTravel->status_1 === 'pending' && Auth::id() === $officialTravel->employee_id)
-                        <form id="all-delete-form-{{ $officialTravel->id }}"
-                            action="{{ route('manager.official-travels.destroy', $officialTravel->id) }}" method="POST"
-                            style="display: none;">
-                            @csrf
-                            @method('DELETE')
-                        </form>
-                        @endif
                         @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="10" class="px-6 py-12 text-center">
                                 <div class="text-neutral-400">
                                     <i class="mb-4 text-4xl fas fa-plane"></i>
                                     <p class="text-lg font-medium">No official travel requests found</p>
+                                    <p class="text-sm">Submit your first travel request to get started</p>
+                                    <a href="{{ route('manager.official-travels.create') }}"
+                                        class="inline-flex items-center px-4 py-2 mt-4 text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
+                                        <i class="mr-2 fas fa-plus"></i>
+                                        New Travel Request
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -266,6 +294,8 @@
             @endif
         </div>
     </div>
+
+    <!-- All Official Travel Requests Table -->
     <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
             <div class="flex items-center justify-between">
@@ -294,10 +324,22 @@
                                 Days</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 1 - Team Lead</th>
+                                Costs</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                                Status 2 - Manager</th>
+                                Status - Approver 1</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Status - Approver 2</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Approver 1</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Approver 2</th>
+                            <th
+                                class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
+                                Customer</th>
                             <th
                                 class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                                 Actions</th>
@@ -308,7 +350,7 @@
                         <tr class="transition-colors duration-200 hover:bg-neutral-50">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div>
-                                    <div class="text-sm font-medium text-neutral-900">#{{ $officialTravel->id }}</div>
+                                    <div class="text-sm font-medium text-neutral-900">#TY{{ $officialTravel->id }}</div>
                                     <div class="text-sm text-neutral-500">{{ $officialTravel->created_at->format('M d,
                                         Y') }}</div>
                                 </div>
@@ -331,38 +373,44 @@
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-medium text-neutral-900">{{
-                                            $officialTravel->employee->name
-                                            }}</div>
+                                            $officialTravel->employee->name }}</div>
                                         <div class="text-sm text-neutral-500">{{ $officialTravel->employee->email }}
                                         </div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">
-                                    {{ $officialTravel->date_start->format('M d') }}
+                                <div class="text-sm text-neutral-900">{{ $officialTravel->date_start->format('M d Y') }}
                                 </div>
-                                <div class="text-sm text-neutral-500">
-                                    to {{ $officialTravel->date_end->format('M d') }}
-                                </div>
+                                <div class="text-sm text-neutral-500">to {{ $officialTravel->date_end->format('M d Y')
+                                    }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-bold text-neutral-900">{{ $officialTravel->total }} day{{
-                                    $officialTravel->total > 1 ? 's' : '' }}</div>
+                                @php
+                                $start = \Carbon\Carbon::parse($officialTravel->date_start);
+                                $end = \Carbon\Carbon::parse($officialTravel->date_end);
+                                $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
+                                @endphp
+                                <div class="text-sm font-bold text-neutral-900">{{ $totalDays }} day{{ $totalDays > 1 ?
+                                    's' : '' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-bold text-success-600">{{ '+Rp' .
+                                    number_format($officialTravel->total ?? 0, 0, ',', '.') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($officialTravel->status_1 === 'pending')
-                                <span class="text-yellow-500 badge-pending">
+                                <span class="badge-pending text-warning-600">
                                     <i class="mr-1 fas fa-clock"></i>
                                     Pending
                                 </span>
                                 @elseif($officialTravel->status_1 === 'approved')
-                                <span class="text-green-500 badge-approved">
+                                <span class="badge-approved text-success-600">
                                     <i class="mr-1 fas fa-check-circle"></i>
                                     Approved
                                 </span>
                                 @elseif($officialTravel->status_1 === 'rejected')
-                                <span class="text-red-500 badge-rejected">
+                                <span class="badge-rejected text-error-600">
                                     <i class="mr-1 fas fa-times-circle"></i>
                                     Rejected
                                 </span>
@@ -370,21 +418,31 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($officialTravel->status_2 === 'pending')
-                                <span class="text-yellow-500 badge-pending">
+                                <span class="badge-pending text-warning-600">
                                     <i class="mr-1 fas fa-clock"></i>
                                     Pending
                                 </span>
                                 @elseif($officialTravel->status_2 === 'approved')
-                                <span class="text-green-500 badge-approved">
+                                <span class="badge-approved text-success-600">
                                     <i class="mr-1 fas fa-check-circle"></i>
                                     Approved
                                 </span>
                                 @elseif($officialTravel->status_2 === 'rejected')
-                                <span class="text-red-500 badge-rejected">
+                                <span class="badge-rejected text-error-600">
                                     <i class="mr-1 fas fa-times-circle"></i>
                                     Rejected
                                 </span>
                                 @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A' }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-neutral-900">{{ $officialTravel->customer ?? 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
@@ -392,17 +450,17 @@
                                         class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <!-- Fixed permission logic - only show edit/delete for own requests -->
-                                    @if($officialTravel->status_1 === 'pending' && Auth::id() ===
-                                    $officialTravel->employee_id)
+                                    @if(Auth::id() === $officialTravel->employee_id && $officialTravel->status_1 ===
+                                    'pending')
                                     <a href="{{ route('manager.official-travels.edit', $officialTravel->id) }}"
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    <!-- Tombol Delete dengan atribut data -->
                                     <button type="button"
                                         class="delete-officialTravel-btn text-error-600 hover:text-error-900"
                                         data-officialTravel-id="{{ $officialTravel->id }}"
-                                        data-officialTravel-name="officialTravel Request #{{ $officialTravel->id }}"
+                                        data-officialTravel-name="Official Travel Request #TY{{ $officialTravel->id }}"
                                         data-table="all" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -410,20 +468,18 @@
                                 </div>
                             </td>
                         </tr>
-                        @if($officialTravel->status_1 === 'pending' && Auth::id() === $officialTravel->employee_id)
-                        <form id="all-delete-form-{{ $officialTravel->id }}"
-                            action="{{ route('manager.official-travels.destroy', $officialTravel->id) }}" method="POST"
-                            style="display: none;">
-                            @csrf
-                            @method('DELETE')
-                        </form>
-                        @endif
                         @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
+                            <td colspan="10" class="px-6 py-12 text-center">
                                 <div class="text-neutral-400">
                                     <i class="mb-4 text-4xl fas fa-plane"></i>
                                     <p class="text-lg font-medium">No official travel requests found</p>
+                                    <p class="text-sm">Submit your first travel request to get started</p>
+                                    <a href="{{ route('manager.official-travels.create') }}"
+                                        class="inline-flex items-center px-4 py-2 mt-4 text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
+                                        <i class="mr-2 fas fa-plus"></i>
+                                        New Travel Request
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -439,6 +495,30 @@
             @endif
         </div>
     </div>
+
+    <!-- Hidden Delete Forms -->
+    @foreach($ownRequests as $officialTravel)
+    @if(Auth::id() === $officialTravel->employee_id && $officialTravel->status_1 === 'pending')
+    <form id="own-delete-form-{{ $officialTravel->id }}"
+        action="{{ route('manager.official-travels.destroy', $officialTravel->id) }}" method="POST"
+        style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
+    @endif
+    @endforeach
+
+    @foreach($allUsersRequests as $officialTravel)
+    @if(Auth::id() === $officialTravel->employee_id && $officialTravel->status_1 === 'pending')
+    <form id="all-delete-form-{{ $officialTravel->id }}"
+        action="{{ route('manager.official-travels.destroy', $officialTravel->id) }}" method="POST"
+        style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
+    @endif
+    @endforeach
+
     <div id="toast" class="fixed z-50 hidden top-4 right-4">
         <div id="toastContent" class="px-6 py-4 rounded-lg shadow-lg">
             <div class="flex items-center">
@@ -450,13 +530,12 @@
         </div>
     </div>
 </main>
-
 @endsection
-@section('partial-modal')
 
+@section('partial-modal')
 <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-
+        <div class="fixed inset-0 transition-opacity bg-opacity-75 " onclick="closeDeleteModal()"></div>
         <div
             class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
             <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
@@ -465,9 +544,7 @@
                         d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                 </svg>
             </div>
-
             <div class="text-center">
-                <!-- Fixed modal content to reference official travels instead of employees -->
                 <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Official Travel Request</h3>
                 <p class="mb-6 text-sm text-gray-500">
                     Are you sure you want to delete <span id="officialTravelName"
@@ -475,7 +552,6 @@
                     This action cannot be undone.
                 </p>
             </div>
-
             <div class="flex justify-center space-x-3">
                 <button type="button" id="cancelDeleteButton"
                     class="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg cancel-delete-btn hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
@@ -497,112 +573,113 @@
         </div>
     </div>
 </div>
-
 @endsection
-
-
 
 @push('scripts')
 <script>
     function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    const toastContent = document.getElementById('toastContent');
-    const toastMessage = document.getElementById('toastMessage');
+        const toast = document.getElementById('toast');
+        const toastContent = document.getElementById('toastContent');
+        const toastMessage = document.getElementById('toastMessage');
 
-    toastMessage.textContent = message;
+        toastMessage.textContent = message;
 
-    if (type === 'success') {
-        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-green-500 text-white';
-    } else {
-        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-red-500 text-white';
+        if (type === 'success') {
+            toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-green-500 text-white';
+        } else {
+            toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-red-500 text-white';
+        }
+
+        toast.classList.remove('hidden');
+
+        setTimeout(() => {
+            hideToast();
+        }, 5000);
     }
 
-    toast.classList.remove('hidden');
+    function hideToast() {
+        document.getElementById('toast').classList.add('hidden');
+    }
 
-    setTimeout(() => {
-        hideToast();
-    }, 5000);
-}
-
-function hideToast() {
-    document.getElementById('toast').classList.add('hidden');
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDeleteFunctionality();
-});
-
-
-let officialTravelIdToDelete = null;
-
-function initializeDeleteFunctionality() {
-    // Add event listeners to all delete buttons
-    const deleteButtons = document.querySelectorAll('.delete-officialTravel-btn');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const officialTravelId = this.getAttribute('data-officialTravel-id');
-            const officialTravelName = this.getAttribute('data-officialTravel-name');
-            confirmDelete(officialTravelId, officialTravelName);
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeDeleteFunctionality();
     });
 
-    // Add event listener for confirm delete button
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', executeDelete);
+    let officialTravelIdToDelete = null;
+    let deleteTableType = null; // Tambahkan variabel untuk jenis tabel
+
+    function initializeDeleteFunctionality() {
+        // Tambahkan event listeners ke semua tombol delete
+        const deleteButtons = document.querySelectorAll('.delete-officialTravel-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const officialTravelId = this.getAttribute('data-officialTravel-id');
+                const officialTravelName = this.getAttribute('data-officialTravel-name');
+                const tableType = this.getAttribute('data-table'); // Ambil jenis tabel
+                confirmDelete(officialTravelId, officialTravelName, tableType); // Kirim jenis tabel
+            });
+        });
+
+        // Tambahkan event listener untuk tombol konfirmasi delete
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', executeDelete);
+        }
+
+        // Tambahkan event listener untuk tombol cancel
+        const cancelButton = document.getElementById('cancelDeleteButton');
+        if (cancelButton) {
+            cancelButton.addEventListener('click', closeDeleteModal);
+        }
     }
 
-    // Add event listener for cancel button
-    const cancelButton = document.getElementById('cancelDeleteButton');
-    if (cancelButton) {
-        cancelButton.addEventListener('click', closeDeleteModal);
+    function confirmDelete(officialTravelId, officialTravelName, tableType) {
+        officialTravelIdToDelete = officialTravelId;
+        deleteTableType = tableType; // Simpan jenis tabel
+        document.getElementById('officialTravelName').textContent = officialTravelName;
+        document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Cegah scrolling latar belakang
     }
-}
 
-function confirmDelete(officialTravelId, officialTravelName) {
-    officialTravelIdToDelete = officialTravelId;
-    document.getElementById('officialTravelName').textContent = officialTravelName;
-    document.getElementById('deleteConfirmModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
-}
-
-function closeDeleteModal() {
-    officialTravelIdToDelete = null;
-    document.getElementById('deleteConfirmModal').classList.add('hidden');
-    document.body.style.overflow = 'auto'; // Restore scrolling
-}
-
-function executeDelete() {
-    if (!officialTravelIdToDelete) return;
-
-    // Show loading state
-    const deleteBtn = document.getElementById('confirmDeleteBtn');
-    const deleteText = document.getElementById('deleteButtonText');
-    const deleteSpinner = document.getElementById('deleteSpinner');
-    const cancelButton = document.getElementById('cancelDeleteButton');
-
-    cancelButton.disabled = true;
-    deleteBtn.disabled = true;
-    deleteText.textContent = 'Deleting...';
-    deleteSpinner.classList.remove('hidden');
-
-    const formId = `all-delete-form-${officialTravelIdToDelete}`;
-    const form = document.getElementById(formId);
-
-    if (form) {
-        form.submit();
-    } else {
-        console.error('Delete form not found:', formId);
-        showToast('Error: Could not find delete form', 'error');
-        closeDeleteModal();
+    function closeDeleteModal() {
+        officialTravelIdToDelete = null;
+        deleteTableType = null; // Reset jenis tabel
+        document.getElementById('deleteConfirmModal').classList.add('hidden');
+        document.body.style.overflow = 'auto'; // Pulihkan scrolling
     }
-}
 
-// Close modal when pressing Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeDeleteModal();
+    function executeDelete() {
+        if (!officialTravelIdToDelete || !deleteTableType) return; // Pastikan ID dan jenis tabel ada
+
+        // Tunjukkan loading state
+        const deleteBtn = document.getElementById('confirmDeleteBtn');
+        const deleteText = document.getElementById('deleteButtonText');
+        const deleteSpinner = document.getElementById('deleteSpinner');
+        const cancelButton = document.getElementById('cancelDeleteButton');
+
+        cancelButton.disabled = true;
+        deleteBtn.disabled = true;
+        deleteText.textContent = 'Deleting...';
+        deleteSpinner.classList.remove('hidden');
+
+        // Buat ID form berdasarkan jenis tabel dan ID request
+        const formId = `${deleteTableType}-delete-form-${officialTravelIdToDelete}`;
+        const form = document.getElementById(formId);
+
+        if (form) {
+            form.submit();
+        } else {
+            console.error('Delete form not found:', formId);
+            showToast('Error: Could not find delete form', 'error');
+            closeDeleteModal();
+        }
     }
-});
+
+    // Tutup modal saat menekan tombol Escape
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
 </script>
 @endpush

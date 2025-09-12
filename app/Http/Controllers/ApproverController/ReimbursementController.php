@@ -110,7 +110,9 @@ class ReimbursementController extends Controller
             ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_approver_at' => now()]);
 
-        return view('approver.reimbursement.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+        return view('approver.reimbursement.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
 
     }
 
@@ -300,7 +302,7 @@ class ReimbursementController extends Controller
 
             $reimbursement->update([
                 'status_2' => $validated['status_2'],
-                'note_2' => $validated['note_2'] ?? ''
+                'note_2' => $validated['note_2'] ?? null
             ]);
 
             $statusMessage = $validated['status_2'];

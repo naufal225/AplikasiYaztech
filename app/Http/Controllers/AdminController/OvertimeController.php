@@ -104,7 +104,9 @@ class OvertimeController extends Controller
         $rejectedRequests = Overtime::where('status_1', 'rejected')
             ->orWhere('status_2', 'rejected')->count();
 
-        return view('admin.overtime.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+        return view('admin.overtime.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
     public function show($id)
@@ -131,7 +133,7 @@ class OvertimeController extends Controller
         return view('admin.overtime.update', compact('overtime', 'approvers'));
     }
 
-    public function update(Request $request, Overtime $overtime)
+      public function update(Request $request, Overtime $overtime)
     {
         $user = Auth::user();
 

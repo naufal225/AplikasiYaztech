@@ -8,64 +8,44 @@
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <!-- Left Column - Main Details -->
         <div class="space-y-6 lg:col-span-2">
+            <!-- Request Header -->
             <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
-                    @if($errors->any())
-                    <div class="flex items-start p-4 mb-6 border border-red-200 bg-red-50 rounded-xl">
-                        <div class="flex-shrink-0">
-                            <svg class="w-5 h-5 text-red-600 mt-0.5" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <h4 class="text-sm font-medium text-red-800">Please correct the following errors:</h4>
-                            <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
-                                @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                    @endif
-
                     <div class="flex items-center justify-between">
                         <div>
-                            <h1 class="text-xl font-bold text-white">Reimbursement Request #{{ $reimbursement->id }}
+                            <h1 class="text-xl font-bold text-white">Reimbursement Claim #RY{{ $reimbursement->id }}
                             </h1>
-                            <p class="text-sm text-primary-100">Submitted on {{
-                                Carbon\Carbon::parse($reimbursement->created_at)->format('M d, Y \a\t H:i') }}</p>
+                            <p class="text-sm text-primary-100">Submitted on {{ $reimbursement->created_at->format('M d,
+                                Y \a\t H:i') }}</p>
                         </div>
                         <div class="text-right">
-                            @if($reimbursement->final_status === 'pending')
-                            <span
-                                class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
-                                <i class="mr-1 fas fa-clock"></i>
-                                Pending Review
-                            </span>
-                            @elseif($reimbursement->final_status === 'approved')
-                            <span
-                                class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
-                                <i class="mr-1 fas fa-check-circle"></i>
-                                Approved
-                            </span>
-                            @elseif($reimbursement->final_status === 'rejected')
+                            @if($reimbursement->status_1 === 'rejected' || $reimbursement->status_2 === 'rejected')
                             <span
                                 class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
-                                <i class="mr-1 fas fa-times-circle"></i>
+                                <i class="mt-1 mr-1 fas fa-times-circle"></i>
                                 Rejected
+                            </span>
+                            @elseif($reimbursement->status_1 === 'approved' && $reimbursement->status_2 === 'approved')
+                            <span
+                                class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
+                                <i class="mt-1 mr-1 fas fa-check-circle"></i>
+                                Approved
+                            </span>
+                            @elseif($reimbursement->status_1 === 'pending' || $reimbursement->status_2 === 'pending')
+                            <span
+                                class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
+                                <i class="mt-1 mr-1 fas fa-clock"></i>
+                                {{ $reimbursement->status_1 === 'pending' ? 'Pending' : 'In Progress' }} Review
                             </span>
                             @endif
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- reimbursement Details -->
+            <!-- Reimbursement Details -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
-                    <h2 class="text-lg font-bold text-neutral-900">Reimbursement Details</h2>
+                    <h2 class="text-lg font-bold text-neutral-900">Claim Details</h2>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -74,55 +54,63 @@
                             <label class="text-sm font-semibold text-neutral-700">Email</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $reimbursement->employee->email ?? 'N/A'
-                                    }}</span>
+                                <span class="font-medium text-neutral-900">{{ $reimbursement->employee->email }}</span>
                             </div>
                         </div>
                         <!-- Approver -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Approver</label>
+                            <label class="text-sm font-semibold text-neutral-700">Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-user-check text-info-600"></i>
                                 <span class="font-medium text-neutral-900">{{ $reimbursement->approver->name ?? 'N/A'
                                     }}</span>
                             </div>
                         </div>
-                        <!-- Start Date -->
+                        <!-- Total (was Amount) -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Start Date</label>
+                            <label class="text-sm font-semibold text-neutral-700">Total Amount</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-calendar-alt text-primary-600"></i>
+                                <i class="mr-3 fas fa-dollar-sign text-primary-600"></i>
+                                <span class="font-medium text-neutral-900">Rp {{ number_format($reimbursement->total, 0,
+                                    ',', '.') }}</span>
+                            </div>
+                        </div>
+                        <!-- Date -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Date of Expense</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-calendar-day text-secondary-600"></i>
                                 <span class="font-medium text-neutral-900">{{
-                                    \Carbon\Carbon::parse($reimbursement->date_start)->format('l, M d, Y') }}</span>
+                                    \Carbon\Carbon::parse($reimbursement->date)->format('l, M d, Y') }}</span>
                             </div>
                         </div>
-                        <!-- End Date -->
+                        <!-- Customer -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">End Date</label>
+                            <label class="text-sm font-semibold text-neutral-700">Customer</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-calendar-alt text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{
-                                    \Carbon\Carbon::parse($reimbursement->date_end)->format('l, M d, Y') }}</span>
+                                <i class="mr-3 fas fa-users text-info-600"></i>
+                                <span class="font-medium text-neutral-900">{{ $reimbursement->customer ?? 'N/A'
+                                    }}</span>
                             </div>
                         </div>
-                        <!-- Duration -->
+                        <!-- Invoice Path (was Attachment) -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Duration</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-clock text-secondary-600"></i>
-                                <span class="font-medium text-neutral-900">
-                                    {{ (int)
-                                    \Carbon\Carbon::parse($reimbursement->date_start)->diffInDays(\Carbon\Carbon::parse($reimbursement->date_end,
-                                    ), false) + 1 }}
-                                    {{ (int)
-                                    \Carbon\Carbon::parse($reimbursement->date_start)->diffInDays(\Carbon\Carbon::parse($reimbursement->date_end,
-                                    ), false) + 1 === 1 ? 'day' : 'days' }}
-                                </span>
+                            <label class="text-sm font-semibold text-neutral-700">Invoice</label>
+                            <div class="p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                @if($reimbursement->invoice_path)
+                                <a href="{{ Storage::url($reimbursement->invoice_path) }}" target="_blank"
+                                    class="flex items-center font-medium text-primary-600 hover:text-primary-800">
+                                    <i class="mr-2 fas fa-file-alt"></i>
+                                    View Invoice ({{ pathinfo($reimbursement->invoice_path, PATHINFO_EXTENSION) }})
+                                </a>
+                                @else
+                                <p class="text-neutral-500">No invoice provided.</p>
+                                @endif
                             </div>
                         </div>
-                        <!-- final_status -->
+                        <!-- Status -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status 1 - Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">Status - Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($reimbursement->status_1 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -136,17 +124,8 @@
                                 @endif
                             </div>
                         </div>
-
-                        <!-- Moved reason section inside grid to fix structure -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Reason for reimbursement</label>
-                            <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <p class="leading-relaxed text-neutral-900">{{ $reimbursement->reason }}</p>
-                            </div>
-                        </div>
-
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status 2 - Manager</label>
+                            <label class="text-sm font-semibold text-neutral-700">Status - Approver 2</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($reimbursement->status_2 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -160,34 +139,22 @@
                                 @endif
                             </div>
                         </div>
-                    </div>
-                    <!-- Reason -->
-
-                    <!-- Added approval/rejection notes section if final_status is not pending -->
-                    @if($reimbursement->final_status !== 'pending' && !empty($reimbursement->approval_notes))
-                    <div class="mt-6 space-y-2">
-                        <label class="text-sm font-semibold text-neutral-700">
-                            @if($reimbursement->final_status === 'approved')
-                            Approval Notes
-                            @else
-                            Rejection Notes
-                            @endif
-                        </label>
-                        <div class="p-4 border rounded-lg
-                            @if($reimbursement->final_status === 'approved')
-                                bg-success-50 border-success-200
-                            @else
-                                bg-error-50 border-error-200
-                            @endif">
-                            <p class="leading-relaxed
-                                @if($reimbursement->final_status === 'approved')
-                                    text-success-900
-                                @else
-                                    text-error-900
-                                @endif">{{ $reimbursement->approval_notes }}</p>
+                        <!-- Note -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                <span class="text-neutral-900">{{ $reimbursement->note_1 ?? '-' }}</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                <span class="text-neutral-900">{{ $reimbursement->note_2 ?? '-' }}</span>
+                            </div>
                         </div>
                     </div>
-                    @endif
                 </div>
             </div>
         </div>
@@ -264,10 +231,10 @@
 
                         <div class="space-y-4">
                             <div>
-                                <label for="approval_notes" class="block mb-2 text-sm font-semibold text-neutral-700">
+                                <label for="note_2" class="block mb-2 text-sm font-semibold text-neutral-700">
                                     Notes <span class="text-neutral-500">(Optional)</span>
                                 </label>
-                                <textarea name="approval_notes" id="approval_notes" rows="4"
+                                <textarea name="note_2" id="note_2" rows="4"
                                     class="w-full px-3 py-2 border rounded-lg resize-none border-neutral-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                     placeholder="Add any comments or reasons for your decision..."></textarea>
                             </div>
@@ -291,16 +258,16 @@
                     <div class="p-4 text-center text-green-800 rounded-lg bg-green-50">
                         <i class="mb-2 text-xl fas fa-check-circle"></i>
                         <p class="font-medium">Approved by Manager</p>
-                        @if($reimbursement->approval_notes)
-                        <p class="mt-2 text-sm"><strong>Notes:</strong> {{ $reimbursement->approval_notes }}</p>
+                        @if($reimbursement->note_2)
+                        <p class="mt-2 text-sm"><strong>Notes:</strong> {{ $reimbursement->note_2 }}</p>
                         @endif
                     </div>
                     @elseif($reimbursement->status_2 === 'rejected')
                     <div class="p-4 text-center text-red-800 rounded-lg bg-red-50">
                         <i class="mb-2 text-xl fas fa-times-circle"></i>
                         <p class="font-medium">Rejected by Manager</p>
-                        @if($reimbursement->approval_notes)
-                        <p class="mt-2 text-sm"><strong>Reason:</strong> {{ $reimbursement->approval_notes }}</p>
+                        @if($reimbursement->note_2)
+                        <p class="mt-2 text-sm"><strong>Reason:</strong> {{ $reimbursement->note_2 }}</p>
                         @else
                         <p class="text-sm">No reason provided.</p>
                         @endif

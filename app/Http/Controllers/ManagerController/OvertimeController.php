@@ -102,7 +102,11 @@ class OvertimeController extends Controller
             // ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_manager_at' => now()]);
 
-        return view('manager.overtime.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+
+        return view('manager.overtime.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
     public function show($id)
@@ -135,13 +139,13 @@ class OvertimeController extends Controller
         if ($request->has('status_1')) {
             $overtime->update([
                 'status_1' => $validated['status_1'],
-                'note_1' => $validated['note_1'] ?? ""
+                'note_1' => $validated['note_1'] ?? null
             ]);
             $status = $validated['status_1'];
         } else if ($request->has('status_2')) {
             $overtime->update([
                 'status_2' => $validated['status_2'],
-                'note_2' => $validated['note_2'] ?? ""
+                'note_2' => $validated['note_2'] ?? null
             ]);
             $status = $validated['status_2'];
         }
@@ -149,7 +153,7 @@ class OvertimeController extends Controller
         return redirect()->route('manager.overtimes.index')->with('success', 'Overtime request ' . $status . ' successfully.');
     }
 
-    public function updateSelf(Request $request, Overtime $overtime)
+     public function updateSelf(Request $request, Overtime $overtime)
     {
         $user = Auth::user();
 
@@ -179,7 +183,7 @@ class OvertimeController extends Controller
 
         $overtimeMinutes = $start->diffInMinutes($end);
 
-        $overtimeHours = $overtimeMinutes / 60;
+        $overtimeHours = round($overtimeMinutes / 60);
 
         if ($overtimeHours < 0.5) {
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
@@ -189,7 +193,7 @@ class OvertimeController extends Controller
         $overtime->customer = $request->customer;
         $overtime->date_start = $request->date_start;
         $overtime->date_end = $request->date_end;
-        $overtime->total = $overtimeMinutes; // Disimpan dalam menit
+        $overtime->total = (int) ($overtimeHours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0);
         $overtime->status_1 = 'pending';
         $overtime->status_2 = 'pending';
         $overtime->note_1 = NULL;
@@ -223,7 +227,7 @@ class OvertimeController extends Controller
             );
         }
 
-        return redirect()->route('manager.overtimes.index', $overtime->id)
+        return redirect()->route('manager.overtimes.show', $overtime->id)
             ->with('success', 'Overtime request updated successfully. Total overtime: ' . $hours . ' hours ' . $minutes . ' minutes');
     }
 
@@ -262,7 +266,7 @@ class OvertimeController extends Controller
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
         }
 
-        $hours = floor($overtimeMinutes / 60);
+        $hours = round($overtimeMinutes / 60);
         $minutes = $overtimeMinutes % 60;
 
         DB::transaction(function () use ($start, $end, $overtimeMinutes, $hours, $minutes, $request) {
@@ -271,7 +275,7 @@ class OvertimeController extends Controller
             $overtime->customer = $request->customer;
             $overtime->date_start = $start;
             $overtime->date_end = $end;
-            $overtime->total = $overtimeMinutes;
+            $overtime->total = (int) ((int) ($hours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0));
             $overtime->status_1 = 'pending';
             $overtime->status_2 = 'pending';
             $overtime->save();
