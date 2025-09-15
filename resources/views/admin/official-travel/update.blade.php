@@ -91,20 +91,6 @@
                     <input type="date" id="date_end" name="date_end" class="form-input"
                         value="{{ $officialTravel->date_end->format('Y-m-d') }}" required min="{{ date('Y-m-d') }}"
                         onchange="calculateDays()">
-                    <p class="mt-1 text-xs text-neutral-500">Current duration: {{ $officialTravel->total }} day{{
-                        $officialTravel->total > 1 ? 's' : '' }}</p>
-                </div>
-            </div>
-
-            Travel Duration Display
-            <div id="duration-calculation" class="p-4 border border-green-200 rounded-lg bg-green-50">
-                <div class="flex items-start">
-                    <i class="fas fa-calculator text-green-600 mr-3 mt-0.5"></i>
-                    <div>
-                        <h4 class="mb-1 text-sm font-semibold text-green-800">Travel Duration</h4>
-                        <p id="duration-total" class="text-sm font-bold text-green-800">Total Duration: {{
-                            $officialTravel->total ?? '0' }} day{{ $officialTravel->total > 1 ? 's' : '' }}</p>
-                    </div>
                 </div>
             </div>
 

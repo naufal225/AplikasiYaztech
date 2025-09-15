@@ -11,6 +11,7 @@ use App\Http\Controllers\AdminController\OfficialTravelController;
 use App\Http\Controllers\AdminController\OvertimeController;
 use App\Http\Controllers\AdminController\ProfileController;
 use App\Http\Controllers\AdminController\ReimbursementController;
+use App\Http\Controllers\AdminController\ReimbursementTypeController;
 use App\Models\OfficialTravel;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,11 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('reimbursements', ReimbursementController::class)
         ->parameters([
             "reimbursements" => "reimbursement"
+        ]);
+
+    Route::resource('reimbursement-types', ReimbursementTypeController::class)
+        ->parameters([
+            "reimbursementType" => "reimbursementType"
         ]);
 
     Route::get('/overtimes/export', [OvertimeController::class, 'export'])
