@@ -11,6 +11,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="icon" type="image/x-icon" href="{{ asset('yaztech-icon.jpg') }}">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
     @stack('styles')
 </head>
 
@@ -97,6 +99,23 @@
                 document.body.classList.remove('overflow-hidden');
             }
         });
+
+        function toggleDropdown(id) {
+        const dropdown = document.getElementById(id);
+        const icon = document.getElementById(id + '-icon');
+        const isOpen = dropdown.classList.contains('max-h-40');
+
+        if (isOpen) {
+            dropdown.classList.remove('max-h-40');
+            dropdown.classList.add('max-h-0');
+            icon.classList.remove('rotate-180');
+        } else {
+            dropdown.classList.remove('max-h-0');
+            dropdown.classList.add('max-h-40');
+            icon.classList.add('rotate-180');
+        }
+    }
+
     </script>
 </body>
 

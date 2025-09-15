@@ -84,14 +84,14 @@ class ReimbursementController extends Controller
 
         if ($request->filled('from_date')) {
             $fromDate = Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta');
-            $ownRequestsQuery->where('created_at', '>=', $fromDate);
-            $allUsersQuery->where('created_at', '>=', $fromDate);
+            $ownRequestsQuery->where('date', '>=', $fromDate);
+            $allUsersQuery->where('date', '>=', $fromDate);
         }
 
         if ($request->filled('to_date')) {
             $toDate = Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta');
-            $ownRequestsQuery->where('created_at', '<=', $toDate);
-            $allUsersQuery->where('created_at', '<=', $toDate);
+            $ownRequestsQuery->where('date', '<=', $toDate);
+            $allUsersQuery->where('date', '<=', $toDate);
         }
 
         $ownRequests = $ownRequestsQuery->paginate(10, ['*'], 'own_page');

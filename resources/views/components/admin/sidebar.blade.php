@@ -1,5 +1,5 @@
 <!-- Sidebar -->
-<div class="fixed inset-y-0 left-0 z-30 z-50 flex flex-col w-64 text-white transition-transform duration-300 ease-in-out transform -translate-x-full bg-primary-800 shadow-medium lg:relative lg:translate-x-0"
+<div class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 text-white transition-transform duration-300 ease-in-out transform -translate-x-full bg-primary-800 shadow-medium lg:relative lg:translate-x-0"
     id="sidebar">
     <div class="flex items-center justify-between px-6 py-4 bg-primary-900">
         <div class="w-full">
@@ -30,23 +30,54 @@
             <span class="font-medium">User</span>
         </a>
 
-        <a href="{{ route('admin.leaves.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-            <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
-            <span class="font-medium">Leave Requests</span>
-        </a>
+        <!-- Leave Dropdown -->
+        <div class="space-y-1"
+            x-data="{ open: {{ request()->routeIs('admin.leaves.*', 'admin.leave-balances.*') ? 'true' : 'false' }} }">
+            <button type="button"
+                class="flex items-center w-full px-4 py-3 text-left transition-all duration-200 rounded-lg"
+                :class="open ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white'"
+                @click="open = !open">
+                <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
+                <span class="flex-1 font-medium">Leave Management</span>
+                <i class="text-xs transition-transform duration-200 fas fa-chevron-down"
+                    :class="{'rotate-180': open}"></i>
+            </button>
+            <div class="pl-4 space-y-1 overflow-hidden" x-show="open" x-collapse>
+                <a href="{{ route('admin.leaves.index') }}"
+                    class="flex items-center px-4 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.leaves.*') ? 'bg-primary-600 text-white' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
+                    <span>Leave Requests</span>
+                </a>
+                <a href="{{ route('admin.leave-balances.index') }}"
+                    class="flex items-center px-4 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.leave-balances.*') ? 'bg-primary-600 text-white' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
+                    <span>Leave Balances</span>
+                </a>
+            </div>
+        </div>
 
-        <a href="{{ route('admin.leave-balances.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.leave-balances.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-            <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
-            <span class="font-medium">Leave Balances</span>
-        </a>
+        <!-- Reimbursement Dropdown -->
+        <div class="space-y-1"
+            x-data="{ open: {{ request()->routeIs('admin.reimbursements.*') || request()->routeIs('admin.reimbursement-types.*') ? 'true' : 'false' }} }">
 
-        <a href="{{ route('admin.reimbursements.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
-            <i class="w-5 mr-3 text-center fas fa-file-invoice-dollar"></i>
-            <span class="font-medium">Reimbursement Requests</span>
-        </a>
+            <button type="button"
+                class="flex items-center w-full px-4 py-3 text-left transition-all duration-200 rounded-lg"
+                :class="open ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white'"
+                @click="open = !open">
+                <i class="w-5 mr-3 text-center fas fa-file-invoice-dollar"></i>
+                <span class="flex-1 font-medium">Reimbursement</span>
+                <i class="text-xs transition-transform duration-200 fas fa-chevron-down"
+                    :class="{'rotate-180': open}"></i>
+            </button>
+            <div class="pl-4 space-y-1 overflow-hidden" x-show="open" x-collapse>
+                <a href="{{ route('admin.reimbursements.index') }}"
+                    class="flex items-center px-4 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.reimbursements.index') ? 'bg-primary-600 text-white' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
+                    <span>All Requests</span>
+                </a>
+                <a href="{{ route('admin.reimbursement-types.index') }}"
+                    class="flex items-center px-4 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.reimbursement-types.*') ? 'bg-primary-600 text-white' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
+                    <span>Reimbursement Types</span>
+                </a>
+            </div>
+        </div>
 
         <a href="{{ route('admin.overtimes.index') }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
@@ -59,7 +90,6 @@
             <i class="w-5 mr-3 text-center fas fa-briefcase"></i>
             <span class="font-medium">Official Travel Requests</span>
         </a>
-
     </nav>
 
     <div class="p-4 border-t border-primary-700">

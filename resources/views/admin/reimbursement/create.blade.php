@@ -51,18 +51,33 @@
             class="p-6 space-y-6">
             @csrf
 
-            <div>
-                <label for="customer" class="block mb-2 text-sm font-semibold text-neutral-700">
-                    <i class="mr-2 fas fa-users text-primary-600"></i>
-                    Customer
-                </label>
-
-                <!-- Input tampilan -->
-                <input type="text" name="customer" id="customer" class="form-input" value="{{ old('customer') }}"
-                    placeholder="e.g., John Doe" required>
-            </div>
-
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label for="customer" class="block mb-2 text-sm font-semibold text-neutral-700">
+                        <i class="mr-2 fas fa-users text-primary-600"></i>
+                        Customer
+                    </label>
+
+                    <!-- Input tampilan -->
+                    <input type="text" name="customer" id="customer" class="form-input" value="{{ old('customer') }}"
+                        placeholder="e.g., John Doe" required>
+                </div>
+
+                <div>
+                    <label for="reimbursement_type_id" class="block mb-2 text-sm font-semibold text-neutral-700">
+                        <i class="mr-2 fas fa-list text-primary-600"></i>
+                        Type Reimbursement
+                    </label>
+                    <select name="reimbursement_type_id" id="reimbursement_type_id" class="form-select" required>
+                        <option value="">-- Select Type --</option>
+                        @foreach($types as $type)
+                        <option value="{{ $type->id }}" {{ old('reimbursement_type_id')==$type->id ? 'selected' : '' }}>
+                            {{ $type->name }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div>
                     <label for="total_display" class="block mb-2 text-sm font-semibold text-neutral-700">
                         <i class="mr-2 fas fa-dollar-sign text-primary-600"></i>
@@ -133,7 +148,6 @@
                         <ul class="space-y-1 text-xs text-primary-700">
                             <li>• All claims must be submitted within 30 days of the expense date.</li>
                             <li>• Original receipts or digital copies are required for all claims.</li>
-                            <li>• Claims over Rp 1.000.000 require additional manager approval.</li>
                             <li>• Personal expenses are not eligible for reimbursement.</li>
                         </ul>
                     </div>
@@ -141,7 +155,7 @@
             </div>
 
             <div class="flex justify-end pt-6 space-x-4 border-t border-neutral-200">
-                <a href="{{ url()->previous() }}"
+                <a href="{{ route('admin.reimbursements.index') }}"
                     class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
                     <i class="mr-2 fas fa-times"></i>
                     Cancel
