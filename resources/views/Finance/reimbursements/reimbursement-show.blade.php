@@ -182,6 +182,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Employee</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Total</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Type</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Approver 1</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Approver 2</th>
@@ -218,6 +219,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">Rp {{ number_format($reimbursement->total, 0, ',', '.') }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->type->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">{{ \Carbon\Carbon::parse($reimbursement->date)->format('M d, Y') }}</div>
@@ -290,7 +294,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="px-6 py-12 text-center">
+                                <td colspan="11" class="px-6 py-12 text-center">
                                     <div class="text-neutral-400">
                                         <i class="fas fa-receipt text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No reimbursement requests found</p>
@@ -341,6 +345,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Request ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Employee</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Total</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Type</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status 1 - Approver 1</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status 2 - Approver 2</th>
@@ -392,6 +397,9 @@
                                     <div class="text-sm text-neutral-900">
                                         Rp {{ number_format($reimbursement->total, 0, ',', '.') }}
                                     </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->type->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">
@@ -448,7 +456,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="px-6 py-12 text-center">
+                                <td colspan="12" class="px-6 py-12 text-center">
                                     <div class="text-neutral-400">
                                         <i class="fas fa-receipt text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No reimbursement employee (No marked done) requests found</p>
@@ -471,6 +479,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request ID</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Employee</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Total</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Type</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Date</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 1 - Approver 1</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Approver 2</th>
@@ -507,6 +516,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">Rp {{ number_format($reimbursement->total, 0, ',', '.') }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $reimbursement->type->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">{{ \Carbon\Carbon::parse($reimbursement->date)->format('M d, Y') }}</div>
@@ -566,7 +578,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="px-6 py-12 text-center">
+                                <td colspan="11" class="px-6 py-12 text-center">
                                     <div class="text-neutral-400">
                                         <i class="fas fa-receipt text-4xl mb-4"></i>
                                         <p class="text-lg font-medium">No reimbursement employee (Marked done) requests found</p>

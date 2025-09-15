@@ -27,9 +27,11 @@ class OfficialTravelController extends Controller
      */
     public function index(Request $request)
     {
+        $userId = Auth::id();
+
         // --- Query untuk "Your Official Travels"
         $yourTravelsQuery = OfficialTravel::with(['employee', 'approver'])
-            ->where('employee_id', Auth::id())
+            ->where('employee_id', $userId)
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
@@ -46,14 +48,13 @@ class OfficialTravelController extends Controller
 
         if ($request->filled('status')) {
             $status = $request->status;
-
             $yourTravelsQuery->where(function ($q) use ($status) {
                 if ($status === 'rejected') {
                     $q->where('status_1', 'rejected')
-                        ->orWhere('status_2', 'rejected');
+                    ->orWhere('status_2', 'rejected');
                 } elseif ($status === 'approved') {
                     $q->where('status_1', 'approved')
-                        ->where('status_2', 'approved');
+                    ->where('status_2', 'approved');
                 } elseif ($status === 'pending') {
                     $q->where(function ($sub) {
                         $sub->where('status_1', 'pending')
@@ -69,10 +70,9 @@ class OfficialTravelController extends Controller
             });
         }
 
-        $yourTravels = $yourTravelsQuery->paginate(5, ['*'], 'your_page');
+        $yourTravels = $yourTravelsQuery->paginate(5, ['*'], 'your_page')->withQueryString();
 
-
-        // --- Query untuk "All Official Travels - Marked Down"
+        // --- Query untuk "All Official Travels Done (Marked Down)"
         $allTravelsDoneQuery = OfficialTravel::with(['employee', 'approver'])
             ->where('status_1', 'approved')
             ->where('status_2', 'approved')
@@ -91,69 +91,64 @@ class OfficialTravelController extends Controller
             );
         }
 
-        $allTravelsDone = $allTravelsDoneQuery->paginate(5, ['*'], 'all_page_done');
+        $allTravelsDone = $allTravelsDoneQuery->paginate(5, ['*'], 'all_page_done')->withQueryString();
 
-
-        // --- Query untuk "All Official Travels" (pakai lock)
+        // --- Query untuk "All Official Travels Not Marked (lockable)"
         $allTravels = collect();
-        DB::transaction(function () use (&$allTravels, $request) {
+        DB::transaction(function () use (&$allTravels, $request, $userId) {
             $query = OfficialTravel::with(['employee', 'approver'])
                 ->where('status_1', 'approved')
                 ->where('status_2', 'approved')
                 ->where('marked_down', false)
-                ->where(function ($q) {
+                ->where(function ($q) use ($userId) {
                     $q->whereNull('locked_by')
-                    ->orWhere(function ($q2) {
+                    ->orWhere(function ($q2) use ($userId) {
                         $q2->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) < ?', [now()]);
                     })
-                    ->orWhere(function ($q3) {
-                        $q3->where('locked_by', Auth::id())
+                    ->orWhere(function ($q3) use ($userId) {
+                        $q3->where('locked_by', $userId)
                             ->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) >= ?', [now()]);
                     });
                 })
                 ->orderBy('created_at', 'asc');
 
-            if ($request->filled('from_date')) {
+            if (request()->filled('from_date')) {
                 $query->where('date_start', '>=',
-                    Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
+                    Carbon::parse(request()->from_date)->startOfDay()->timezone('Asia/Jakarta')
                 );
             }
 
-            if ($request->filled('to_date')) {
+            if (request()->filled('to_date')) {
                 $query->where('date_end', '<=',
-                    Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
+                    Carbon::parse(request()->to_date)->endOfDay()->timezone('Asia/Jakarta')
                 );
             }
 
-            // Ambil data & lock untuk user ini
             $allTravels = $query->limit(5)->lockForUpdate()->get();
 
             if ($allTravels->isNotEmpty()) {
                 OfficialTravel::whereIn('id', $allTravels->pluck('id'))
                     ->update([
-                        'locked_by' => Auth::id(),
+                        'locked_by' => $userId,
                         'locked_at' => now(),
                     ]);
             }
         });
 
-
-        // --- Hitung statistik
-        $dataAll = OfficialTravel::query()
-            ->where('status_1', 'approved')
+        // --- Statistik
+        $dataAll = OfficialTravel::where('status_1', 'approved')
             ->where('status_2', 'approved');
 
-        $totalRequests = (clone $dataAll)->count();
-        $approvedRequests = (int) (clone $dataAll)->withFinalStatusCount()->first()->approved;
-        $markedRequests = (int) (clone $dataAll)->where('marked_down', true)->count();
-        $totalAllNoMark = (int) (clone $dataAll)->where('marked_down', false)->count();
+        $totalRequests = $dataAll->count();
+        $approvedRequests = optional($dataAll->withFinalStatusCount()->first())->approved ?? 0;
+        $markedRequests = (clone $dataAll)->where('marked_down', true)->count();
+        $totalAllNoMark = (clone $dataAll)->where('marked_down', false)->count();
 
         $countsYours = (clone $yourTravelsQuery)->withFinalStatusCount()->first();
-        $totalYoursRequests = (int) $yourTravelsQuery->count();
-        $pendingYoursRequests = (int) $countsYours->pending;
-        $approvedYoursRequests = (int) $countsYours->approved;
-        $rejectedYoursRequests = (int) $countsYours->rejected;
-
+        $totalYoursRequests = $yourTravelsQuery->count();
+        $pendingYoursRequests = optional($countsYours)->pending ?? 0;
+        $approvedYoursRequests = optional($countsYours)->approved ?? 0;
+        $rejectedYoursRequests = optional($countsYours)->rejected ?? 0;
 
         // --- Manager
         $manager = User::where('role', Roles::Manager->value)->first();

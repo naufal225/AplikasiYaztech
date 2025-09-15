@@ -92,8 +92,8 @@
     <div class="section">
         <div class="sub-title">Overtime Request #OY{{ $overtime->id }} | {{ \Carbon\Carbon::parse($overtime->created_at)->format('F d, Y \a\t H:i') }}</div>
         <h3>Employee Information</h3>
-        <div><span class="label">Email:</span> <span class="value">{{ Auth::user()->email }}</span></div>
-        <div><span class="label">Name:</span> <span class="value">{{ Auth::user()->name }}</span></div>
+        <div><span class="label">Email:</span> <span class="value">{{ $overtime->employee->email }}</span></div>
+        <div><span class="label">Name:</span> <span class="value">{{ $overtime->employee->name }}</span></div>
         <div><span class="label">Approver 1:</span> <span class="value">{{ $overtime->approver->name ?? 'N/A' }}</span></div>
         <div><span class="label">Divisi:</span> <span class="value">{{ $overtime->employee->division->name ?? 'N/A' }}</span></div>
     </div>
@@ -102,27 +102,34 @@
         <h3>Overtime Details</h3>
         <div class="grid-2">
             <div>
-                <div><span class="label">Customer:</span></div>
-                <div class="box">{{ $overtime->customer ?? 'N/A' }}</div>
+                <div><span class="label">Start s/d End Date:</span></div>
+                <div class="box">{{ \Carbon\Carbon::parse($overtime->date_start)->format('l, M d, Y \a\t H:i') }} <b>s/d</b> {{ \Carbon\Carbon::parse($overtime->date_end)->format('l, M d, Y \a\t H:i') }}</div>
             </div>
             <div>
-                <div><span class="label">Start Date:</span></div>
-                <div class="box">{{ \Carbon\Carbon::parse($overtime->date_start)->format('l, M d, Y \a\t H:i') }}</div>
-            </div>
-            <div>
-                <div><span class="label">End Date:</span></div>
-                <div class="box">{{ \Carbon\Carbon::parse($overtime->date_end)->format('l, M d, Y \a\t H:i') }}</div>
-            </div>
-            <div>
-                <div><span class="label">Duration:</span></div>
-                <div class="box">
-                    @php
-                        $totalMinutes = $overtime->total;
-                        $hours = floor($totalMinutes / 60);
-                        $minutes = $totalMinutes % 60;
-                    @endphp
+                <div><span class="label">Total Overtime Hours:</span></div>
+                @php
+                    // Parsing waktu input
+                    $start = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_start, 'Asia/Jakarta');
+                    $end = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_end, 'Asia/Jakarta');
 
-                    {{ $hours }} jam {{ $minutes }} menit
+                    // Hitung langsung dari date_start
+                    $overtimeMinutes = $start->diffInMinutes($end);
+                    $overtimeHours = $overtimeMinutes / 60;
+
+                    $hours = floor($overtimeMinutes / 60);
+                    $minutes = $overtimeMinutes % 60;
+                @endphp
+
+                <div class="box">{{ $hours }} jam {{ $minutes }} menit</div>
+            </div>
+            <div>
+                <div><span class="label">Customer:</span></div>
+                <div class="box">{{ $overtime->customer }}</div>
+            </div>
+            <div>
+                <div><span class="label">Total Amount:</span></div>
+                <div class="box">
+                    {{ 'Rp ' . number_format($overtime->total ?? 0, 0, ',', '.') }}
                 </div>
             </div>
         </div>
@@ -165,6 +172,5 @@
             </div>
         </div>
     </div>
-
 </body>
 </html>

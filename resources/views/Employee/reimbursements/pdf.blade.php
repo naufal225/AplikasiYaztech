@@ -110,6 +110,10 @@
                 <div class="box">{{ $reimbursement->customer ?? 'N/A' }}</div>
             </div>
             <div>
+                <div><span class="label">Type Reimbursement:</span></div>
+                <div class="box">{{ $reimbursement->type->name ?? 'N/A' }}</div>
+            </div>
+            <div>
                 <div><span class="label">Total Amount:</span></div>
                 <div class="box">
                     Rp {{ number_format($reimbursement->total, 0, ',', '.') }}
