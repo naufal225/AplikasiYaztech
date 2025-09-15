@@ -23,9 +23,12 @@ class LeaveController extends Controller
 {
     public function index(Request $request)
     {
+        $userId = Auth::id();
+        $tahunSekarang = now()->year;
+
         // --- Query untuk "Your Leaves"
         $yourLeavesQuery = Leave::with(['employee', 'approver'])
-            ->where('employee_id', Auth::id())
+            ->where('employee_id', $userId)
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
@@ -41,13 +44,17 @@ class LeaveController extends Controller
         }
 
         if ($request->filled('status')) {
-            $yourLeavesQuery->where('status_1', $request->status);
+            $status = $request->status;
+            $yourLeavesQuery->where(function ($q) use ($status) {
+                if ($status === 'pending' || $status === 'approved' || $status === 'rejected') {
+                    $q->where('status_1', $status);
+                }
+            });
         }
 
-        $yourLeaves = $yourLeavesQuery->paginate(10, ['*'], 'your_page');
+        $yourLeaves = $yourLeavesQuery->paginate(10, ['*'], 'your_page')->withQueryString();
 
-
-        // --- Query untuk "All Leaves"
+        // --- Query untuk "All Leaves" (approved)
         $allLeavesQuery = Leave::with(['employee', 'approver'])
             ->where('status_1', 'approved')
             ->orderBy('created_at', 'desc');
@@ -64,19 +71,21 @@ class LeaveController extends Controller
             );
         }
 
-        $allLeaves = $allLeavesQuery->paginate(10, ['*'], 'all_page');
+        $allLeaves = $allLeavesQuery->paginate(10, ['*'], 'all_page')->withQueryString();
 
+        // --- Hitung counts (sebelum paginate!)
         $counts = (clone $allLeavesQuery)->withFinalStatusCount()->first();
         $totalRequests = Leave::count();
-        $approvedRequests = (int) $counts->approved;
+        $approvedRequests = $counts ? (int) $counts->approved : 0;
 
         $countsYours = (clone $yourLeavesQuery)->withFinalStatusCount()->first();
+        $totalYoursRequests = $countsYours ? (int) ($countsYours->total ?? 0) : 0;
+        $pendingYoursRequests = $countsYours ? (int) $countsYours->pending : 0;
+        $approvedYoursRequests = $countsYours ? (int) $countsYours->approved : 0;
+        $rejectedYoursRequests = $countsYours ? (int) $countsYours->rejected : 0;
 
-        $tahunSekarang = now()->year;
-
-        $totalHariCuti = (int) Leave::where('employee_id', Auth::id())
-            ->with(['employee', 'approver'])
-            ->orderBy('created_at', 'desc')
+        // --- Hitung sisa cuti
+        $totalHariCuti = Leave::where('employee_id', $userId)
             ->where('status_1', 'approved')
             ->where(function ($q) use ($tahunSekarang) {
                 $q->whereYear('date_start', $tahunSekarang)
@@ -84,25 +93,16 @@ class LeaveController extends Controller
             })
             ->get()
             ->sum(function ($cuti) use ($tahunSekarang) {
-                $start = \Carbon\Carbon::parse($cuti->date_start);
-                $end   = \Carbon\Carbon::parse($cuti->date_end);
+                $start = Carbon::parse($cuti->date_start);
+                $end = Carbon::parse($cuti->date_end);
 
-                // Batasi tanggal ke dalam tahun berjalan
-                if ($start->year < $tahunSekarang) {
-                    $start = \Carbon\Carbon::create($tahunSekarang, 1, 1);
-                }
-                if ($end->year > $tahunSekarang) {
-                    $end = \Carbon\Carbon::create($tahunSekarang, 12, 31);
-                }
+                if ($start->year < $tahunSekarang) $start = Carbon::create($tahunSekarang, 1, 1);
+                if ($end->year > $tahunSekarang) $end = Carbon::create($tahunSekarang, 12, 31);
 
                 return $start->lte($end) ? $start->diffInDays($end) + 1 : 0;
             });
 
         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
-        $totalYoursRequests = (int) $yourLeavesQuery->count();
-        $pendingYoursRequests = (int) $countsYours->pending;
-        $approvedYoursRequests = (int) $countsYours->approved;
-        $rejectedYoursRequests = (int) $countsYours->rejected;
 
         $manager = User::where('role', Roles::Manager->value)->first();
 
