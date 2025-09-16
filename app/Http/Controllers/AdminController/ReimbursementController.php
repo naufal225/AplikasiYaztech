@@ -360,7 +360,7 @@ class ReimbursementController extends Controller
             );
         }
 
-        return redirect()->route('admin.reimbursements.show', $reimbursement->id)
+        return redirect()->route('admin.reimbursements.index', $reimbursement->id)
             ->with('success', 'Reimbursement request updated successfully.');
     }
 

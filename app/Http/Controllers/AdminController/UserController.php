@@ -46,7 +46,16 @@ class UserController extends Controller
         $divisions = Division::latest()->get();
         $roles = collect(Roles::cases())
             ->values();
-        return view('admin.user.create', compact('divisions', 'roles'));
+        $roleLabels = [
+            Roles::Approver->value => 'Approver 1',
+            Roles::Employee->value => 'Employee',
+            Roles::Manager->value => 'Approver 2',
+            Roles::Admin->value => 'Admin',
+            Roles::SuperAdmin->value => 'Super Admin',
+            Roles::Finance->value => 'Finance',
+        ];
+
+        return view('admin.user.create', compact('divisions', 'roles', 'roleLabels'));
     }
 
     public function store(Request $request)
@@ -138,7 +147,16 @@ class UserController extends Controller
         $roles = collect(Roles::cases())
             ->values();
 
-        return view('admin.user.update', compact('user', 'divisions', 'roles'));
+        $roleLabels = [
+            Roles::Approver->value => 'Approver 1',
+            Roles::Employee->value => 'Employee',
+            Roles::Manager->value => 'Approver 2',
+            Roles::Admin->value => 'Admin',
+            Roles::SuperAdmin->value => 'Super Admin',
+            Roles::Finance->value => 'Finance',
+        ];
+
+        return view('admin.user.update', compact('user', 'divisions', 'roles', 'roleLabels'));
     }
 
     public function update(User $user, Request $request)
@@ -167,7 +185,7 @@ class UserController extends Controller
 
         // jika pindah divisi padahal dia leader, copot dia
         if (($user->division_id != $validated['division_id'] && $user->division != null && $user->division->leader_id !== null)) {
-            if($user->division->leader_id == $user->id) {
+            if ($user->division->leader_id == $user->id) {
                 $user->division->update(['leader_id' => null]);
             }
         }

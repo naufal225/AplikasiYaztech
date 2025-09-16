@@ -88,39 +88,47 @@
     </div>
 
     <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
-        <form id="filterForm" method="GET" action="{{ route('approver.overtimes.index') }}"
-            class="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <div>
-                <label class="block mb-2 text-sm font-medium text-neutral-700">Status</label>
-                <select name="status" id="statusFilter" class="form-select">
-                    <option value="">All Status</option>
-                    <option value="pending" {{ request('status')==='pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="approved" {{ request('status')==='approved' ? 'selected' : '' }}>Approved</option>
-                    <option value="rejected" {{ request('status')==='rejected' ? 'selected' : '' }}>Rejected</option>
-                </select>
-            </div>
-            <div>
-                <label class="block mb-2 text-sm font-medium text-neutral-700">From Date</label>
-                <input type="date" name="from_date" id="fromDateFilter" value="{{ request('from_date') }}"
-                    class="form-input">
-            </div>
-            <div>
-                <label class="block mb-2 text-sm font-medium text-neutral-700">To Date</label>
-                <input type="date" name="to_date" id="toDateFilter" value="{{ request('to_date') }}" class="form-input">
-            </div>
-            <div class="flex items-end">
-                <button type="submit" class="mr-2 btn-primary">
-                    <i class="mr-2 fas fa-search"></i>
-                    Filter
-                </button>
-                <a href="{{ route('approver.overtimes.index') }}" class="btn-secondary">
-                    <i class="mr-2 fas fa-refresh"></i>
-                    Reset
-                </a>
+        <form id="filterForm" method="GET" action="{{ route('approver.overtimes.index') }}" class="space-y-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-neutral-700">Status</label>
+                    <select name="status" id="statusFilter"
+                        class="w-full py-2.5 px-3 border border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                        <option value="">All Status</option>
+                        <option value="pending" {{ request('status')==='pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="approved" {{ request('status')==='approved' ? 'selected' : '' }}>Approved
+                        </option>
+                        <option value="rejected" {{ request('status')==='rejected' ? 'selected' : '' }}>Rejected
+                        </option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-neutral-700">From Date</label>
+                    <input type="date" name="from_date" id="fromDateFilter" value="{{ request('from_date') }}"
+                        class="w-full py-2.5 px-3 border border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-neutral-700">To Date</label>
+                    <input type="date" name="to_date" id="toDateFilter" value="{{ request('to_date') }}"
+                        class="w-full py-2.5 px-3 border border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="flex justify-center items-center cursor-pointer px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl shadow-sm
+                        hover:bg-blue-700 hover:shadow-md transition-all duration-300 mr-2">
+                        <i class="mr-2 fas fa-search"></i>
+                        Filter
+                    </button>
+                    <a href="{{ route('approver.overtimes.index') }}" class="flex justify-center items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl shadow-sm
+                        hover:bg-gray-200 hover:shadow-md transition-all duration-300">
+                        <i class="mr-2 fas fa-refresh"></i>
+                        Reset
+                    </a>
+                </div>
             </div>
         </form>
     </div>
 
+    <!-- My Overtime Requests Table -->
     <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
             <div class="flex items-center justify-between">
@@ -171,8 +179,8 @@
                         @forelse($ownRequests as $overtime)
                         @php
                         // Parsing waktu input
-                        $start = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_start, 'Asia/Jakarta');
-                        $end = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_end, 'Asia/Jakarta');
+                        $start = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_start, 'Asia/Jakarta');
+                        $end = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_end, 'Asia/Jakarta');
 
                         // Hitung langsung dari date_start
                         $overtimeMinutes = $start->diffInMinutes($end);
@@ -254,22 +262,22 @@
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('approver.overtimes.show', $overtime->id) }}"
-                                        class="text-primary-600 hover:text-primary-900">
+                                        class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     @if(Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending')
                                     <a href="{{ route('approver.overtimes.edit', $overtime->id) }}"
-                                        class="text-secondary-600 hover:text-secondary-900">
+                                        class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('approver.overtimes.destroy', $overtime->id) }}"
-                                        method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-error-600 hover:text-error-900">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                                    <!-- Tombol Delete dengan atribut data -->
+                                    <button type="button"
+                                        class="delete-overtime-btn text-error-600 hover:text-error-900"
+                                        data-overtime-id="{{ $overtime->id }}"
+                                        data-overtime-name="Overtime Request #OY{{ $overtime->id }}" data-table="own"
+                                        title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                     @endif
                                 </div>
                             </td>
@@ -301,6 +309,8 @@
             @endif
         </div>
     </div>
+
+    <!-- All Overtime Requests Table -->
     <div class="overflow-hidden bg-white border border-gray-100 shadow-sm rounded-xl">
         <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
             <div class="flex items-center justify-between">
@@ -354,8 +364,8 @@
                         @forelse($allUsersRequests as $overtime)
                         @php
                         // Parsing waktu input
-                        $start = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_start, 'Asia/Jakarta');
-                        $end = Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_end, 'Asia/Jakarta');
+                        $start = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_start, 'Asia/Jakarta');
+                        $end = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $overtime->date_end, 'Asia/Jakarta');
 
                         // Hitung langsung dari date_start
                         $overtimeMinutes = $start->diffInMinutes($end);
@@ -461,22 +471,22 @@
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('approver.overtimes.show', $overtime->id) }}"
-                                        class="text-primary-600 hover:text-primary-900">
+                                        class="text-primary-600 hover:text-primary-900" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     @if(Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending')
                                     <a href="{{ route('approver.overtimes.edit', $overtime->id) }}"
-                                        class="text-secondary-600 hover:text-secondary-900">
+                                        class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('approver.overtimes.destroy', $overtime->id) }}"
-                                        method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="text-error-600 hover:text-error-900">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                                    <!-- Tombol Delete dengan atribut data -->
+                                    <button type="button"
+                                        class="delete-overtime-btn text-error-600 hover:text-error-900"
+                                        data-overtime-id="{{ $overtime->id }}"
+                                        data-overtime-name="Overtime Request #OY{{ $overtime->id }}" data-table="all"
+                                        title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                     @endif
                                 </div>
                             </td>
@@ -508,6 +518,28 @@
             @endif
         </div>
     </div>
+
+    <!-- Hidden Delete Forms -->
+    @foreach($ownRequests as $overtime)
+    @if(Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending')
+    <form id="own-delete-form-{{ $overtime->id }}" action="{{ route('approver.overtimes.destroy', $overtime->id) }}"
+        method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
+    @endif
+    @endforeach
+
+    @foreach($allUsersRequests as $overtime)
+    @if(Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending')
+    <form id="all-delete-form-{{ $overtime->id }}" action="{{ route('approver.overtimes.destroy', $overtime->id) }}"
+        method="POST" style="display: none;">
+        @csrf
+        @method('DELETE')
+    </form>
+    @endif
+    @endforeach
+
     <div id="toast" class="fixed z-50 hidden top-4 right-4">
         <div id="toastContent" class="px-6 py-4 rounded-lg shadow-lg">
             <div class="flex items-center">
@@ -523,10 +555,10 @@
 @endsection
 
 @section('partial-modal')
-
+{{-- Updated modal to handle overtime requests instead of users --}}
 <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-
+        <div class="fixed inset-0 transition-opacity " onclick="closeDeleteModal()"></div>
         <div
             class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
             <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
@@ -537,7 +569,6 @@
             </div>
 
             <div class="text-center">
-                <!-- Fixed modal content to reference overtimes instead of employees -->
                 <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Overtime Request</h3>
                 <p class="mb-6 text-sm text-gray-500">
                     Are you sure you want to delete <span id="overtimeName" class="font-medium text-gray-900"></span>?
@@ -566,115 +597,113 @@
         </div>
     </div>
 </div>
-
 @endsection
-
 
 @push('scripts')
 <script>
     function showToast(message, type = 'success') {
-    const toast = document.getElementById('toast');
-    const toastContent = document.getElementById('toastContent');
-    const toastMessage = document.getElementById('toastMessage');
+        const toast = document.getElementById('toast');
+        const toastContent = document.getElementById('toastContent');
+        const toastMessage = document.getElementById('toastMessage');
 
-    toastMessage.textContent = message;
+        toastMessage.textContent = message;
 
-    if (type === 'success') {
-        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-green-500 text-white';
-    } else {
-        toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-red-500 text-white';
+        if (type === 'success') {
+            toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-green-500 text-white';
+        } else {
+            toastContent.className = 'px-6 py-4 rounded-lg shadow-lg bg-red-500 text-white';
+        }
+
+        toast.classList.remove('hidden');
+
+        setTimeout(() => {
+            hideToast();
+        }, 5000);
     }
 
-    toast.classList.remove('hidden');
+    function hideToast() {
+        document.getElementById('toast').classList.add('hidden');
+    }
 
-    setTimeout(() => {
-        hideToast();
-    }, 5000);
-}
-
-function hideToast() {
-    document.getElementById('toast').classList.add('hidden');
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    initializeDeleteFunctionality();
-});
-
-
-let overtimeIdToDelete = null;
-let deleteTableType = null;
-
-function initializeDeleteFunctionality() {
-    // Add event listeners to all delete buttons
-    const deleteButtons = document.querySelectorAll('.delete-overtime-btn');
-    deleteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const overtimeId = this.getAttribute('data-overtime-id');
-            const overtimeName = this.getAttribute('data-overtime-name');
-            const tableType = this.getAttribute('data-table');
-            confirmDelete(overtimeId, overtimeName, tableType);
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeDeleteFunctionality();
     });
 
-    // Add event listener for confirm delete button
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', executeDelete);
+    let overtimeIdToDelete = null;
+    let deleteTableType = null; // 'own' atau 'all'
+
+    function initializeDeleteFunctionality() {
+        // Tambahkan event listeners ke semua tombol delete
+        const deleteButtons = document.querySelectorAll('.delete-overtime-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const overtimeId = this.getAttribute('data-overtime-id');
+                const overtimeName = this.getAttribute('data-overtime-name');
+                const tableType = this.getAttribute('data-table'); // Ambil jenis tabel
+                confirmDelete(overtimeId, overtimeName, tableType); // Kirim jenis tabel
+            });
+        });
+
+        // Tambahkan event listener untuk tombol konfirmasi delete
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        if (confirmDeleteBtn) {
+            confirmDeleteBtn.addEventListener('click', executeDelete);
+        }
+
+        // Tambahkan event listener untuk tombol cancel
+        const cancelButton = document.getElementById('cancelDeleteButton');
+        if (cancelButton) {
+            cancelButton.addEventListener('click', closeDeleteModal);
+        }
     }
 
-    // Add event listener for cancel button
-    const cancelButton = document.getElementById('cancelDeleteButton');
-    if (cancelButton) {
-        cancelButton.addEventListener('click', closeDeleteModal);
+    function confirmDelete(overtimeId, overtimeName, tableType) {
+        overtimeIdToDelete = overtimeId;
+        deleteTableType = tableType; // Simpan jenis tabel
+        document.getElementById('overtimeName').textContent = overtimeName;
+        document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Cegah scrolling latar belakang
     }
-}
 
-function confirmDelete(overtimeId, overtimeName, tableType) {
-    overtimeIdToDelete = overtimeId;
-    deleteTableType = tableType;
-    document.getElementById('overtimeName').textContent = overtimeName;
-    document.getElementById('deleteConfirmModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden'; // Prevent background scrolling
-}
-
-function closeDeleteModal() {
-    overtimeIdToDelete = null;
-    deleteTableType = null;
-    document.getElementById('deleteConfirmModal').classList.add('hidden');
-    document.body.style.overflow = 'auto'; // Restore scrolling
-}
-
-function executeDelete() {
-    if (!overtimeIdToDelete || !deleteTableType) return;
-
-    // Show loading state
-    const deleteBtn = document.getElementById('confirmDeleteBtn');
-    const deleteText = document.getElementById('deleteButtonText');
-    const deleteSpinner = document.getElementById('deleteSpinner');
-    const cancelButton = document.getElementById('cancelDeleteButton');
-
-    cancelButton.disabled = true;
-    deleteBtn.disabled = true;
-    deleteText.textContent = 'Deleting...';
-    deleteSpinner.classList.remove('hidden');
-
-    const formId = `${deleteTableType}-delete-form-${overtimeIdToDelete}`;
-    const form = document.getElementById(formId);
-
-    if (form) {
-        form.submit();
-    } else {
-        console.error('Delete form not found:', formId);
-        showToast('Error: Could not find delete form', 'error');
-        closeDeleteModal();
+    function closeDeleteModal() {
+        overtimeIdToDelete = null;
+        deleteTableType = null; // Reset jenis tabel
+        document.getElementById('deleteConfirmModal').classList.add('hidden');
+        document.body.style.overflow = 'auto'; // Pulihkan scrolling
     }
-}
 
-// Close modal when pressing Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeDeleteModal();
+    function executeDelete() {
+        if (!overtimeIdToDelete || !deleteTableType) return; // Pastikan ID dan jenis tabel ada
+
+        // Tunjukkan loading state
+        const deleteBtn = document.getElementById('confirmDeleteBtn');
+        const deleteText = document.getElementById('deleteButtonText');
+        const deleteSpinner = document.getElementById('deleteSpinner');
+        const cancelButton = document.getElementById('cancelDeleteButton');
+
+        cancelButton.disabled = true;
+        deleteBtn.disabled = true;
+        deleteText.textContent = 'Deleting...';
+        deleteSpinner.classList.remove('hidden');
+
+        // Buat ID form berdasarkan jenis tabel dan ID request
+        const formId = `${deleteTableType}-delete-form-${overtimeIdToDelete}`;
+        const form = document.getElementById(formId);
+
+        if (form) {
+            form.submit();
+        } else {
+            console.error('Delete form not found:', formId);
+            showToast('Error: Could not find delete form', 'error');
+            closeDeleteModal(); // Tutup modal jika form tidak ditemukan
+        }
     }
-});
+
+    // Tutup modal saat menekan tombol Escape
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
 </script>
 @endpush

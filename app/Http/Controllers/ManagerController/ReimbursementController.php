@@ -8,6 +8,7 @@ use App\Models\ApprovalLink;
 use App\Models\Reimbursement;
 use App\Models\User;
 use App\Roles;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -123,7 +124,8 @@ class ReimbursementController extends Controller
 
     public function create()
     {
-        return view('manager.reimbursement.create');
+        $types = \App\Models\ReimbursementType::all();
+        return view('manager.reimbursement.create', compact('types'));
     }
 
     public function store(Request $request)
@@ -132,6 +134,7 @@ class ReimbursementController extends Controller
             'customer' => 'required',
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
+            'reimbursement_type_id' => 'required|exists:reimbursement_types,id',
             'invoice_path' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ], [
             'customer.required' => 'Customer harus dipilih.',
@@ -141,15 +144,19 @@ class ReimbursementController extends Controller
             'total.min' => 'Total tidak boleh kurang dari 0.',
             'date.required' => 'Tanggal harus diisi.',
             'date.date' => 'Format tanggal tidak valid.',
+            'invoice_path.required' => 'Bukti pengeluaran harus diupload.',
             'invoice_path.file' => 'File yang diupload tidak valid.',
             'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
             'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
+            'reimbursement_type_id.required' => 'Tipe reimbursement harus dipilih.',
+            'reimbursement_type_id.exists' => 'Tipe reimbursement tidak valid.',
         ]);
 
         DB::transaction(function () use ($request) {
             $reimbursement = new Reimbursement();
             $reimbursement->employee_id = Auth::id();
             $reimbursement->customer = $request->customer;
+            $reimbursement->reimbursement_type_id = $request->reimbursement_type_id;
             $reimbursement->total = $request->total;
             $reimbursement->date = $request->date;
             $reimbursement->status_1 = 'pending';
@@ -258,7 +265,9 @@ class ReimbursementController extends Controller
                 ->with('error', 'You cannot edit a reimbursement request that has already been processed.');
         }
 
-        return view('manager.reimbursement.update', compact('reimbursement'));
+        $types = \App\Models\ReimbursementType::all();
+
+        return view('manager.reimbursement.update', compact('reimbursement', 'types'));
     }
 
     public function updateSelf(Request $request, Reimbursement $reimbursement)
@@ -278,6 +287,7 @@ class ReimbursementController extends Controller
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
             'invoice_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'reimbursement_type_id' => 'required|exists:reimbursement_types,id',
         ], [
             'customer.required' => 'Customer harus dipilih.',
             'customer.exists' => 'Customer tidak valid.',
@@ -289,11 +299,15 @@ class ReimbursementController extends Controller
             'invoice_path.file' => 'File yang diupload tidak valid.',
             'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
             'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
+            'invoice_path.required' => 'Bukti pengeluaran harus diupload.',
+            'reimbursement_type_id.required' => 'Tipe reimbursement harus dipilih.',
+            'reimbursement_type_id.exists' => 'Tipe reimbursement tidak valid.',
         ]);
 
         $reimbursement->customer = $request->customer;
         $reimbursement->total = $request->total;
         $reimbursement->date = $request->date;
+        $reimbursement->reimbursement_type_id = $request->reimbursement_type_id;
         $reimbursement->status_1 = 'pending';
         $reimbursement->status_2 = 'pending';
         $reimbursement->note_1 = NULL;
@@ -339,7 +353,7 @@ class ReimbursementController extends Controller
             );
         }
 
-        return redirect()->route('manager.reimbursements.index')
+        return redirect()->route('manager.reimbursements.index', $reimbursement->id)
             ->with('success', 'Reimbursement request updated successfully.');
     }
 
@@ -365,5 +379,11 @@ class ReimbursementController extends Controller
 
         return redirect()->route('manager.reimbursements.index')
             ->with('success', 'Reimbursement request deleted successfully.');
+    }
+
+    public function exportPdf(Reimbursement $reimbursement)
+    {
+        $pdf = Pdf::loadView('admin.reimbursement.pdf', compact('reimbursement'));
+        return $pdf->download('reimbursement-details.pdf');
     }
 }

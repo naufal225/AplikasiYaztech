@@ -87,36 +87,43 @@
         </div>
     </div>
 
-    <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
-        <form id="filterForm" method="GET" action="{{ route('manager.official-travels.index') }}"
-            class="grid grid-cols-1 gap-4 md:grid-cols-4">
-            <div>
-                <label class="block mb-2 text-sm font-medium text-neutral-700">Status</label>
-                <select name="status" id="statusFilter" class="form-select">
-                    <option value="">All Status</option>
-                    <option value="pending" {{ request('status')==='pending' ? 'selected' : '' }}>Pending</option>
-                    <option value="approved" {{ request('status')==='approved' ? 'selected' : '' }}>Approved</option>
-                    <option value="rejected" {{ request('status')==='rejected' ? 'selected' : '' }}>Rejected</option>
-                </select>
-            </div>
-            <div>
-                <label class="block mb-2 text-sm font-medium text-neutral-700">From Date</label>
-                <input type="date" name="from_date" id="fromDateFilter" value="{{ request('from_date') }}"
-                    class="form-input">
-            </div>
-            <div>
-                <label class="block mb-2 text-sm font-medium text-neutral-700">To Date</label>
-                <input type="date" name="to_date" id="toDateFilter" value="{{ request('to_date') }}" class="form-input">
-            </div>
-            <div class="flex items-end">
-                <button type="submit" class="mr-2 btn-primary">
-                    <i class="mr-2 fas fa-search"></i>
-                    Filter
-                </button>
-                <a href="{{ route('manager.official-travels.index') }}" class="btn-secondary">
-                    <i class="mr-2 fas fa-refresh"></i>
-                    Reset
-                </a>
+      <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
+        <form id="filterForm" method="GET" action="{{ route('manager.official-travels.index') }}" class="space-y-4">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-neutral-700">Status</label>
+                    <select name="status" id="statusFilter"
+                        class="w-full py-2.5 px-3 border border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                        <option value="">All Status</option>
+                        <option value="pending" {{ request('status')==='pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="approved" {{ request('status')==='approved' ? 'selected' : '' }}>Approved
+                        </option>
+                        <option value="rejected" {{ request('status')==='rejected' ? 'selected' : '' }}>Rejected
+                        </option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-neutral-700">From Date</label>
+                    <input type="date" name="from_date" id="fromDateFilter" value="{{ request('from_date') }}"
+                        class="w-full py-2.5 px-3 border border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                </div>
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-neutral-700">To Date</label>
+                    <input type="date" name="to_date" id="toDateFilter" value="{{ request('to_date') }}"
+                        class="w-full py-2.5 px-3 border border-gray-300 rounded-xl shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                </div>
+                <div class="flex items-end">
+                    <button type="submit" class="flex justify-center items-center cursor-pointer px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl shadow-sm
+                        hover:bg-blue-700 hover:shadow-md transition-all duration-300 mr-2">
+                        <i class="mr-2 fas fa-search"></i>
+                        Filter
+                    </button>
+                    <a href="{{ route('manager.official-travels.index') }}" class="flex justify-center items-center px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-xl shadow-sm
+                        hover:bg-gray-200 hover:shadow-md transition-all duration-300">
+                        <i class="mr-2 fas fa-refresh"></i>
+                        Reset
+                    </a>
+                </div>
             </div>
         </form>
     </div>

@@ -55,33 +55,76 @@
         </div>
         @endif
 
-        <form action="{{ route('manager.reimbursements.updateSelf', $reimbursement) }}" method="POST"
+        <form action="{{ route('manager.reimbursements.updateSelf', $reimbursement->id) }}" method="POST"
             enctype="multipart/form-data" class="p-6 space-y-6">
             @csrf
             @method('PUT')
 
-            <div>
-                <label for="customer" class="block mb-2 text-sm font-semibold text-neutral-700">
-                    <i class="mr-2 fas fa-users text-primary-600"></i>
-                    Customer
-                </label>
-
-                <!-- Input tampilan -->
-                <input type="text" name="customer" id="customer" class="form-input"
-                    value="{{ old('customer', $reimbursement->customer) }}" placeholder="e.g., John Doe" required>
-            </div>
-
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label for="customer" class="block mb-2 text-sm font-semibold text-neutral-700">
+                        <i class="mr-2 fas fa-users text-primary-600"></i>
+                        Customer
+                    </label>
+
+                    <!-- Input tampilan -->
+                    <input type="text" name="customer" id="customer" class="form-input"
+                        value="{{ old('customer', $reimbursement->customer) }}" placeholder="e.g., John Doe" required>
+                </div>
+
+                <div>
+                    <label for="reimbursement_type_id" class="block mb-2 text-sm font-semibold text-neutral-700">
+                        <i class="mr-2 fas fa-list text-primary-600"></i>
+                        Type Reimbursement
+                    </label>
+                    <select name="reimbursement_type_id" id="reimbursement_type_id" class="form-select" required>
+                        <option value="">-- Select Type --</option>
+                        @foreach($types as $type)
+                        <option value="{{ $type->id }}" {{ old('reimbursement_type_id', $reimbursement->
+                            reimbursement_type_id) == $type->id ? 'selected' : '' }}>
+                            {{ $type->name }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div>
                     <label for="total" class="block mb-2 text-sm font-semibold text-neutral-700"> {{-- Changed from
                         amount --}}
                         <i class="mr-2 fas fa-dollar-sign text-primary-600"></i>
                         Total Amount (Rp) {{-- Changed from Amount --}}
                     </label>
-                    <input type="number" id="total" name="total" class="form-input" {{-- Changed from amount --}}
-                        value="{{ old('total', $reimbursement->total) }}" min="0" step="0.01"
-                        placeholder="e.g., 150000.00" required>
+                    <input type="text" id="total_display" class="form-input"
+                        value="{{ old('total', $reimbursement->total) }}" placeholder="e.g., 150000" required>
+
+                    <!-- Input hidden untuk nilai asli -->
+                    <input type="hidden" id="total" name="total" value="{{ old('total', $reimbursement->total) }}">
                 </div>
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                            const displayInput = document.getElementById("total_display");
+                            const hiddenInput = document.getElementById("total");
+
+                            function formatRupiah(angka) {
+                                return angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                            }
+
+                            displayInput.addEventListener("input", function (e) {
+                                // ambil angka asli (tanpa titik)
+                                let raw = this.value.replace(/\D/g, "");
+                                // simpan ke hidden input
+                                hiddenInput.value = raw;
+                                // tampilkan kembali dalam format rupiah
+                                this.value = formatRupiah(raw);
+                            });
+
+                            // kalau ada value lama dari old()
+                            if (hiddenInput.value) {
+                                displayInput.value = formatRupiah(hiddenInput.value);
+                            }
+                        });
+                </script>
 
                 <div>
                     <label for="date" class="block mb-2 text-sm font-semibold text-neutral-700">
@@ -127,8 +170,8 @@
                     <div>
                         <h4 class="mb-1 text-sm font-semibold text-warning-800">Important Notice</h4>
                         <p class="text-xs text-warning-700">
-                            Editing this request will reset its status to pending and require re-approval from your team
-                            lead.
+                            Editing this request will reset its status to pending and require re-approval from your
+                            Approver 1.
                         </p>
                     </div>
                 </div>

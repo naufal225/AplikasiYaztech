@@ -25,20 +25,25 @@ Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')
 
     Route::get('/reimbursements/export', [ReimbursementController::class, 'export'])
         ->name('reimbursements.export');
+    Route::get('/reimbursements/{reimbursement}/export-pdf', [ReimbursementController::class, 'exportPdf'])->name('reimbursements.exportPdf');
+
     Route::put('/reimbursements/{reimbursement}/update-self', [ReimbursementController::class, 'updateSelf'])->name('reimbursements.updateSelf');
     Route::resource('reimbursements', ReimbursementController::class)
-    ->parameters([
-        "reimbursements" => "reimbursement"
-    ]);
+        ->parameters([
+            "reimbursements" => "reimbursement"
+        ]);
 
     Route::get('/overtimes/export', [OvertimeController::class, 'export'])
-    ->name('overtimes.export');
+        ->name('overtimes.export');
+    Route::get('overtimes/{overtime}/export-pdf', [OvertimeController::class, 'exportPdf'])->name('overtimes.exportPdf');
     Route::put('/overtimes/{overtime}/update-self', [OvertimeController::class, 'updateSelf'])->name('overtimes.updateSelf');
     Route::resource('overtimes', OvertimeController::class);
 
     Route::get('/official-travels/export', [OfficialTravelController::class, 'export'])
-    ->name('official-travels.export');
+        ->name('official-travels.export');
+
     Route::put('/official-travels/{officialTravel}/update-self', [OfficialTravelController::class, 'updateSelf'])->name('official-travels.updateSelf');
+    Route::get('official-travels/{officialTravel}/export-pdf', [OfficialTravelController::class, 'exportPdf'])->name('official-travels.exportPdf');
     Route::resource('official-travels', OfficialTravelController::class);
 
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');

@@ -313,7 +313,7 @@ class LeaveController extends Controller
             );
         }
 
-        return redirect()->route('approver.leaves.index')
+        return redirect()->route('manager.leaves.index')
             ->with('success', 'Leave request updated successfully.');
     }
 

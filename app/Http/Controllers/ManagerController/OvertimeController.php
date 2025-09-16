@@ -7,6 +7,7 @@ use App\Models\ApprovalLink;
 use App\Models\Overtime;
 use App\Models\User;
 use App\Roles;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -153,7 +154,24 @@ class OvertimeController extends Controller
         return redirect()->route('manager.overtimes.index')->with('success', 'Overtime request ' . $status . ' successfully.');
     }
 
-     public function updateSelf(Request $request, Overtime $overtime)
+    public function edit(Overtime $overtime)
+    {
+        $user = Auth::user();
+        if ($user->id !== $overtime->employee_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') {
+            return redirect()->route('approver.overtimes.show', $overtime->id)
+                ->with('error', 'You cannot edit an overtime request that has already been processed.');
+        }
+
+        $approvers = User::where('role', Roles::Approver->value)
+            ->get();
+        return view('manager.overtime.update', compact('overtime', 'approvers'));
+    }
+
+    public function updateSelf(Request $request, Overtime $overtime)
     {
         $user = Auth::user();
 
@@ -227,7 +245,7 @@ class OvertimeController extends Controller
             );
         }
 
-        return redirect()->route('manager.overtimes.show', $overtime->id)
+        return redirect()->route('manager.overtimes.index', $overtime->id)
             ->with('success', 'Overtime request updated successfully. Total overtime: ' . $hours . ' hours ' . $minutes . ' minutes');
     }
 
@@ -343,5 +361,11 @@ class OvertimeController extends Controller
             ->with('success', 'Overtime request deleted successfully.');
     }
 
+
+    public function exportPdf(Overtime $overtime)
+    {
+        $pdf = Pdf::loadView('Employee.overtimes.pdf', compact('overtime'));
+        return $pdf->download('overtime-details.pdf');
+    }
 
 }

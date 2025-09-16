@@ -9,17 +9,22 @@
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <!-- Left Column - Main Details -->
         <div class="space-y-6 lg:col-span-2">
-            <!-- Header Card -->
-            <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+            <!-- Request Header -->
+            <div class="relative overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+                <!-- Overlay Checklist -->
+                @if($officialTravel->marked_down)
+                <div class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 rounded-xl">
+                    <i class="text-5xl text-green-500 bg-white rounded-full fas fa-check-circle drop-shadow-lg"></i>
+                </div>
+                @endif
+
                 <div class="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h1 class="text-xl font-bold text-white">
-                                Official Travel Request #TY{{ $officialTravel->id }}
-                            </h1>
-                            <p class="text-sm text-primary-100">
-                                Submitted on {{ $officialTravel->created_at->format('M d, Y \a\t H:i') }}
-                            </p>
+                            <h1 class="text-xl font-bold text-white">Official Travel Request #TY{{ $officialTravel->id
+                                }}</h1>
+                            <p class="text-sm text-primary-100">Submitted on {{ $officialTravel->created_at->format('M
+                                d, Y \a\t H:i') }}</p>
                         </div>
                         <div class="text-right">
                             @if($officialTravel->status_1 === 'rejected' || $officialTravel->status_2 === 'rejected')
@@ -47,76 +52,76 @@
                 </div>
             </div>
 
-            <!-- Travel Details Card -->
+            <!-- Travel Details -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
                     <h2 class="text-lg font-bold text-neutral-900">Travel Details</h2>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <!-- Employee Email -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Employee Email</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $officialTravel->employee->email }}</span>
-                            </div>
-                        </div>
-
-                        <!-- Team Lead -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Team Lead</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-user-check text-info-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A'
-                                    }}</span>
-                            </div>
-                        </div>
-
-                        <!-- Start Date -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Start Date</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-calendar-alt text-secondary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $officialTravel->date_start->format('l, M
-                                    d, Y') }}</span>
-                            </div>
-                        </div>
-
-                        <!-- End Date -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">End Date</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-calendar-alt text-secondary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $officialTravel->date_end->format('l, M d,
-                                    Y') }}</span>
-                            </div>
-                        </div>
-
-                        <!-- Total Days -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Total Days</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-calendar-day text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">
-                                    {{ $officialTravel->total }} day{{ $officialTravel->total > 1 ? 's' : '' }}
+                            <label class="text-sm font-semibold text-neutral-700">Email</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200"
+                                x-data="{ tooltip: false }">
+                                <i class="flex-shrink-0 mr-3 fas fa-envelope text-primary-600"></i>
+                                <span class="font-medium truncate text-neutral-900" @mouseenter="tooltip = true"
+                                    @mouseleave="tooltip = false" x-tooltip="'{{ $officialTravel->employee->email }}'">
+                                    {{ $officialTravel->employee->email }}
                                 </span>
+                                <!-- Tooltip -->
+                                <div x-show="tooltip" x-cloak
+                                    class="absolute px-3 py-2 -mt-12 text-sm text-white bg-gray-900 rounded-lg shadow-lg">
+                                    {{ $officialTravel->employee->email }}
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Customer -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Customer</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-users text-info-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $officialTravel->customer ?? 'N/A'
-                                    }}</span>
+                                <span class="font-medium truncate text-neutral-900">{{ $officialTravel->customer ??
+                                    'N/A' }}</span>
                             </div>
                         </div>
-
-                        <!-- Status - Team Lead -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status - Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">Start Date</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-calendar-alt text-secondary-600"></i>
+                                <span class="font-medium truncate text-neutral-900">{{
+                                    $officialTravel->date_start->format('l, M d, Y') }}</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">End Date</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-calendar-alt text-secondary-600"></i>
+                                <span class="font-medium truncate text-neutral-900">{{
+                                    $officialTravel->date_end->format('l, M d, Y') }}</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Total Days</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                @php
+                                $start = Carbon\Carbon::parse($officialTravel->date_start);
+                                $end = Carbon\Carbon::parse($officialTravel->date_end);
+                                $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
+                                @endphp
+                                <i class="mr-3 fas fa-calendar-day text-primary-600"></i>
+                                <span class="font-medium text-neutral-900">{{ $totalDays }} day{{ $totalDays > 1 ? 's' :
+                                    '' }}</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Total Costs</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-dollar-sign text-primary-600"></i>
+                                <span class="font-medium truncate text-neutral-900">{{ 'Rp ' .
+                                    number_format($officialTravel->total ?? 0, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Status 1 - Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($officialTravel->status_1 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -130,10 +135,8 @@
                                 @endif
                             </div>
                         </div>
-
-                        <!-- Status - Manager -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status - Manager</label>
+                            <label class="text-sm font-semibold text-neutral-700">Status 2 - Approver 2</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($officialTravel->status_2 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -147,22 +150,18 @@
                                 @endif
                             </div>
                         </div>
-
-                        <!-- Note - Team Lead -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Note - Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                <span class="text-neutral-900">{{ $officialTravel->note_1 ?? '-' }}</span>
+                                <span class="text-neutral-900">{{ $overtime->note_1 ?? '-' }}</span>
                             </div>
                         </div>
-
-                        <!-- Note - Manager -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Note - Manager</label>
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                <span class="text-neutral-900">{{ $officialTravel->note_2 ?? '-' }}</span>
+                                <span class="text-neutral-900">{{ $overtime->note_2 ?? '-' }}</span>
                             </div>
                         </div>
                     </div>
@@ -201,11 +200,14 @@
                     </form>
                     @endif
 
-                    <button onclick="window.print()"
+                    @if($officialTravel->status_1 === 'approved' && $officialTravel->status_2 === 'approved')
+                    <button
+                        onclick="window.location.href='{{ route('approver.official-travels.exportPdf', $officialTravel->id) }}'"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
                         Print Request
                     </button>
+                    @endif
 
                     <a href="{{ route('approver.official-travels.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">

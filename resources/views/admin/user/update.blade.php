@@ -139,8 +139,7 @@
                                 <option value="{{ $role->value }}" {{ old('role', $user->role)==$role->value ?
                                     'selected' :
                                     '' }}>
-                                    {{ $role->value == App\Roles::Approver->value ? "team leader" : ($role->value ==
-                                    App\Roles::Employee->value ? "regular employee" : $role->value) }}
+                                    {{ $roleLabels[$role->value] ?? $role->value }}
                                 </option>
                                 @endforeach
                                 @endif

@@ -17,6 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
             "role" => RoleMiddleware::class
         ]);
     })
+    ->withCommands([
+        \App\Console\Commands\RunQueueOnce::class,
+    ])
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();

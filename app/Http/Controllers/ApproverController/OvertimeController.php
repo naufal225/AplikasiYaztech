@@ -9,6 +9,7 @@ use App\Models\ApprovalLink;
 use App\Models\Overtime;
 use App\Models\User;
 use App\Roles;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -211,7 +212,7 @@ class OvertimeController extends Controller
             );
         }
 
-        return redirect()->route('approver.overtimes.show', $overtime->id)
+        return redirect()->route('approver.overtimes.index', $overtime->id)
             ->with('success', 'Overtime request updated successfully. Total overtime: ' . $hours . ' hours ' . $minutes . ' minutes');
     }
 
@@ -399,5 +400,11 @@ class OvertimeController extends Controller
 
         return redirect()->route('approver.overtimes.index')
             ->with('success', 'Overtime request deleted successfully.');
+    }
+
+    public function exportPdf(Overtime $overtime)
+    {
+        $pdf = Pdf::loadView('Employee.overtimes.pdf', compact('overtime'));
+        return $pdf->download('overtime-details.pdf');
     }
 }

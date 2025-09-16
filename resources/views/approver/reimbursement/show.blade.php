@@ -9,7 +9,14 @@
         <!-- Left Column - Main Details -->
         <div class="space-y-6 lg:col-span-2">
             <!-- Request Header -->
-            <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+            <div class="relative overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+                <!-- Overlay Checklist -->
+                @if($reimbursement->marked_down)
+                <div class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 rounded-xl">
+                    <i class="text-5xl text-green-500 bg-white rounded-full fas fa-check-circle drop-shadow-lg"></i>
+                </div>
+                @endif
+
                 <div class="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
                     <div class="flex items-center justify-between">
                         <div>
@@ -52,9 +59,18 @@
                         <!-- Email -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Email</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $reimbursement->employee->email }}</span>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200"
+                                x-data="{ tooltip: false }">
+                                <i class="flex-shrink-0 mr-3 fas fa-envelope text-primary-600"></i>
+                                <span class="font-medium truncate text-neutral-900" @mouseenter="tooltip = true"
+                                    @mouseleave="tooltip = false" x-tooltip="'{{ $reimbursement->employee->email }}'">
+                                    {{ $reimbursement->employee->email }}
+                                </span>
+                                <!-- Tooltip -->
+                                <div x-show="tooltip" x-cloak
+                                    class="absolute px-3 py-2 -mt-12 text-sm text-white bg-gray-900 rounded-lg shadow-lg">
+                                    {{ $reimbursement->employee->email }}
+                                </div>
                             </div>
                         </div>
                         <!-- Approver -->
@@ -93,19 +109,13 @@
                                     }}</span>
                             </div>
                         </div>
-                        <!-- Invoice Path (was Attachment) -->
+                        <!-- Type Reimbursement -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Invoice</label>
-                            <div class="p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                @if($reimbursement->invoice_path)
-                                <a href="{{ Storage::url($reimbursement->invoice_path) }}" target="_blank"
-                                    class="flex items-center font-medium text-primary-600 hover:text-primary-800">
-                                    <i class="mr-2 fas fa-file-alt"></i>
-                                    View Invoice ({{ pathinfo($reimbursement->invoice_path, PATHINFO_EXTENSION) }})
-                                </a>
-                                @else
-                                <p class="text-neutral-500">No invoice provided.</p>
-                                @endif
+                            <label class="text-sm font-semibold text-neutral-700">Type Reimbursement</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-list text-primary-600"></i>
+                                <span class="font-medium text-neutral-900">{{ $reimbursement->type->name ?? 'N/A'
+                                    }}</span>
                             </div>
                         </div>
                         <!-- Status -->
@@ -155,6 +165,21 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Invoice Path (was Attachment) -->
+                    <div class="py-6 space-y-2">
+                        <label class="text-sm font-semibold text-neutral-700">Invoice</label>
+                        <div class="p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                            @if($reimbursement->invoice_path)
+                            <a href="{{ Storage::url($reimbursement->invoice_path) }}" target="_blank"
+                                class="flex items-center font-medium text-primary-600 hover:text-primary-800">
+                                <i class="mr-2 fas fa-file-alt"></i>
+                                View Invoice ({{ pathinfo($reimbursement->invoice_path, PATHINFO_EXTENSION) }})
+                            </a>
+                            @else
+                            <p class="text-neutral-500">No invoice provided.</p>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -189,12 +214,14 @@
                     </form>
                     @endif
 
+                    @if($reimbursement->status_1 === 'approved' && $reimbursement->status_2 === 'approved')
                     <button
                         onclick="window.location.href='{{ route('approver.reimbursements.exportPdf', $reimbursement->id) }}'"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
                         Print Request
                     </button>
+                    @endif
 
                     <a href="{{ route('approver.reimbursements.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
