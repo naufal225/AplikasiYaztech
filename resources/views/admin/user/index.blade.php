@@ -129,8 +129,18 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-500">
-                                    {{ $user->role == App\Roles::Approver->value ? "team leader" : ($user->role ==
-                                    App\Roles::Employee->value ? "regular employee" : $user->role) }}
+                                    {{ $user->role == App\Roles::Approver->value ? "Approver 1" : (
+                                    $user->role == App\Roles::Employee->value ? "Employee" : (
+                                    $user->role == App\Roles::Manager->value ? "Approver 2" : (
+                                    $user->role == App\Roles::Admin->value ? "Admin" : (
+                                    $user->role == App\Roles::SuperAdmin->value ? "Super Admin" : (
+                                    $user->role == App\Roles::Finance->value ? "Finance" : (
+                                    $user->role
+                                    )
+                                    )
+                                    )
+                                    )
+                                    )) }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">

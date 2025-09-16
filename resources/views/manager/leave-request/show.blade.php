@@ -57,9 +57,18 @@
                         <!-- Email -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Email</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $leave->employee->email }}</span>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200"
+                                x-data="{ tooltip: false }">
+                                <i class="flex-shrink-0 mr-3 fas fa-envelope text-primary-600"></i>
+                                <span class="font-medium truncate text-neutral-900" @mouseenter="tooltip = true"
+                                    @mouseleave="tooltip = false" x-tooltip="'{{ $leave->employee->email }}'">
+                                    {{ $leave->employee->email }}
+                                </span>
+                                <!-- Tooltip -->
+                                <div x-show="tooltip" x-cloak
+                                    class="absolute px-3 py-2 -mt-12 text-sm text-white bg-gray-900 rounded-lg shadow-lg">
+                                    {{ $leave->employee->email }}
+                                </div>
                             </div>
                         </div>
 
@@ -237,13 +246,85 @@
                     <h3 class="text-lg font-bold text-neutral-900">Review Request</h3>
                 </div>
                 <div class="p-6">
-                    <h1>You have reviewed this request</h1>
+                    @if($leave->status_1 === 'pending')
+                    <div class="p-4 text-center text-yellow-800 rounded-lg bg-yellow-50">
+                        <i class="mb-2 text-xl fas fa-clock"></i>
+                        <p class="font-medium">Pending Approver Review</p>
+                        <p class="text-sm">Waiting for approval from approver.</p>
+                    </div>
+                    @elseif($leave->status_1 === 'approved')
+                    <div class="p-4 text-center text-green-800 rounded-lg bg-green-50">
+                        <i class="mb-2 text-xl fas fa-check-circle"></i>
+                        <p class="font-medium">Approved by Approver</p>
+                        @if($leave->note_1)
+                        <p class="mt-2 text-sm"><strong>Notes:</strong> {{ $leave->note_1 }}</p>
+                        @endif
+                    </div>
+                    @elseif($leave->status_1 === 'rejected')
+                    <div class="p-4 text-center text-red-800 rounded-lg bg-red-50">
+                        <i class="mb-2 text-xl fas fa-times-circle"></i>
+                        <p class="font-medium">Rejected by Approver</p>
+                        @if($leave->note_1)
+                        <p class="mt-2 text-sm"><strong>Reason:</strong> {{ $leave->note_1 }}</p>
+                        @else
+                        <p class="text-sm">No reason provided.</p>
+                        @endif
+                    </div>
+                    @endif
                 </div>
             </div>
             @endif
         </div>
     </div>
 </div>
+
+
+
+@section('partial-modal')
+{{-- Updated modal to handle leave requests instead of users --}}
+<div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity bg-opacity-75 " onclick="closeDeleteModal()"></div>
+        <div
+            class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+            <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+
+            <div class="text-center">
+                <h3 class="mb-2 text-lg font-semibold text-gray-900">Delete Leave Request</h3>
+                <p class="mb-6 text-sm text-gray-500">
+                    Are you sure you want to delete <span id="leaveName" class="font-medium text-gray-900"></span>?
+                    This action cannot be undone.
+                </p>
+            </div>
+
+            <div class="flex justify-center space-x-3">
+                <button type="button" id="cancelDeleteButton"
+                    class="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg cancel-delete-btn hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    Cancel
+                </button>
+                <button type="button" id="confirmDeleteBtn"
+                    class="z-40 px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    <span id="deleteButtonText">Delete</span>
+                    <svg id="deleteSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
 
 @push('scripts')
 
@@ -258,6 +339,76 @@
         document.getElementById('approvalForm').submit();
         // }
     }
+
+       let leaveIdToDelete = null;
+
+// Initialize delete functionality when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDeleteFunctionality();
+});
+
+function initializeDeleteFunctionality() {
+    // Add event listeners to all delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-leave-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const leaveId = this.getAttribute('data-leave-id');
+            const leaveName = this.getAttribute('data-leave-name');
+            confirmDelete(leaveId, leaveName);
+        });
+    });
+
+    // Add event listener for confirm delete button
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', executeDelete);
+    }
+
+    // Add event listener for cancel button
+    const cancelButton = document.getElementById('cancelDeleteButton');
+    if (cancelButton) {
+        cancelButton.addEventListener('click', closeDeleteModal);
+    }
+}
+
+function confirmDelete(leaveId, leaveName) {
+    leaveIdToDelete = leaveId;
+    document.getElementById('leaveName').textContent = leaveName;
+    document.getElementById('deleteConfirmModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function closeDeleteModal() {
+    leaveIdToDelete = null;
+    document.getElementById('deleteConfirmModal').classList.add('hidden');
+    document.body.style.overflow = 'auto'; // Restore scrolling
+}
+
+function executeDelete() {
+    if (!leaveIdToDelete) return;
+
+    // Show loading state
+    const deleteBtn = document.getElementById('confirmDeleteBtn');
+    const deleteText = document.getElementById('deleteButtonText');
+    const deleteSpinner = document.getElementById('deleteSpinner');
+    const cancelButton = document.getElementById('cancelDeleteButton');
+
+    cancelButton.disabled = true;
+    deleteBtn.disabled = true;
+    deleteText.textContent = 'Deleting...';
+    deleteSpinner.classList.remove('hidden');
+
+    // Submit the form
+    document.getElementById(`delete-form-${leaveIdToDelete}`).submit();
+}
+
+// Close modal when pressing Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeDeleteModal();
+    }
+});
+
 </script>
 
 @endpush

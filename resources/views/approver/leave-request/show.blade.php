@@ -57,9 +57,18 @@
                         <!-- Email -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Email</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $leave->employee->email }}</span>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200"
+                                x-data="{ tooltip: false }">
+                                <i class="flex-shrink-0 mr-3 fas fa-envelope text-primary-600"></i>
+                                <span class="font-medium truncate text-neutral-900" @mouseenter="tooltip = true"
+                                    @mouseleave="tooltip = false" x-tooltip="'{{ $leave->employee->email }}'">
+                                    {{ $leave->employee->email }}
+                                </span>
+                                <!-- Tooltip -->
+                                <div x-show="tooltip" x-cloak
+                                    class="absolute px-3 py-2 -mt-12 text-sm text-white bg-gray-900 rounded-lg shadow-lg">
+                                    {{ $leave->employee->email }}
+                                </div>
                             </div>
                         </div>
 
@@ -180,11 +189,14 @@
 
 
                     <!-- Print -->
-                    <button onclick="window.location.href='{{ route('approver.leaves.exportPdf', $leave->id) }}'"
+                    @if($leave->status_1 === 'approved' && $leave->status_2 === 'approved')
+                    <button
+                        onclick="window.location.href='{{ route('approver.leaves.exportPdf', $leave->id) }}'"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
                         Print Request
                     </button>
+                    @endif
 
                     <!-- Back to List -->
                     <a href="{{ route('approver.leaves.index') }}"
@@ -198,19 +210,19 @@
             <!-- Review Status -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
-                    <h3 class="text-lg font-bold text-neutral-900">Manager Review</h3>
+                    <h3 class="text-lg font-bold text-neutral-900">Approver Review</h3>
                 </div>
                 <div class="p-6">
                     @if($leave->status_1 === 'pending')
                     <div class="p-4 text-center text-yellow-800 rounded-lg bg-yellow-50">
                         <i class="mb-2 text-xl fas fa-clock"></i>
-                        <p class="font-medium">Pending Manager Review</p>
-                        <p class="text-sm">Waiting for approval from manager.</p>
+                        <p class="font-medium">Pending Approver Review</p>
+                        <p class="text-sm">Waiting for approval from approver.</p>
                     </div>
                     @elseif($leave->status_1 === 'approved')
                     <div class="p-4 text-center text-green-800 rounded-lg bg-green-50">
                         <i class="mb-2 text-xl fas fa-check-circle"></i>
-                        <p class="font-medium">Approved by Manager</p>
+                        <p class="font-medium">Approved by Approver</p>
                         @if($leave->note_1)
                         <p class="mt-2 text-sm"><strong>Notes:</strong> {{ $leave->note_1 }}</p>
                         @endif
@@ -218,7 +230,7 @@
                     @elseif($leave->status_1 === 'rejected')
                     <div class="p-4 text-center text-red-800 rounded-lg bg-red-50">
                         <i class="mb-2 text-xl fas fa-times-circle"></i>
-                        <p class="font-medium">Rejected by Manager</p>
+                        <p class="font-medium">Rejected by Approver</p>
                         @if($leave->note_1)
                         <p class="mt-2 text-sm"><strong>Reason:</strong> {{ $leave->note_1 }}</p>
                         @else
@@ -237,7 +249,7 @@
 <!-- Delete Confirmation Modal -->
 <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
     <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity bg-black bg-opacity-50" onclick="closeDeleteModal()"></div>
+        <div class="fixed inset-0 transition-opacity" onclick="closeDeleteModal()"></div>
         <div
             class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
             <div class="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
@@ -261,7 +273,7 @@
                     Cancel
                 </button>
                 <button type="button" id="confirmDeleteBtn"
-                    class="px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    class="z-40 px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                     <span id="deleteButtonText">Delete</span>
                     <svg id="deleteSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
                         viewBox="0 0 24 24">

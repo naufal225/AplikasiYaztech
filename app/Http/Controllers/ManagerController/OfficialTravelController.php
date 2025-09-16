@@ -7,6 +7,7 @@ use App\Models\ApprovalLink;
 use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Roles;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -353,4 +354,9 @@ class OfficialTravelController extends Controller
             ->with('success', 'Official travel request deleted successfully.');
     }
 
+    public function exportPdf(OfficialTravel $officialTravel)
+    {
+        $pdf = Pdf::loadView('admin.travels.pdf', compact('officialTravel'));
+        return $pdf->download('official-travel-details.pdf');
+    }
 }

@@ -34,7 +34,14 @@
         <!-- Left Column - Main Details -->
         <div class="space-y-6 lg:col-span-2">
             <!-- Request Header -->
-            <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+            <div class="relative overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+                <!-- Overlay Checklist -->
+                @if($reimbursement->marked_down)
+                <div class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 rounded-xl">
+                    <i class="text-5xl text-green-500 bg-white rounded-full fas fa-check-circle drop-shadow-lg"></i>
+                </div>
+                @endif
+
                 <div class="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
                     <div class="flex items-center justify-between">
                         <div>
@@ -127,19 +134,13 @@
                                     }}</span>
                             </div>
                         </div>
-                        <!-- Invoice Path (was Attachment) -->
+                        <!-- Type Reimbursement -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Invoice</label>
-                            <div class="p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                @if($reimbursement->invoice_path)
-                                <a href="{{ Storage::url($reimbursement->invoice_path) }}" target="_blank"
-                                    class="flex items-center font-medium text-primary-600 hover:text-primary-800">
-                                    <i class="mr-2 fas fa-file-alt"></i>
-                                    View Invoice ({{ pathinfo($reimbursement->invoice_path, PATHINFO_EXTENSION) }})
-                                </a>
-                                @else
-                                <p class="text-neutral-500">No invoice provided.</p>
-                                @endif
+                            <label class="text-sm font-semibold text-neutral-700">Type Reimbursement</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-list text-primary-600"></i>
+                                <span class="font-medium text-neutral-900">{{ $reimbursement->type->name ?? 'N/A'
+                                    }}</span>
                             </div>
                         </div>
                         <!-- Status -->
@@ -187,6 +188,21 @@
                                 <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                 <span class="text-neutral-900">{{ $reimbursement->note_2 ?? '-' }}</span>
                             </div>
+                        </div>
+                    </div>
+                    <!-- Invoice Path (was Attachment) -->
+                    <div class="py-6 space-y-2">
+                        <label class="text-sm font-semibold text-neutral-700">Invoice</label>
+                        <div class="p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                            @if($reimbursement->invoice_path)
+                            <a href="{{ Storage::url($reimbursement->invoice_path) }}" target="_blank"
+                                class="flex items-center font-medium text-primary-600 hover:text-primary-800">
+                                <i class="mr-2 fas fa-file-alt"></i>
+                                View Invoice ({{ pathinfo($reimbursement->invoice_path, PATHINFO_EXTENSION) }})
+                            </a>
+                            @else
+                            <p class="text-neutral-500">No invoice provided.</p>
+                            @endif
                         </div>
                     </div>
                 </div>

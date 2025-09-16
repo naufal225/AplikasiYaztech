@@ -8,56 +8,42 @@
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <!-- Left Column - Main Details -->
         <div class="space-y-6 lg:col-span-2">
-            <!-- Header -->
-            <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
-                <div class="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
-                    @if($errors->any())
-                    <div class="flex items-start p-4 mb-6 border border-red-200 bg-red-50 rounded-xl">
-                        <div class="flex-shrink-0">
-                            <svg class="w-5 h-5 text-red-600 mt-0.5" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <h4 class="text-sm font-medium text-red-800">Please correct the following errors:</h4>
-                            <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
-                                @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                    @endif
+            <!-- Request Header -->
+            <div class="relative overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
+                <!-- Overlay Checklist -->
+                @if($officialTravel->marked_down)
+                <div class="absolute inset-0 z-10 flex items-center justify-center bg-white/70 rounded-xl">
+                    <i class="text-5xl text-green-500 bg-white rounded-full fas fa-check-circle drop-shadow-lg"></i>
+                </div>
+                @endif
 
+                <div class="px-6 py-4 bg-gradient-to-r from-primary-600 to-primary-700">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h1 class="text-xl font-bold text-white">Official Travel Request #{{ $officialTravel->id }}
-                            </h1>
-                            <p class="text-sm text-primary-100">
-                                Submitted on {{ \Carbon\Carbon::parse($officialTravel->created_at)->format('M d, Y \a\t
-                                H:i') }}
-                            </p>
+                            <h1 class="text-xl font-bold text-white">Official Travel Request #TY{{ $officialTravel->id
+                                }}</h1>
+                            <p class="text-sm text-primary-100">Submitted on {{ $officialTravel->created_at->format('M
+                                d, Y \a\t H:i') }}</p>
                         </div>
                         <div class="text-right">
-                            @if($officialTravel->status_2 === 'pending')
-                            <span
-                                class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
-                                <i class="mr-1 fas fa-clock"></i>
-                                Pending Review
-                            </span>
-                            @elseif($officialTravel->status_2 === 'approved')
-                            <span
-                                class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
-                                <i class="mr-1 fas fa-check-circle"></i>
-                                Approved
-                            </span>
-                            @elseif($officialTravel->status_2 === 'rejected')
+                            @if($officialTravel->status_1 === 'rejected' || $officialTravel->status_2 === 'rejected')
                             <span
                                 class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-error-100 text-error-800">
-                                <i class="mr-1 fas fa-times-circle"></i>
+                                <i class="mt-1 mr-1 fas fa-times-circle"></i>
                                 Rejected
+                            </span>
+                            @elseif($officialTravel->status_1 === 'approved' && $officialTravel->status_2 ===
+                            'approved')
+                            <span
+                                class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-success-100 text-success-800">
+                                <i class="mt-1 mr-1 fas fa-check-circle"></i>
+                                Approved
+                            </span>
+                            @elseif($officialTravel->status_1 === 'pending' || $officialTravel->status_2 === 'pending')
+                            <span
+                                class="inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full bg-warning-100 text-warning-800">
+                                <i class="mt-1 mr-1 fas fa-clock"></i>
+                                {{ $officialTravel->status_1 === 'pending' ? 'Pending' : 'In Progress' }} Review
                             </span>
                             @endif
                         </div>
@@ -65,72 +51,76 @@
                 </div>
             </div>
 
-            <!-- Official Travel Details -->
+            <!-- Travel Details -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
-                    <h2 class="text-lg font-bold text-neutral-900">Official Travel Details</h2>
+                    <h2 class="text-lg font-bold text-neutral-900">Travel Details</h2>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                        <!-- Email -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Email</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $officialTravel->employee->email ?? 'N/A'
-                                    }}</span>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200"
+                                x-data="{ tooltip: false }">
+                                <i class="flex-shrink-0 mr-3 fas fa-envelope text-primary-600"></i>
+                                <span class="font-medium truncate text-neutral-900" @mouseenter="tooltip = true"
+                                    @mouseleave="tooltip = false" x-tooltip="'{{ $officialTravel->employee->email }}'">
+                                    {{ $officialTravel->employee->email }}
+                                </span>
+                                <!-- Tooltip -->
+                                <div x-show="tooltip" x-cloak
+                                    class="absolute px-3 py-2 -mt-12 text-sm text-white bg-gray-900 rounded-lg shadow-lg">
+                                    {{ $officialTravel->employee->email }}
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Approver (Team Lead) -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Approver</label>
+                            <label class="text-sm font-semibold text-neutral-700">Customer</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-user-check text-info-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A'
-                                    }}</span>
+                                <i class="mr-3 fas fa-users text-info-600"></i>
+                                <span class="font-medium truncate text-neutral-900">{{ $officialTravel->customer ??
+                                    'N/A' }}</span>
                             </div>
                         </div>
-
-                        <!-- Start Date -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Start Date</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-calendar-alt text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{
-                                    \Carbon\Carbon::parse($officialTravel->date_start)->format('l, M d, Y') }}</span>
+                                <i class="mr-3 fas fa-calendar-alt text-secondary-600"></i>
+                                <span class="font-medium truncate text-neutral-900">{{
+                                    $officialTravel->date_start->format('l, M d, Y') }}</span>
                             </div>
                         </div>
-
-                        <!-- End Date -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">End Date</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-calendar-alt text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{
-                                    \Carbon\Carbon::parse($officialTravel->date_end)->format('l, M d, Y') }}</span>
+                                <i class="mr-3 fas fa-calendar-alt text-secondary-600"></i>
+                                <span class="font-medium truncate text-neutral-900">{{
+                                    $officialTravel->date_end->format('l, M d, Y') }}</span>
                             </div>
                         </div>
-
-                        <!-- Duration -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Duration</label>
+                            <label class="text-sm font-semibold text-neutral-700">Total Days</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-clock text-secondary-600"></i>
                                 @php
-                                $duration =
-                                \Carbon\Carbon::parse($officialTravel->date_start)->diffInDays(\Carbon\Carbon::parse($officialTravel->date_end))
-                                + 1;
+                                $start = Carbon\Carbon::parse($officialTravel->date_start);
+                                $end = Carbon\Carbon::parse($officialTravel->date_end);
+                                $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
                                 @endphp
-                                <span class="font-medium text-neutral-900">
-                                    {{ $duration }} {{ $duration === 1 ? 'day' : 'days' }}
-                                </span>
+                                <i class="mr-3 fas fa-calendar-day text-primary-600"></i>
+                                <span class="font-medium text-neutral-900">{{ $totalDays }} day{{ $totalDays > 1 ? 's' :
+                                    '' }}</span>
                             </div>
                         </div>
-
-                        <!-- Status 1 - Team Lead -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status 1 - Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">Total Costs</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-dollar-sign text-primary-600"></i>
+                                <span class="font-medium truncate text-neutral-900">{{ 'Rp ' .
+                                    number_format($officialTravel->total ?? 0, 0, ',', '.') }}</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Status 1 - Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($officialTravel->status_1 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -144,11 +134,8 @@
                                 @endif
                             </div>
                         </div>
-
-
-                        <!-- Status 2 - Manager -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status 2 - Manager</label>
+                            <label class="text-sm font-semibold text-neutral-700">Status 2 - Approver 2</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($officialTravel->status_2 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -162,48 +149,18 @@
                                 @endif
                             </div>
                         </div>
-
-                        <!-- Approval/Rejection Notes dari Team Lead -->
-                        @if($officialTravel->status_1 === 'approved' && $officialTravel->note_1)
-                        <div class="space-y-2 md:col-span-2">
-                            <label class="text-sm font-semibold text-neutral-700">Approval Notes (Team Lead)</label>
-                            <div class="p-4 border rounded-lg bg-success-50 border-success-200">
-                                <p class="leading-relaxed text-success-900">{{ $officialTravel->note_1 }}</p>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                <span class="text-neutral-900">{{ $overtime->note_1 ?? '-' }}</span>
                             </div>
                         </div>
-                        @elseif($officialTravel->status_1 === 'rejected' && $officialTravel->note_1)
-                        <div class="space-y-2 md:col-span-2">
-                            <label class="text-sm font-semibold text-neutral-700">Rejection Notes (Team Lead)</label>
-                            <div class="p-4 border rounded-lg bg-error-50 border-error-200">
-                                <p class="leading-relaxed text-error-900">{{ $officialTravel->note_1 }}</p>
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Approval/Rejection Notes dari Manager -->
-                        @if($officialTravel->status_2 !== 'pending' && $officialTravel->note_2)
-                        <div class="space-y-2 md:col-span-2">
-                            <label class="text-sm font-semibold text-neutral-700">
-                                {{ $officialTravel->status_2 === 'approved' ? 'Approval Notes (Manager)' : 'Rejection
-                                Notes (Manager)' }}
-                            </label>
-                            <div
-                                class="p-4 border rounded-lg
-                                    {{ $officialTravel->status_2 === 'approved' ? 'bg-success-50 border-success-200' : 'bg-error-50 border-error-200' }}">
-                                <p
-                                    class="leading-relaxed
-                                        {{ $officialTravel->status_2 === 'approved' ? 'text-success-900' : 'text-error-900' }}">
-                                    {{ $officialTravel->note_2 }}
-                                </p>
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Reason -->
-                        <div class="space-y-2 md:col-span-2">
-                            <label class="text-sm font-semibold text-neutral-700">Reason for Official Travel</label>
-                            <div class="p-4 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <p class="leading-relaxed text-neutral-900">{{ $officialTravel->reason }}</p>
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                <span class="text-neutral-900">{{ $overtime->note_2 ?? '-' }}</span>
                             </div>
                         </div>
                     </div>
@@ -235,7 +192,8 @@
                     </button>
                     @endif
 
-                    <button onclick="window.print()"
+                    <button
+                        onclick="window.location.href='{{ route('manager.official-travels.exportPdf', $officialTravel->id) }}'"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
                         Print Request

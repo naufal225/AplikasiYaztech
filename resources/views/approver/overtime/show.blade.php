@@ -232,11 +232,14 @@ $minutes = $overtimeMinutes % 60;
                     </form>
                     @endif
 
-                    <button onclick="window.print()"
+                    @if($overtime->status_1 === 'approved' && $overtime->status_2 === 'approved')
+                    <button
+                        onclick="window.location.href='{{ route('approver.overtimes.exportPdf', $overtime->id) }}'"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
                         Print Request
                     </button>
+                    @endif
 
                     <a href="{{ route('approver.overtimes.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
@@ -343,7 +346,7 @@ $minutes = $overtimeMinutes % 60;
                     Cancel
                 </button>
                 <button type="button" id="confirmDeleteBtn"
-                    class="px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    class="z-40 px-4 py-2 text-sm font-medium text-white transition-colors bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                     <span id="deleteButtonText">Delete</span>
                     <svg id="deleteSpinner" class="hidden w-4 h-4 ml-2 -mr-1 text-white animate-spin" fill="none"
                         viewBox="0 0 24 24">

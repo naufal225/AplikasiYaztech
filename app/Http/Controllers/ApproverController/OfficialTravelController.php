@@ -9,6 +9,7 @@ use App\Models\ApprovalLink;
 use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Roles;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -132,7 +133,7 @@ class OfficialTravelController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-  public function store(Request $request)
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'customer' => 'required',
@@ -234,7 +235,7 @@ class OfficialTravelController extends Controller
         return view('approver.official-travel.update', compact('officialTravel'));
     }
 
-   public function updateSelf(Request $request, OfficialTravel $officialTravel)
+    public function updateSelf(Request $request, OfficialTravel $officialTravel)
     {
         $user = Auth::user();
         if ($user->id !== $officialTravel->employee_id) {
@@ -302,7 +303,7 @@ class OfficialTravelController extends Controller
             );
         }
 
-        return redirect()->route('approver.official-travels.show', $officialTravel->id)
+        return redirect()->route('approver.official-travels.index', $officialTravel->id)
             ->with('success', 'Official travel request updated successfully. Total days: ' . $totalDays);
     }
 
@@ -451,5 +452,11 @@ class OfficialTravelController extends Controller
 
         return redirect()->route('approver.official-travels.index')
             ->with('success', 'Official travel request deleted successfully.');
+    }
+
+    public function exportPdf(OfficialTravel $officialTravel)
+    {
+        $pdf = Pdf::loadView('admin.travels.pdf', compact('officialTravel'));
+        return $pdf->download('official-travel-details.pdf');
     }
 }
