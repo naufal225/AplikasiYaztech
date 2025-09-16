@@ -170,6 +170,40 @@
         <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
     </div>
 
+    @if($reimbursement->marked_down)
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            z-index: 9999;
+        ">
+            {{-- <div style="
+                    position: absolute;
+                    bottom: 20px;
+                    right: 20px;
+                    font-size: 10px;
+                    color: #444;
+                    z-index: 50;
+                ">
+                Request #RY{{ $reimbursement->id }} | {{ \Carbon\Carbon::parse($reimbursement->created_at)->format('F d, Y \a\t H:i') }} <br>
+                {{ $reimbursement->employee->email }}
+            </div> --}}
+            <img src="{{ public_path('yaztech-logo-web.png') }}" 
+                alt="Yaztech Engineering Solusindo"
+                style="
+                    position: absolute;
+                    bottom: 20px;
+                    right: 20px;
+                    width: 12rem;
+                    z-index: 100;
+                    opacity: 1;
+                ">
+        </div>
+    @endif
+
     <div class="section">
         <div class="sub-title">Reimbursement Request #RY{{ $reimbursement->id }} | {{
             \Carbon\Carbon::parse($reimbursement->created_at)->format('F d, Y \a\t H:i') }}</div>
@@ -265,57 +299,27 @@
             <tr>
                 <td class="label-col">Invoice:</td>
                 <td class="data-col">
-                    <div class="box" style="height:240px; text-align: center; line-height: 230px;">
+                    <div class="box" style="max-height:340px; text-align:center; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                         @php
-                        $path = storage_path('app/public/' . $reimbursement->invoice_path);
-                        $base64 = '';
-                        if (file_exists($path)) {
-                        $type = pathinfo($path, PATHINFO_EXTENSION);
-                        $data = file_get_contents($path);
-                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                        }
+                            $path = storage_path('app/public/' . $reimbursement->invoice_path);
+                            $base64 = '';
+                            if (file_exists($path)) {
+                            $type = pathinfo($path, PATHINFO_EXTENSION);
+                            $data = file_get_contents($path);
+                            $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                            }
                         @endphp
+
                         @if($base64)
-                        <img src="{{ $base64 }}" alt="Invoice" class="invoice"
-                            style="vertical-align: middle; line-height: 1;">
+                            <img src="{{ $base64 }}" alt="Invoice" class="invoice"
+                                style="width:auto; height:100%; object-fit:cover;">
                         @else
-                        <span style="color: #777; font-style: italic; line-height: 1.4;">No image available</span>
+                            <span style="color: #777; font-style: italic;">No image available</span>
                         @endif
                     </div>
                 </td>
             </tr>
         </table>
-
-        <!-- Catatan di bawah invoice -->
-        <div class="notes-section">
-            <h3>Notes</h3>
-            <table class="grid-2">
-                <tr>
-                    <td>
-                        <div><span class="note-label">Note from Approver 1:</span></div>
-                        <div class="note-box">
-                            @if($reimbursement->note_1)
-                            <span class="note-content">{{ $reimbursement->note_1 }}</span>
-                            @else
-                            <span class="no-note">No note provided.</span>
-                            @endif
-                        </div>
-                    </td>
-                    <td>
-                        <div><span class="note-label">Note from Approver 2:</span></div>
-                        <div class="note-box">
-                            @if($reimbursement->note_2)
-                            <span class="note-content">{{ $reimbursement->note_2 }}</span>
-                            @else
-                            <span class="no-note">No note provided.</span>
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <!-- Akhir Catatan -->
-
     </div>
 
 </body>
