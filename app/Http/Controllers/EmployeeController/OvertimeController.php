@@ -242,7 +242,7 @@ class OvertimeController extends Controller
     public function show(Overtime $overtime)
     {
         $user = Auth::user();
-        if ($user->id !== $overtime->employee_id && $user->id !== $overtime->approver_id && $user->role !== Roles::Admin->value) {
+        if ($user->id !== (int) $overtime->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 

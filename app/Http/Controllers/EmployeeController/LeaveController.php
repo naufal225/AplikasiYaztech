@@ -202,6 +202,42 @@ class LeaveController extends Controller
             return back()->with('error', 'You are not in a division. Please contact your administrator.');
         }
 
+        $tahunSekarang = now()->year;
+
+        // Hitung cuti yang sudah terpakai
+        $totalHariCuti = (int) Leave::where('employee_id', Auth::id())
+            ->where('status_1', 'approved')
+            ->where(function ($q) use ($tahunSekarang) {
+                $q->whereYear('date_start', $tahunSekarang)
+                ->orWhereYear('date_end', $tahunSekarang);
+            })
+            ->get()
+            ->sum(function ($cuti) use ($tahunSekarang) {
+                $start = \Carbon\Carbon::parse($cuti->date_start);
+                $end   = \Carbon\Carbon::parse($cuti->date_end);
+
+                if ($start->year < $tahunSekarang) {
+                    $start = \Carbon\Carbon::create($tahunSekarang, 1, 1);
+                }
+                if ($end->year > $tahunSekarang) {
+                    $end = \Carbon\Carbon::create($tahunSekarang, 12, 31);
+                }
+
+                return $start->lte($end) ? $start->diffInDays($end) + 1 : 0;
+            });
+
+        // Hitung cuti yang sedang diajukan
+        $startBaru = \Carbon\Carbon::parse($request->date_start);
+        $endBaru   = \Carbon\Carbon::parse($request->date_end);
+        $hariCutiBaru = $startBaru->diffInDays($endBaru) + 1;
+
+        $jatahTahunan = (int) env('CUTI_TAHUNAN', 20);
+        $sisaCuti = $jatahTahunan - $totalHariCuti;
+
+        if ($hariCutiBaru > $sisaCuti) {
+            return back()->with('error', "Sisa cuti hanya {$sisaCuti} hari, tidak bisa ajukan {$hariCutiBaru} hari.");
+        }
+
         DB::transaction(function () use ($request) {
             $leave = new Leave();
             $leave->employee_id = Auth::id();
@@ -261,12 +297,11 @@ class LeaveController extends Controller
      */
     public function show(Leave $leave)
     {
-        // Check if the user has permission to view this leave
         $user = Auth::user();
-        if ($user->id !== $leave->employee_id && ($user->role == Roles::Admin->value || $user->role == Roles::Manager->value || $user->role == Roles::Approver->value)) {
+        if ($user->id !== (int) $leave->employee_id) {
             abort(403, 'Unauthorized action.');
         }
-
+        
         $leave->load(['employee', 'approver']);
         return view('Employee.leaves.leave-detail', compact('leave'));
     }
