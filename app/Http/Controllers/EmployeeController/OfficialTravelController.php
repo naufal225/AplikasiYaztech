@@ -265,7 +265,7 @@ class OfficialTravelController extends Controller
     public function edit(OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id) {
+        if ($user->id !== (int) $officialTravel->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -285,7 +285,7 @@ class OfficialTravelController extends Controller
     public function update(Request $request, OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id) {
+        if ($user->id !== (int) $officialTravel->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 

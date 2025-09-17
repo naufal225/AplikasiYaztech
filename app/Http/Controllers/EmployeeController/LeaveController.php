@@ -72,7 +72,7 @@ class LeaveController extends Controller
         // Data untuk tabel (pagination)
         $leaves = $query->paginate(10)->withQueryString();
 
-        // 🔹 Query baru khusus untuk aggregate (tanpa orderBy)
+        // Query baru khusus untuk aggregate (tanpa orderBy)
         $countsQuery = Leave::where('employee_id', $user->id);
         if ($request->filled('status')) {
             $countsQuery->filterFinalStatus($request->status); // pakai scope dari HasDualStatus
@@ -421,7 +421,7 @@ class LeaveController extends Controller
     {
         // Check if the user has permission to edit this leave
         $user = Auth::user();
-        if ($user->id !== $leave->employee_id) {
+        if ($user->id !== (int) $leave->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -444,7 +444,7 @@ class LeaveController extends Controller
     public function update(Request $request, Leave $leave)
     {
         $user = Auth::user();
-        if ($user->id !== $leave->employee_id) {
+        if ($user->id !== (int) $leave->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
