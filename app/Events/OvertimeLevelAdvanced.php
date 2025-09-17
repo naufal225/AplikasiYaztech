@@ -49,15 +49,7 @@ class OvertimeLevelAdvanced implements ShouldBroadcast
         $d2 = \Carbon\Carbon::parse($this->overtime->date_end);
 
         return [
-            'overtime' => [
-                'id' => $this->overtime->id,
-                'status_1' => $this->overtime->status_1,
-                'status_2' => $this->overtime->status_2,
-                'date_start_fmt' => $d1->format('M d'),
-                'date_end_fmt' => $d2->format('M d, Y'),
-                'total_days' => $d1->diffInDays($d2) + 1,
-                'created_at_fmt' => optional($this->overtime->created_at)->format('M d, Y'),
-            ],
+            'overtime' => $this->overtime,
             'newLevel' => $this->newLevel,
         ];
     }

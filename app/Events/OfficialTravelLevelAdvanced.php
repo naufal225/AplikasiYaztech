@@ -49,15 +49,7 @@ class OfficialTravelLevelAdvanced implements ShouldBroadcast
         $d2 = \Carbon\Carbon::parse($this->officialTravel->date_end);
 
         return [
-            'officialTravel' => [
-                'id' => $this->officialTravel->id,
-                'status_1' => $this->officialTravel->status_1,
-                'status_2' => $this->officialTravel->status_2,
-                'date_start_fmt' => $d1->format('M d'),
-                'date_end_fmt' => $d2->format('M d, Y'),
-                'total_days' => $d1->diffInDays($d2) + 1,
-                'created_at_fmt' => optional($this->officialTravel->created_at)->format('M d, Y'),
-            ],
+            'officialTravel' => $this->officialTravel,
             'newLevel' => $this->newLevel,
         ];
     }

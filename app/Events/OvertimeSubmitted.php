@@ -37,11 +37,7 @@ class OvertimeSubmitted implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'id' => $this->overtime->id,
-            'employee' => $this->overtime->employee->name,
-            'status_1' => $this->overtime->status_1,
-            'status_2' => $this->overtime->status_2,
-            'created_at' => $this->overtime->created_at->toIso8601String(),
+            'overtime' => $this->overtime,
             'detail_url' => route('approver.overtimes.show', $this->overtime),
         ];
     }

@@ -33,11 +33,7 @@ class OfficialTravelSubmitted implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'id'         => $this->officialTravel->id,
-            'employee'   => $this->officialTravel->employee->name,
-            'status_1'   => $this->officialTravel->status_1,
-            'status_2'   => $this->officialTravel->status_2,
-            'created_at' => $this->officialTravel->created_at->toIso8601String(),
+            'official-travel' => $this->officialTravel,
             'detail_url' => route('approver.official-travels.show', $this->officialTravel),
         ];
     }

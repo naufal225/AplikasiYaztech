@@ -28,11 +28,7 @@ class LeaveSubmitted implements ShouldBroadcast {
     public function broadcastWith()
     {
         return [
-            'id'         => $this->leave->id,
-            'employee'   => $this->leave->employee->name,
-            'status_1'   => $this->leave->status_1,
-            'status_2'   => $this->leave->status_2,
-            'created_at' => $this->leave->created_at->toIso8601String(),
+            'leave' => $this->leave,
             'detail_url' => route('approver.leaves.show', $this->leave),
         ];
     }
