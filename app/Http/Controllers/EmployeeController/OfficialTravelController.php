@@ -242,7 +242,7 @@ class OfficialTravelController extends Controller
     public function show(OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id && $user->id !== $officialTravel->approver_id && $user->role !== Roles::Admin->value) {
+        if ($user->id !== (int) $officialTravel->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
