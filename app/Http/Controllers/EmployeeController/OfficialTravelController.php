@@ -169,51 +169,67 @@ class OfficialTravelController extends Controller
             'date_end.after_or_equal' => 'Tanggal/Waktu Akhir harus hari ini atau setelahnya.',
         ]);
 
-        $start = Carbon::parse($validated['date_start']);
-        $end = Carbon::parse($validated['date_end']);
+        $start = \Carbon\Carbon::parse($validated['date_start'])->startOfDay();
+        $end = \Carbon\Carbon::parse($validated['date_end'])->startOfDay();
 
-        $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
+        $totalDays = $start->diffInDays($end) + 1;
 
         $user = Auth::user();
         $userName = $user->name;
         $userEmail = $user->email;
         $divisionId = $user->division_id;
 
-        DB::transaction(function () use ($request, $start, $end, $totalDays, $user, $userName, $userEmail, $divisionId) {
+        // Hitung biaya per hari
+        $weekDayCost = (int) env('TRAVEL_COSTS_WEEK_DAY', 0);
+        $weekEndCost = (int) env('TRAVEL_COSTS_WEEK_END', 0);
+
+        // Ambil semua holiday dari DB
+        $holidayDates = \App\Models\Holiday::pluck('holiday_date')->map(fn($d) => \Carbon\Carbon::parse($d)->toDateString())->toArray();
+
+        $period = \Carbon\CarbonPeriod::create($start, $end);
+
+        $totalCost = 0;
+        foreach ($period as $date) {
+            $isWeekend = $date->isWeekend();
+            $isHoliday = in_array($date->toDateString(), $holidayDates);
+
+            if ($isWeekend || $isHoliday) {
+                $totalCost += $weekEndCost;
+            } else {
+                $totalCost += $weekDayCost;
+            }
+        }
+
+        DB::transaction(function () use ($request, $start, $end, $totalDays, $user, $userName, $userEmail, $divisionId, $totalCost) {
             $officialTravel = new OfficialTravel();
             $officialTravel->customer = $request->customer;
             $officialTravel->employee_id = Auth::id();
             $officialTravel->date_start = $start;
             $officialTravel->date_end = $end;
-            $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
+            $officialTravel->total = $totalCost;
             $officialTravel->status_1 = 'pending';
             $officialTravel->status_2 = 'pending';
             $officialTravel->save();
 
-
-            // Siapkan token kalau ada approver
             $tokenRaw = null;
-            // Send notification email to the approver
             if ($officialTravel->approver) {
                 $tokenRaw = Str::random(48);
                 ApprovalLink::create([
-                    'model_type' => get_class($officialTravel),   // App\Models\officialTravel
+                    'model_type' => get_class($officialTravel),
                     'model_id' => $officialTravel->id,
                     'approver_user_id' => $officialTravel->approver->id,
-                    'level' => 1, // level 1 berarti arahnya ke team lead
-                    'scope' => 'both',             // boleh approve & reject
-                    'token' => hash('sha256', $tokenRaw), // simpan hash, kirim raw
-                    'expires_at' => now()->addDays(3),  // masa berlaku
+                    'level' => 1,
+                    'scope' => 'both',
+                    'token' => hash('sha256', $tokenRaw),
+                    'expires_at' => now()->addDays(3),
                 ]);
-
             }
 
             DB::afterCommit(function () use ($officialTravel, $tokenRaw, $totalDays, $userName, $userEmail, $divisionId) {
-                $fresh = $officialTravel->fresh(); // ambil ulang (punya created_at dll)
+                $fresh = $officialTravel->fresh();
 
                 event(new \App\Events\OfficialTravelSubmitted($fresh, $divisionId));
 
-                // Kalau tidak ada approver atau token, jangan kirim email
                 if (!$fresh || !$fresh->approver || !$tokenRaw) {
                     return;
                 }
@@ -229,7 +245,6 @@ class OfficialTravelController extends Controller
                     )
                 );
             });
-
         });
 
         return redirect()->route('employee.official-travels.index')
@@ -313,7 +328,28 @@ class OfficialTravelController extends Controller
         $start = Carbon::parse($request->date_start);
         $end = Carbon::parse($request->date_end);
 
-        $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
+        $totalDays = $start->diffInDays($end) + 1;
+
+        // Hitung biaya per hari
+        $weekDayCost = (int) env('TRAVEL_COSTS_WEEK_DAY', 0);
+        $weekEndCost = (int) env('TRAVEL_COSTS_WEEK_END', 0);
+
+        // Ambil semua holiday dari DB
+        $holidayDates = \App\Models\Holiday::pluck('holiday_date')->map(fn($d) => \Carbon\Carbon::parse($d)->toDateString())->toArray();
+
+        $period = \Carbon\CarbonPeriod::create($start, $end);
+
+        $totalCost = 0;
+        foreach ($period as $date) {
+            $isWeekend = $date->isWeekend();
+            $isHoliday = in_array($date->toDateString(), $holidayDates);
+
+            if ($isWeekend || $isHoliday) {
+                $totalCost += $weekEndCost;
+            } else {
+                $totalCost += $weekDayCost;
+            }
+        }
 
         $officialTravel->customer = $request->customer;
         $officialTravel->date_start = $request->date_start;
@@ -322,7 +358,7 @@ class OfficialTravelController extends Controller
         $officialTravel->status_2 = 'pending';
         $officialTravel->note_1 = NULL;
         $officialTravel->note_2 = NULL;
-        $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
+        $officialTravel->total = $totalCost;
         $officialTravel->save();
 
         // Send notification email to the approver
