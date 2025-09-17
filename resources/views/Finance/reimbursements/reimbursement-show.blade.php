@@ -274,7 +274,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('finance.reimbursements.show', $reimbursement->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
 
                                         @if((Auth::id() === $reimbursement->employee_id && $reimbursement->status_1 === 'pending' && !\App\Models\Division::where('leader_id', Auth::id())->exists()) || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $reimbursement->status_2 === 'pending'))
@@ -449,7 +449,7 @@
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('finance.reimbursements.show', $reimbursement->id) }}"
                                         class="text-primary-600 hover:text-primary-900" title="View Details">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
                                     </div>
                                 </td>
@@ -571,7 +571,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('finance.reimbursements.show', $reimbursement->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
                                     </div>
                                 </td>

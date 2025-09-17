@@ -218,7 +218,19 @@ class OvertimeController extends Controller
             $overtime->customer = $request->customer;
             $overtime->date_start = $start;
             $overtime->date_end = $end;
-            $overtime->total = (int) ((int) ($hours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0));
+            // Hitung biaya overtime
+            $costPerHour = (int) env('OVERTIME_COSTS', 0);
+            $bonusCost = (int) env('OVERTIME_BONUS_COSTS', 0);
+
+            $baseTotal = $hours * $costPerHour;
+
+            // Hitung bonus tiap 24 jam
+            $bonusMultiplier = intdiv($hours, 24);
+            $bonusTotal = $bonusMultiplier * $bonusCost;
+
+            $totalOvertime = $baseTotal + $bonusTotal;
+
+            $overtime->total = $totalOvertime;
 
             // Cek apakah user adalah leader division
             $isLeader = \App\Models\Division::where('leader_id', Auth::id())->exists();
@@ -336,7 +348,7 @@ class OvertimeController extends Controller
     public function edit(Overtime $overtime)
     {
         $user = Auth::user();
-        if ($user->id !== $overtime->employee_id) {
+        if ($user->id !== (int) $overtime->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -360,7 +372,7 @@ class OvertimeController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->id !== $overtime->employee_id) {
+        if ($user->id !== (int) $overtime->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -398,7 +410,15 @@ class OvertimeController extends Controller
         $overtime->customer = $request->customer;
         $overtime->date_start = $request->date_start;
         $overtime->date_end = $request->date_end;
-        $overtime->total = (int) ($overtimeHours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0);
+        // Hitung biaya overtime
+        $costPerHour = (int) env('OVERTIME_COSTS', 0);
+        $bonusCost = (int) env('OVERTIME_BONUS_COSTS', 0);
+        $baseTotal = $hours * $costPerHour;
+        // Hitung bonus tiap 24 jam
+        $bonusMultiplier = intdiv($hours, 24);
+        $bonusTotal = $bonusMultiplier * $bonusCost;
+        $totalOvertime = $baseTotal + $bonusTotal;
+        $overtime->total = $totalOvertime;
 
          // Reset status dan catatan
 

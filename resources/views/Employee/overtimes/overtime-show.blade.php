@@ -210,19 +210,19 @@
                                     <div class="text-sm text-neutral-900">{{ $overtime->customer ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div class="flex items-center text-base space-x-2">
+                                    <div class="flex items-center space-x-2">
                                         <a href="{{ route('employee.overtimes.show', $overtime->id) }}" class="text-primary-600 hover:text-primary-900">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
                                         @if(Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending')
                                             <a href="{{ route('employee.overtimes.edit', $overtime->id) }}" class="text-secondary-600 hover:text-secondary-900">
-                                                <i class="fas fa-edit"></i>
+                                                <i class="fas fa-edit text-lg"></i>
                                             </a>
                                             <form action="{{ route('employee.overtimes.destroy', $overtime->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-error-600 hover:text-error-900">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fas fa-trash text-lg"></i>
                                                 </button>
                                             </form>
                                         @endif

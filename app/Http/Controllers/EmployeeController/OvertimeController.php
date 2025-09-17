@@ -186,7 +186,20 @@ class OvertimeController extends Controller
             $overtime->customer = $request->customer;
             $overtime->date_start = $start;
             $overtime->date_end = $end;
-            $overtime->total = (int) ((int) ($hours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0));
+
+            // Hitung biaya overtime
+            $costPerHour = (int) env('OVERTIME_COSTS', 0);
+            $bonusCost = (int) env('OVERTIME_BONUS_COSTS', 0);
+
+            $baseTotal = $hours * $costPerHour;
+
+            // Hitung bonus tiap 24 jam
+            $bonusMultiplier = intdiv($hours, 24);
+            $bonusTotal = $bonusMultiplier * $bonusCost;
+
+            $totalOvertime = $baseTotal + $bonusTotal;
+
+            $overtime->total = $totalOvertime;
             $overtime->status_1 = 'pending';
             $overtime->status_2 = 'pending';
             $overtime->save();
@@ -196,7 +209,7 @@ class OvertimeController extends Controller
             if ($overtime->approver) {
                 $token = \Illuminate\Support\Str::random(48);
                 ApprovalLink::create([
-                    'model_type' => get_class($overtime),   // App\Models\overtime
+                    'model_type' => get_class($overtime),   // App\Models\Overtime
                     'model_id' => $overtime->id,
                     'approver_user_id' => $overtime->approver->id,
                     'level' => 1, // level 1 berarti arahnya ke team lead
@@ -204,16 +217,13 @@ class OvertimeController extends Controller
                     'token' => hash('sha256', $token), // simpan hash, kirim raw
                     'expires_at' => now()->addDays(3),  // masa berlaku
                 ]);
-
             }
 
             DB::afterCommit(function () use ($overtime, $token, $start, $end, $hours, $minutes) {
                 $fresh = $overtime->fresh(); // ambil ulang (punya created_at dll)
-                // dd("jalan");
                 event(new \App\Events\OvertimeSubmitted($fresh, Auth::user()->division_id));
 
                 // Kalau tidak ada approver atau token, jangan kirim email
-                
                 if (!$fresh || !$fresh->approver || !$token) {
                     return;
                 }
@@ -235,6 +245,7 @@ class OvertimeController extends Controller
         return redirect()->route('employee.overtimes.index')
             ->with('success', 'Overtime submitted. Total: ' . $hours . ' hours ' . $minutes . ' minutes');
     }
+
 
     /**
      * Display the specified resource.
@@ -265,7 +276,7 @@ class OvertimeController extends Controller
     public function edit(Overtime $overtime)
     {
         $user = Auth::user();
-        if ($user->id !== $overtime->employee_id) {
+        if ($user->id !== (int) $overtime->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -286,7 +297,7 @@ class OvertimeController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->id !== $overtime->employee_id) {
+        if ($user->id !== (int) $overtime->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -322,7 +333,15 @@ class OvertimeController extends Controller
         $overtime->customer = $request->customer;
         $overtime->date_start = $request->date_start;
         $overtime->date_end = $request->date_end;
-        $overtime->total = (int) ($overtimeHours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0);
+        // Hitung biaya overtime
+        $costPerHour = (int) env('OVERTIME_COSTS', 0);
+        $bonusCost = (int) env('OVERTIME_BONUS_COSTS', 0);
+        $baseTotal = $hours * $costPerHour;
+        // Hitung bonus tiap 24 jam
+        $bonusMultiplier = intdiv($hours, 24);
+        $bonusTotal = $bonusMultiplier * $bonusCost;
+        $totalOvertime = $baseTotal + $bonusTotal;
+        $overtime->total = $totalOvertime;
         $overtime->status_1 = 'pending';
         $overtime->status_2 = 'pending';
         $overtime->note_1 = NULL;
