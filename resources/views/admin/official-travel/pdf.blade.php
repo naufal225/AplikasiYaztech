@@ -152,6 +152,29 @@
         <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
     </div>
 
+    @if($travel->marked_down)
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            z-index: 9999;
+        ">
+            <img src="{{ public_path('yaztech-logo-web.png') }}" 
+                alt="Yaztech Engineering Solusindo"
+                style="
+                    position: absolute;
+                    bottom: 20px;
+                    right: 20px;
+                    width: 12rem;
+                    z-index: 100;
+                    opacity: 1;
+                ">
+        </div>
+    @endif
+
     <div class="section">
         <div class="sub-title">Official Travel Request #TY{{ $travel->id }} | {{
             \Carbon\Carbon::parse($travel->created_at)->format('F d, Y \a\t H:i') }}</div>
