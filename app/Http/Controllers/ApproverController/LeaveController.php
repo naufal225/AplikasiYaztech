@@ -5,10 +5,13 @@ namespace App\Http\Controllers\ApproverController;
 use App\Events\LeaveLevelAdvanced;
 use App\Exports\LeavesExport;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreLeaveRequest;
+use App\Http\Requests\UpdateLeaveRequest;
 use App\Models\ApprovalLink;
 use App\Models\Leave;
 use App\Models\User;
 use App\Roles;
+use App\Services\LeaveService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -119,80 +122,52 @@ class LeaveController extends Controller
 
     public function create()
     {
+        $tahunSekarang = now()->year;
+
+        $totalHariCuti = (int) Leave::where('employee_id', Auth::id())
+            ->with(['employee', 'approver'])
+            ->orderBy('created_at', 'desc')
+            ->where('status_1', 'approved')
+            ->where(function ($q) use ($tahunSekarang) {
+                $q->whereYear('date_start', $tahunSekarang)
+                    ->orWhereYear('date_end', $tahunSekarang);
+            })
+            ->get()
+            ->sum(function ($cuti) use ($tahunSekarang) {
+                $start = \Carbon\Carbon::parse($cuti->date_start);
+                $end = \Carbon\Carbon::parse($cuti->date_end);
+
+                // Batasi tanggal ke dalam tahun berjalan
+                if ($start->year < $tahunSekarang) {
+                    $start = \Carbon\Carbon::create($tahunSekarang, 1, 1);
+                }
+                if ($end->year > $tahunSekarang) {
+                    $end = \Carbon\Carbon::create($tahunSekarang, 12, 31);
+                }
+
+                return $start->lte($end) ? $start->diffInDays($end) + 1 : 0;
+            });
+
+        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
+
+        if ($sisaCuti <= 0) {
+            abort(422, 'Sisa cuti tidak cukup.');
+        }
+
         return view('approver.leave-request.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreLeaveRequest $request, LeaveService $leaveService)
     {
-        $request->validate([
-            'date_start' => 'required|date',
-            'date_end' => 'required|date|after_or_equal:date_start',
-            'reason' => 'required|string|max:1000',
-        ], [
-            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
-            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
-            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
-            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
-            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
-            'reason.required' => 'Alasan harus diisi.',
-            'reason.string' => 'Alasan harus berupa teks.',
-            'reason.max' => 'Alasan tidak boleh lebih dari 1000 karakter.',
-        ]);
+        $user = Auth::user();
+        $sisaCuti = $leaveService->sisaCuti($user);
+        $hariBaru = $leaveService->hitungHariCuti($request->date_start, $request->date_end);
 
-        if (!Auth::user()->division_id) {
-            return back()->with('error', 'You are not in a division. Please contact your administrator.');
+        if ($hariBaru > $sisaCuti) {
+            return back()->with('error', "Sisa cuti hanya {$sisaCuti} hari.");
         }
 
-        DB::transaction(function () use ($request) {
-            $leave = new Leave();
-            $leave->employee_id = Auth::id();
-            $leave->date_start = $request->date_start;
-            $leave->date_end = $request->date_end;
-            $leave->reason = $request->reason;
-            $leave->status_1 = 'pending';
-            $leave->save();
-
-            $tokenRaw = null;
-            // --- Email ke approver ---
-            $manager = User::where('role', Roles::Manager->value)->first();
-            if ($manager) {
-                $token = Str::random(48);
-                ApprovalLink::create([
-                    'model_type' => get_class($leave),   // App\Models\Leave
-                    'model_id' => $leave->id,
-                    'approver_user_id' => $manager->id,
-                    'level' => 2,
-                    'scope' => 'both',             // boleh approve & reject
-                    'token' => hash('sha256', $token), // simpan hash, kirim raw
-                    'expires_at' => now()->addDays(3),  // masa berlaku
-                ]);
-            }
-
-            // pastikan broadcast SETELAH commit
-            DB::afterCommit(function () use ($leave, $tokenRaw, $manager) {
-                $fresh = $leave->fresh(); // ambil ulang (punya created_at dll)
-
-                // event(new \App\Events\LeaveSubmitted($fresh, Auth::user()->division_id));
-                event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, 'manager'));
-
-                if (!$fresh || !$fresh->approver || !$tokenRaw) {
-                    return;
-                }
-
-                $linkTanggapan = route('public.approval.show', $tokenRaw); // pastikan route param sesuai
-
-                // Gunakan queue
-                Mail::to($manager->email)->queue(
-                    new \App\Mail\SendMessage(
-                        namaPengaju: $leave->employee->name,
-                        namaApprover: $manager->name,
-                        linkTanggapan: $linkTanggapan,
-                        emailPengaju: $leave->employee->email
-                    )
-                );
-            });
-
-        });
+        $leaveService->createLeave($request->validated());
 
         return redirect()->route('approver.leaves.index')
             ->with('success', 'Leave request submitted successfully.');
@@ -203,89 +178,25 @@ class LeaveController extends Controller
         return view('approver.leave-request.update', compact('leave'));
     }
 
-    public function update(Request $request, Leave $leave)
+    public function update(UpdateLeaveRequest $request, Leave $leave, LeaveService $leaveService)
     {
-        $validated = $request->validate([
-            'status_1' => 'nullable|string|in:approved,rejected',
-            'status_2' => 'nullable|string|in:approved,rejected',
-            'note_1' => 'nullable|string|min:3|max:100',
-            'note_2' => 'nullable|string|min:3|max:100',
-        ], [
-            'status_1.in' => 'Status 1 hanya boleh berisi: approved atau rejected.',
-            'status_2.in' => 'Status 2 hanya boleh berisi: approved atau rejected.',
-            'note_1.string' => 'Catatan 1 harus berupa teks.',
-            'note_1.min' => 'Catatan 1 minimal harus berisi 3 karakter.',
-            'note_1.max' => 'Catatan 1 maksimal hanya boleh 100 karakter.',
-            'note_2.string' => 'Catatan 2 harus berupa teks.',
-            'note_2.min' => 'Catatan 2 minimal harus berisi 3 karakter.',
-            'note_2.max' => 'Catatan 2 maksimal hanya boleh 100 karakter.',
-        ]);
-
-
-        // Cegah update dua status sekaligus
-        if ($request->filled('status_1') && $request->filled('status_2')) {
-            return back()->withErrors(['status' => 'Hanya boleh mengubah salah satu status dalam satu waktu.']);
+        if ($leave->status_1 !== 'pending') {
+            return redirect()->route('approver.leaves.index', $leave->id)
+                ->with('error', 'Cuti sudah diproses, tidak bisa diupdate.');
         }
 
-        $statusMessage = '';
+        $newDays = $leaveService->hitungHariCuti($request->date_start, $request->date_end);
+        $oldDays = $leaveService->hitungHariCuti($leave->date_start, $leave->date_end);
+        $sisaCuti = $leaveService->sisaCuti(Auth::user(), $leave->id);
 
-        // === STATUS 1 ===
-        if ($request->filled('status_1')) {
-
-            if ($leave->status_1 !== 'pending') {
-                return back()->withErrors(['status_1' => 'Status 1 sudah final dan tidak dapat diubah.']);
-            }
-
-            // Jika direject, cascade ke status_2 juga
-            // Jika direject, cascade ke status_2 juga
-            if ($validated['status_1'] === 'rejected') {
-                $leave->update([
-                    'status_1' => 'rejected',
-                    'note_1' => $validated['note_1'] ?? NULL,
-                    'status_2' => 'rejected', // ikut rejected juga
-                    'note_2' => $validated['note_2'] ?? NULL,
-                ]);
-            } else {
-                // approved → kirim notifikasi ke manager
-                $leave->update([
-                    'status_1' => 'approved',
-                    'note_1' => $validated['note_1'] ?? NULL,
-                ]);
-
-                event(new LeaveLevelAdvanced($leave, Auth::user()->division_id, 'manager'));
-
-                $manager = User::where('role', Roles::Manager->value)->first();
-                if ($manager) {
-                    $token = Str::random(48);
-                    ApprovalLink::create([
-                        'model_type' => get_class($leave),   // App\Models\Leave
-                        'model_id' => $leave->id,
-                        'approver_user_id' => $manager->id,
-                        'level' => 2,
-                        'scope' => 'both',             // boleh approve & reject
-                        'token' => hash('sha256', $token), // simpan hash, kirim raw
-                        'expires_at' => now()->addDays(3),  // masa berlaku
-                    ]);
-                    $link = route('public.approval.show', $token);
-
-                    // Gunakan queue
-                    Mail::to($manager->email)->queue(
-                        new \App\Mail\SendMessage(
-                            namaPengaju: $leave->employee->name,
-                            namaApprover: $manager->name,
-                            linkTanggapan: $link,
-                            emailPengaju: $leave->employee->email
-                        )
-                    );
-                }
-            }
-
-            $statusMessage = $validated['status_1'];
+        if ($newDays > $oldDays && $sisaCuti < ($newDays - $oldDays)) {
+            return back()->with('error', 'Sisa cuti tidak mencukupi untuk memperpanjang cuti.');
         }
 
-        return redirect()
-            ->route('approver.leaves.index')
-            ->with('success', "Leave request {$statusMessage} successfully.");
+        $leaveService->updateLeave($leave, $request->validated());
+
+        return redirect()->route('approver.leaves.index', $leave->id)
+            ->with('success', 'Leave request updated successfully.');
     }
 
 
@@ -344,71 +255,6 @@ class LeaveController extends Controller
     {
         $pdf = Pdf::loadView('Employee.leaves.pdf', compact('leave'));
         return $pdf->download('leave-details.pdf');
-    }
-
-    public function updateSelf(Request $request, Leave $leave)
-    {
-        // Check if the user has permission to update this leave
-        $user = Auth::user();
-        if ($user->id !== $leave->employee_id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        // Only allow updating if the leave is still pending
-        if ($leave->status_1 !== 'pending') {
-            return redirect()->back()
-                ->with('error', 'You cannot update a leave request that has already been processed.');
-        }
-
-        $request->validate([
-            'date_start' => 'required|date',
-            'date_end' => 'required|date|after_or_equal:date_start',
-            'reason' => 'required|string|max:1000',
-        ], [
-            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
-            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
-            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
-            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
-            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
-            'reason.required' => 'Alasan harus diisi.',
-            'reason.string' => 'Alasan harus berupa teks.',
-            'reason.max' => 'Alasan tidak boleh lebih dari 1000 karakter.',
-        ]);
-
-        $leave->date_start = $request->date_start;
-        $leave->date_end = $request->date_end;
-        $leave->reason = $request->reason;
-        $leave->status_1 = 'pending';
-        $leave->note_1 = NULL;
-        $leave->save();
-
-        // Send notification email to the approver
-        $manager = User::where('role', Roles::Manager->value)->first();
-        if ($manager) {
-            $token = Str::random(48);
-            ApprovalLink::create([
-                'model_type' => get_class($leave),   // App\Models\Leave
-                'model_id' => $leave->id,
-                'approver_user_id' => $manager->id,
-                'level' => 1, // level 1 berarti arahnya ke team lead
-                'scope' => 'both',             // boleh approve & reject
-                'token' => hash('sha256', $token), // simpan hash, kirim raw
-                'expires_at' => now()->addDays(3),  // masa berlaku
-            ]);
-            $linkTanggapan = route('public.approval.show', $token);
-
-            Mail::to($manager->email)->send(
-                new \App\Mail\SendMessage(
-                    namaPengaju: Auth::user()->name,
-                    namaApprover: $manager->name,
-                    linkTanggapan: $linkTanggapan,
-                    emailPengaju: Auth::user()->email
-                )
-            );
-        }
-
-        return redirect()->route('approver.leaves.index')
-            ->with('success', 'Leave request updated successfully.');
     }
 
 }
