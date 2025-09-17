@@ -180,17 +180,6 @@
             background-color: rgba(255, 255, 255, 0.2);
             z-index: 9999;
         ">
-            {{-- <div style="
-                    position: absolute;
-                    bottom: 20px;
-                    right: 20px;
-                    font-size: 10px;
-                    color: #444;
-                    z-index: 50;
-                ">
-                Request #RY{{ $reimbursement->id }} | {{ \Carbon\Carbon::parse($reimbursement->created_at)->format('F d, Y \a\t H:i') }} <br>
-                {{ $reimbursement->employee->email }}
-            </div> --}}
             <img src="{{ public_path('yaztech-logo-web.png') }}" 
                 alt="Yaztech Engineering Solusindo"
                 style="
@@ -294,11 +283,8 @@
             <tr>
                 <td class="label-col">Invoice:</td>
                 <td class="data-col">
-<<<<<<< HEAD
+
                     <div class="box" style="height:390px; text-align: center; line-height: 380px;">
-=======
-                    <div class="box" style="max-height:340px; text-align:center; display:flex; align-items:center; justify-content:center; overflow:hidden;">
->>>>>>> 80c250094c9092094a69173635f7808e97706815
                         @php
                             $path = storage_path('app/public/' . $reimbursement->invoice_path);
                             $base64 = '';
@@ -326,12 +312,6 @@
                 </td>
             </tr>
         </table>
-<<<<<<< HEAD
-
-        <!-- Akhir Catatan -->
-
-=======
->>>>>>> 80c250094c9092094a69173635f7808e97706815
     </div>
 
 </body>
