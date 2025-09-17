@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController\ApproverController;
 use App\Http\Controllers\AdminController\CustomerController;
 use App\Http\Controllers\AdminController\DashboardController;
 use App\Http\Controllers\AdminController\DivisionController;
+use App\Http\Controllers\AdminController\HolidayController;
 use App\Http\Controllers\AdminController\LeaveBalancesController;
 use App\Http\Controllers\AdminController\UserController;
 use App\Http\Controllers\AdminController\LeaveController;
@@ -66,6 +67,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/official-travels/export/pdf/all', [OfficialTravelController::class, 'exportPdfAllData'])
         ->name('official-travels.export.pdf.all');
     Route::resource('official-travels', OfficialTravelController::class);
+
+    Route::resource('holidays', HolidayController::class);
 
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::resource('profile', ProfileController::class);

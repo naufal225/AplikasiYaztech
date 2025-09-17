@@ -39,15 +39,7 @@ class LeaveLevelAdvanced implements ShouldBroadcast
         $d2 = \Carbon\Carbon::parse($this->leave->date_end);
 
         return [
-            'leave' => [
-                'id' => $this->leave->id,
-                'status_1' => $this->leave->status_1,
-                'status_2' => $this->leave->status_2,
-                'date_start_fmt' => $d1->format('M d'),
-                'date_end_fmt' => $d2->format('M d, Y'),
-                'total_days' => $d1->diffInDays($d2) + 1,
-                'created_at_fmt' => optional($this->leave->created_at)->format('M d, Y'),
-            ],
+            'leave' => $this->leave,
             'newLevel' => $this->newLevel,
         ];
     }

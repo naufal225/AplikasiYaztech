@@ -302,19 +302,19 @@ class OfficialTravelController extends Controller
     public function update(Request $request, OfficialTravel $officialTravel)
     {
         $validated = $request->validate([
-            'status_1' => 'string|in:approved,rejected',
-            'status_2' => 'string|in:approved,rejected',
-            'note_1' => 'nullable|string',
-            'note_2' => 'nullable|string',
+            'status_1' => 'nullable|string|in:approved,rejected',
+            'status_2' => 'nullable|string|in:approved,rejected',
+            'note_1' => 'nullable|string|min:3|max:100',
+            'note_2' => 'nullable|string|min:3|max:100',
         ], [
-            'status_1.string' => 'Status must be a valid string.',
-            'status_1.in' => 'Status must approved or rejected.',
-
-            'status_2.string' => 'Status must be a valid string.',
-            'status_2.in' => 'Status must approved or rejected.',
-
-            'note_1.string' => 'Note must be a valid string.',
-            'note_2.string' => 'Note must be a valid string.',
+            'status_1.in' => 'Status 1 hanya boleh berisi: approved atau rejected.',
+            'status_2.in' => 'Status 2 hanya boleh berisi: approved atau rejected.',
+            'note_1.string' => 'Catatan 1 harus berupa teks.',
+            'note_1.min' => 'Catatan 1 minimal harus berisi 3 karakter.',
+            'note_1.max' => 'Catatan 1 maksimal hanya boleh 100 karakter.',
+            'note_2.string' => 'Catatan 2 harus berupa teks.',
+            'note_2.min' => 'Catatan 2 minimal harus berisi 3 karakter.',
+            'note_2.max' => 'Catatan 2 maksimal hanya boleh 100 karakter.',
         ]);
 
         $status = '';
@@ -356,7 +356,8 @@ class OfficialTravelController extends Controller
 
     public function exportPdf(OfficialTravel $officialTravel)
     {
-        $pdf = Pdf::loadView('admin.travels.pdf', compact('officialTravel'));
+        $travel = $officialTravel;
+        $pdf = Pdf::loadView('admin.official-travel.pdf', compact('travel'));
         return $pdf->download('official-travel-details.pdf');
     }
 }

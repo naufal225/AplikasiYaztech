@@ -100,7 +100,7 @@
         }
 
         img.invoice {
-            max-height: 220px;
+            max-height: 380px;
             /* Sesuaikan dengan tinggi box jika perlu */
             max-width: 100%;
             object-fit: contain;
@@ -250,12 +250,7 @@
                     <div class="box">{{ $reimbursement->customer ?? 'N/A' }}</div>
                 </td>
             </tr>
-            <tr>
-                <td class="label-col">Type Reimbursement:</td>
-                <td class="data-col">
-                    <div class="box">{{ $reimbursement->type->name ?? 'N/A' }}</div>
-                </td>
-            </tr>
+
             <tr>
                 <td class="label-col">Total Amount:</td>
                 <td class="data-col">
@@ -265,7 +260,7 @@
             <tr>
                 <td class="label-col">Invoice:</td>
                 <td class="data-col">
-                    <div class="box" style="height:240px; text-align: center; line-height: 230px;">
+                    <div class="box" style="height:390px; text-align: center; line-height: 380px;">
                         @php
                         $path = storage_path('app/public/' . $reimbursement->invoice_path);
                         $base64 = '';
@@ -284,36 +279,15 @@
                     </div>
                 </td>
             </tr>
+
+            <tr>
+                <td class="label-col">Type Reimbursement:</td>
+                <td class="data-col">
+                    <div class="box">{{ $reimbursement->type->name ?? 'N/A' }}</div>
+                </td>
+            </tr>
         </table>
 
-        <!-- Catatan di bawah invoice -->
-        <div class="notes-section">
-            <h3>Notes</h3>
-            <table class="grid-2">
-                <tr>
-                    <td>
-                        <div><span class="note-label">Note from Approver 1:</span></div>
-                        <div class="note-box">
-                            @if($reimbursement->note_1)
-                            <span class="note-content">{{ $reimbursement->note_1 }}</span>
-                            @else
-                            <span class="no-note">No note provided.</span>
-                            @endif
-                        </div>
-                    </td>
-                    <td>
-                        <div><span class="note-label">Note from Approver 2:</span></div>
-                        <div class="note-box">
-                            @if($reimbursement->note_2)
-                            <span class="note-content">{{ $reimbursement->note_2 }}</span>
-                            @else
-                            <span class="no-note">No note provided.</span>
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
         <!-- Akhir Catatan -->
 
     </div>

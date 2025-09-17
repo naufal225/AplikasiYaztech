@@ -37,11 +37,7 @@ class ReimbursementSubmitted implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'id' => $this->reimbursement->id,
-            'employee' => $this->reimbursement->employee->name,
-            'status_1' => $this->reimbursement->status_1,
-            'status_2' => $this->reimbursement->status_2,
-            'created_at' => $this->reimbursement->created_at->toIso8601String(),
+            'reimbursement' => $this->reimbursement,
             'detail_url' => route('approver.reimbursements.show', $this->reimbursement),
         ];
     }

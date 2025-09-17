@@ -50,12 +50,7 @@ class ReimbursementLevelAdvanced implements ShouldBroadcast
 
         return [
             'reimbursement' => [
-                'id' => $this->reimbursement->id,
-                'status_1' => $this->reimbursement->status_1,
-                'status_2' => $this->reimbursement->status_2,
-                'date_start_fmt' => $d1->format('M d'),
-                'date_end_fmt' => $d2->format('M d, Y'),
-                'total_days' => $d1->diffInDays($d2) + 1,
+                'reimbursement' => $this->reimbursement,
                 'created_at_fmt' => optional($this->reimbursement->created_at)->format('M d, Y'),
             ],
             'newLevel' => $this->newLevel,

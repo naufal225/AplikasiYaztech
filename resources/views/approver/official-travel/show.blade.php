@@ -52,6 +52,16 @@
                 </div>
             </div>
 
+            @if ($errors->any())
+            <div class="px-4 py-3 mx-6 mt-6 border rounded-lg bg-error-50 border-error-200 text-error-700">
+                <ul class="pl-5 space-y-1 list-disc">
+                    @foreach ($errors->all() as $error)
+                    <li class="text-sm">{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
             <!-- Travel Details -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
@@ -154,14 +164,14 @@
                             <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                <span class="text-neutral-900">{{ $overtime->note_1 ?? '-' }}</span>
+                                <span class="text-neutral-900">{{ $officialTravel->note_1 ?? '-' }}</span>
                             </div>
                         </div>
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                <span class="text-neutral-900">{{ $overtime->note_2 ?? '-' }}</span>
+                                <span class="text-neutral-900">{{ $officialTravel->note_2 ?? '-' }}</span>
                             </div>
                         </div>
                     </div>

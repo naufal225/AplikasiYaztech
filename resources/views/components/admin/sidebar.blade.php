@@ -32,7 +32,7 @@
 
         <!-- Leave Dropdown -->
         <div class="space-y-1"
-            x-data="{ open: {{ request()->routeIs('admin.leaves.*', 'admin.leave-balances.*') ? 'true' : 'false' }} }">
+            x-data="{ open: {{ request()->routeIs('admin.leaves.*', 'admin.leave-balances.*', 'admin.holidays.*') ? 'true' : 'false' }} }">
             <button type="button"
                 class="flex items-center w-full px-4 py-3 text-left transition-all duration-200 rounded-lg"
                 :class="open ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white'"
@@ -51,9 +51,13 @@
                     class="flex items-center px-4 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.leave-balances.*') ? 'bg-primary-600 text-white' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
                     <span>Leave Balances</span>
                 </a>
+                <!-- Tambahkan menu Holidays -->
+                <a href="{{ route('admin.holidays.index') }}"
+                    class="flex items-center px-4 py-2 rounded-lg text-sm transition-all duration-200 {{ request()->routeIs('admin.holidays.*') ? 'bg-primary-600 text-white' : 'text-primary-200 hover:bg-primary-700 hover:text-white' }}">
+                    <span>Holidays</span>
+                </a>
             </div>
         </div>
-
         <!-- Reimbursement Dropdown -->
         <div class="space-y-1"
             x-data="{ open: {{ request()->routeIs('admin.reimbursements.*') || request()->routeIs('admin.reimbursement-types.*') ? 'true' : 'false' }} }">

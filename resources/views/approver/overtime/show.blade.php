@@ -83,6 +83,16 @@ $minutes = $overtimeMinutes % 60;
                 </div>
             </div>
 
+            @if ($errors->any())
+            <div class="px-4 py-3 mx-6 mt-6 border rounded-lg bg-error-50 border-error-200 text-error-700">
+                <ul class="pl-5 space-y-1 list-disc">
+                    @foreach ($errors->all() as $error)
+                    <li class="text-sm">{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+
             <!-- Overtime Details -->
             <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="px-6 py-4 border-b border-neutral-200">
@@ -233,8 +243,7 @@ $minutes = $overtimeMinutes % 60;
                     @endif
 
                     @if($overtime->status_1 === 'approved' && $overtime->status_2 === 'approved')
-                    <button
-                        onclick="window.location.href='{{ route('approver.overtimes.exportPdf', $overtime->id) }}'"
+                    <button onclick="window.location.href='{{ route('approver.overtimes.exportPdf', $overtime->id) }}'"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-secondary-600 hover:bg-secondary-700">
                         <i class="mr-2 fas fa-print"></i>
                         Print Request
