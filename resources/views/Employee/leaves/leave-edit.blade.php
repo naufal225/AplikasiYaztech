@@ -84,12 +84,27 @@
                             <span class="text-sm font-medium text-neutral-700">Duration:</span>
                         </div>
                         <span id="duration-display" class="text-sm font-bold text-primary-600">
-                            {{ \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end)) + 1 }} days
+                            @php
+                                $tahunSekarang = now()->year;
+                                $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                    ->pluck('holiday_date')
+                                    ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                    ->toArray();
+                                $start = \Carbon\Carbon::parse($leave->date_start);
+                                $end   = \Carbon\Carbon::parse($leave->date_end);
+                                $durasi = app()->call('App\Http\Controllers\EmployeeController\LeaveController@hitungHariCuti', [
+                                    'start' => $start,
+                                    'end' => $end,
+                                    'tahunSekarang' => $tahunSekarang,
+                                    'hariLibur' => $hariLibur,
+                                ]);
+                            @endphp
+                            {{ $durasi }} {{ $durasi === 1 ? 'day' : 'days' }}
                         </span>
                     </div>
                     <div class="mt-2 text-xs text-neutral-500">
                         <span id="working-days-display">
-                            {{ \Carbon\Carbon::parse($leave->date_start)->diffInWeekdays(\Carbon\Carbon::parse($leave->date_end)) + 1 }} working days
+                            {{ $durasi }} working days
                         </span>
                     </div>
                 </div>
@@ -110,7 +125,7 @@
                         <div>
                             <h4 class="mb-1 text-sm font-semibold text-warning-800">Important Notice</h4>
                             <p class="text-xs text-warning-700">
-                                Editing this request will reset its status to pending and require re-approval from your Approver 1.
+                                Editing this request will reset its status to pending and require re-approval from your Approver 2.
                             </p>
                         </div>
                     </div>
@@ -131,6 +146,8 @@
     </div>
 
     @push('scripts')
+        const holidays = @json($holidays);
+
         function calculateDuration() {
             const startDate = document.getElementById('date_start').value;
             const endDate = document.getElementById('date_end').value;
@@ -140,22 +157,26 @@
                 const end = new Date(endDate);
 
                 if (end >= start) {
-                    const timeDiff = end.getTime() - start.getTime();
-                    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
-
                     let workingDays = 0;
                     let currentDate = new Date(start);
 
                     while (currentDate <= end) {
                         const dayOfWeek = currentDate.getDay();
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Sunday (0) | Saturday (6)
+                        const formattedDate = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD
+
+                        // Hanya hitung jika bukan Sabtu, Minggu, dan bukan hari libur
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6 && !holidays.includes(formattedDate)) {
                             workingDays++;
                         }
+
                         currentDate.setDate(currentDate.getDate() + 1);
                     }
 
-                    document.getElementById('duration-display').textContent = daysDiff + ' days';
-                    document.getElementById('working-days-display').textContent = workingDays + ' working days';
+                    document.getElementById('duration-display').textContent =
+                        workingDays + (workingDays === 1 ? ' day' : ' days');
+
+                    document.getElementById('working-days-display').textContent =
+                        workingDays + (workingDays === 1 ? ' working day' : ' working days');
                 } else {
                     document.getElementById('duration-display').textContent = '0 days';
                     document.getElementById('working-days-display').textContent = '0 working days';
@@ -168,6 +189,7 @@
 
         document.getElementById('date_start').addEventListener('change', function() {
             document.getElementById('date_end').min = this.value;
+            calculateDuration();
         });
     @endpush
 @endsection

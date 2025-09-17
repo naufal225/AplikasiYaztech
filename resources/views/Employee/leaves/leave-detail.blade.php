@@ -116,8 +116,25 @@
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-clock text-secondary-600"></i>
                                     <span class="font-medium text-neutral-900">
-                                        {{ (int) \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end, ), false) + 1 }}
-                                        {{ (int) \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end, ), false) + 1 === 1 ? 'day' : 'days' }}
+                                        @php
+                                            $tahunSekarang = now()->year;
+                                            $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                                ->pluck('holiday_date')
+                                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                                ->toArray();
+
+                                            $start = \Carbon\Carbon::parse($leave->date_start);
+                                            $end   = \Carbon\Carbon::parse($leave->date_end);
+
+                                            $durasi = app()->call('App\Http\Controllers\EmployeeController\LeaveController@hitungHariCuti', [
+                                                'start' => $start,
+                                                'end' => $end,
+                                                'tahunSekarang' => $tahunSekarang,
+                                                'hariLibur' => $hariLibur,
+                                            ]);
+                                        @endphp
+
+                                        {{ $durasi }} {{ $durasi === 1 ? 'day' : 'days' }}
                                     </span>
                                 </div>
                             </div>
