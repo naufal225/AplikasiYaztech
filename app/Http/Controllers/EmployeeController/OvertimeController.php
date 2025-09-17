@@ -169,6 +169,12 @@ class OvertimeController extends Controller
         $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
         $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
 
+        if ($start->isToday() && $start->lt(Carbon::today()->setTime(17,0))) {
+            return back()->withErrors([
+                'date_start' => 'Jika tanggal mulai adalah hari ini, maka waktu mulai harus setelah jam 17:00.'
+            ])->withInput();
+        }
+
         // Hitung langsung dari date_start
         $overtimeMinutes = $start->diffInMinutes($end);
         $overtimeHours = $overtimeMinutes / 60;
@@ -177,7 +183,7 @@ class OvertimeController extends Controller
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
         }
 
-        $hours = round($overtimeMinutes / 60);
+        $hours = floor($overtimeMinutes / 60);
         $minutes = $overtimeMinutes % 60;
 
         DB::transaction(function () use ($start, $end, $overtimeMinutes, $hours, $minutes, $request) {
@@ -321,9 +327,18 @@ class OvertimeController extends Controller
         $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
         $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
 
-        $overtimeMinutes = $start->diffInMinutes($end);
+        if ($start->isToday() && $start->lt(Carbon::today()->setTime(17,0))) {
+            return back()->withErrors([
+                'date_start' => 'Jika tanggal mulai adalah hari ini, maka waktu mulai harus setelah jam 17:00.'
+            ])->withInput();
+        }
 
-        $overtimeHours = round($overtimeMinutes / 60);
+        // Hitung langsung dari date_start
+        $overtimeMinutes = $start->diffInMinutes($end);
+        $overtimeHours = $overtimeMinutes / 60;
+
+        $hours = floor($overtimeMinutes / 60);
+        $minutes = $overtimeMinutes % 60;
 
         if ($overtimeHours < 0.5) {
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
@@ -361,9 +376,6 @@ class OvertimeController extends Controller
                 'expires_at' => now()->addDays(3),  // masa berlaku
             ]);
             $linkTanggapan = route('public.approval.show', $token);
-
-            $hours = floor($overtimeMinutes / 60);
-            $minutes = $overtimeMinutes % 60;
 
             Mail::to($overtime->approver->email)->queue(
                 new \App\Mail\SendMessage(
