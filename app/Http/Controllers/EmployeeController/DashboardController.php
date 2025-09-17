@@ -71,6 +71,12 @@ class DashboardController extends Controller
         // Hitung total cuti tahun berjalan
         $tahunSekarang = now()->year;
 
+        // Ambil daftar libur dari tabel holidays
+        $holidays = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+            ->pluck('holiday_date')
+            ->map(fn($d) => \Carbon\Carbon::parse($d)->toDateString())
+            ->toArray();
+
         $totalHariCuti = $queryClone
             ->where('status_1', 'approved')
             ->where(function ($q) use ($tahunSekarang) {
@@ -78,7 +84,7 @@ class DashboardController extends Controller
                 ->orWhereYear('date_end', $tahunSekarang);
             })
             ->get()
-            ->sum(function ($cuti) use ($tahunSekarang) {
+            ->sum(function ($cuti) use ($tahunSekarang, $holidays) {
                 $start = \Carbon\Carbon::parse($cuti->date_start);
                 $end   = \Carbon\Carbon::parse($cuti->date_end);
 
@@ -89,7 +95,12 @@ class DashboardController extends Controller
                     $end = \Carbon\Carbon::create($tahunSekarang, 12, 31);
                 }
 
-                return $start->lte($end) ? $start->diffInDays($end) + 1 : 0;
+                return $start->lte($end) 
+                    ? collect(\Carbon\CarbonPeriod::create($start, $end))->filter(function ($date) use ($holidays) {
+                        return !$date->isWeekend() && !in_array($date->toDateString(), $holidays);
+                    })->count()
+                    : 0;
+
             });
 
         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
@@ -109,11 +120,16 @@ class DashboardController extends Controller
             $end   = \Carbon\Carbon::parse($cuti->date_end);
             while ($start->lte($end)) {
                 $tanggal = $start->format('Y-m-d');
-                $cutiPerTanggal[$tanggal][] = [
-                    'employee' => $cuti->employee->name,
-                    'email'    => $cuti->employee->email,
-                    'url_profile' => $cuti->employee->url_profile,
-                ];
+
+                // Skip weekend & holiday
+                if (!$start->isWeekend() && !in_array($tanggal, $holidays)) {
+                    $cutiPerTanggal[$tanggal][] = [
+                        'employee' => $cuti->employee->name,
+                        'email'    => $cuti->employee->email,
+                        'url_profile' => $cuti->employee->url_profile,
+                    ];
+                }
+
                 $start->addDay();
             }
         }
