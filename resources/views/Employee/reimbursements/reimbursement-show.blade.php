@@ -194,7 +194,7 @@
                                     <div class="text-sm text-neutral-900">{{ $reimbursement->customer ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div class="flex items-center space-x-2">
+                                    <div class="flex items-center text-base space-x-2">
                                         <a href="{{ route('employee.reimbursements.show', $reimbursement->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye"></i>
                                         </a>
