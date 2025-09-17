@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\ManagerController;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApproveOfficialTravelRequest;
+use App\Http\Requests\StoreOfficialTravelRequest;
+use App\Http\Requests\UpdateOfficialTravelRequest;
 use App\Models\ApprovalLink;
 use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Roles;
+use App\Services\OfficialTravelService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -125,89 +129,12 @@ class OfficialTravelController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreOfficialTravelRequest $request, OfficialTravelService $service)
     {
-        $validated = $request->validate([
-            'customer' => 'required',
-            'date_start' => 'required|date|after_or_equal:today',
-            'date_end' => 'required|date|after_or_equal:date_start',
-        ], [
-            'customer.required' => 'Customer harus diisi.',
-            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
-            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
-            'date_start.after' => 'Tanggal/Waktu Mulai harus setelah sekarang.',
-            'date_start.after_or_equal' => 'Tanggal/Waktu Mulai harus hari ini atau setelahnya.',
-            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
-            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
-            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
-            'date_end.after_or_equal' => 'Tanggal/Waktu Akhir harus hari ini atau setelahnya.',
-        ]);
-
-        $start = Carbon::parse($validated['date_start']);
-        $end = Carbon::parse($validated['date_end']);
-
-        $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
-
-        $user = Auth::user();
-        $userName = $user->name;
-        $userEmail = $user->email;
-        $divisionId = $user->division_id;
-
-        DB::transaction(function () use ($request, $start, $end, $totalDays, $user, $userName, $userEmail, $divisionId) {
-            $officialTravel = new OfficialTravel();
-            $officialTravel->customer = $request->customer;
-            $officialTravel->employee_id = Auth::id();
-            $officialTravel->date_start = $start;
-            $officialTravel->date_end = $end;
-            $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
-            $officialTravel->status_1 = 'pending';
-            $officialTravel->status_2 = 'pending';
-            $officialTravel->save();
-
-
-            // Siapkan token kalau ada approver
-            $tokenRaw = null;
-            // Send notification email to the approver
-            if ($officialTravel->approver) {
-                $tokenRaw = Str::random(48);
-                ApprovalLink::create([
-                    'model_type' => get_class($officialTravel),   // App\Models\officialTravel
-                    'model_id' => $officialTravel->id,
-                    'approver_user_id' => $officialTravel->approver->id,
-                    'level' => 1, // level 1 berarti arahnya ke team lead
-                    'scope' => 'both',             // boleh approve & reject
-                    'token' => hash('sha256', $tokenRaw), // simpan hash, kirim raw
-                    'expires_at' => now()->addDays(3),  // masa berlaku
-                ]);
-
-            }
-
-            DB::afterCommit(function () use ($officialTravel, $tokenRaw, $totalDays, $userName, $userEmail, $divisionId) {
-                $fresh = $officialTravel->fresh(); // ambil ulang (punya created_at dll)
-
-                event(new \App\Events\OfficialTravelSubmitted($fresh, $divisionId));
-
-                // Kalau tidak ada approver atau token, jangan kirim email
-                if (!$fresh || !$fresh->approver || !$tokenRaw) {
-                    return;
-                }
-
-                $linkTanggapan = route('public.approval.show', $tokenRaw);
-
-                Mail::to($officialTravel->approver->email)->queue(
-                    new \App\Mail\SendMessage(
-                        namaPengaju: $userName,
-                        namaApprover: $officialTravel->approver->name,
-                        linkTanggapan: $linkTanggapan,
-                        emailPengaju: $userEmail,
-                    )
-                );
-            });
-
-        });
+        $service->create($request->validated());
 
         return redirect()->route('manager.official-travels.index')
-            ->with('success', 'Official travel request submitted successfully. Total days: ' . $totalDays);
+            ->with('success', 'Official travel request submitted successfully');
     }
 
     public function edit(OfficialTravel $officialTravel)
@@ -227,114 +154,27 @@ class OfficialTravelController extends Controller
         return view('manager.official-travel.update', compact('officialTravel'));
     }
 
-    public function updateSelf(Request $request, OfficialTravel $officialTravel)
+    public function updateSelf(UpdateOfficialTravelRequest $request, OfficialTravel $travel, OfficialTravelService $service)
     {
-        $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id) {
-            abort(403, 'Unauthorized action.');
+        try {
+            $service->update($travel, $request->validated());
+
+            return redirect()
+                ->route('manager.official-travels.index', $travel->id)
+                ->with('success', 'Official travel updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
-
-        if ($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') {
-            return redirect()->route('manager.official-travels.show', $officialTravel->id)
-                ->with('error', 'You cannot update a travel request that has already been processed.');
-        }
-
-        $request->validate([
-            'customer' => 'required',
-            'date_start' => 'required|date|after_or_equal:today',
-            'date_end' => 'required|date|after_or_equal:date_start',
-        ], [
-            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
-            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
-            'date_start.after_or_equal' => 'Tanggal/Waktu Mulai harus hari ini atau setelahnya.',
-            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
-            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
-            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
-            'date_end.after_or_equal' => 'Tanggal/Waktu Akhir harus hari ini atau setelahnya.',
-            'customer.required' => 'Customer harus diisi.',
-        ]);
-
-        // Calculate total days
-        $start = Carbon::parse($request->date_start);
-        $end = Carbon::parse($request->date_end);
-
-        $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
-
-        $officialTravel->customer = $request->customer;
-        $officialTravel->date_start = $request->date_start;
-        $officialTravel->date_end = $request->date_end;
-        $officialTravel->status_1 = 'pending';
-        $officialTravel->status_2 = 'pending';
-        $officialTravel->note_1 = NULL;
-        $officialTravel->note_2 = NULL;
-        $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
-        $officialTravel->save();
-
-        // Send notification email to the approver
-        if ($officialTravel->approver) {
-            $token = Str::random(48);
-            ApprovalLink::create([
-                'model_type' => get_class($officialTravel),   // App\Models\officialTravel
-                'model_id' => $officialTravel->id,
-                'approver_user_id' => $officialTravel->approver->id,
-                'level' => 1, // level 1 berarti arahnya ke team lead
-                'scope' => 'both',             // boleh approve & reject
-                'token' => hash('sha256', $token), // simpan hash, kirim raw
-                'expires_at' => now()->addDays(3),  // masa berlaku
-            ]);
-
-            $linkTanggapan = route('public.approval.show', $token);
-
-            Mail::to($officialTravel->approver->email)->send(
-                new \App\Mail\SendMessage(
-                    namaPengaju: Auth::user()->name,
-                    namaApprover: $officialTravel->approver->name,
-                    linkTanggapan: $linkTanggapan,
-                    emailPengaju: Auth::user()->email,
-                )
-            );
-        }
-
-        return redirect()->route('manager.official-travels.show', $officialTravel->id)
-            ->with('success', 'Official travel request updated successfully. Total days: ' . $totalDays);
     }
 
-    public function update(Request $request, OfficialTravel $officialTravel)
+
+    public function update(ApproveOfficialTravelRequest $request, OfficialTravel $travel, OfficialTravelService $service)
     {
-        $validated = $request->validate([
-            'status_1' => 'nullable|string|in:approved,rejected',
-            'status_2' => 'nullable|string|in:approved,rejected',
-            'note_1' => 'nullable|string|min:3|max:100',
-            'note_2' => 'nullable|string|min:3|max:100',
-        ], [
-            'status_1.in' => 'Status 1 hanya boleh berisi: approved atau rejected.',
-            'status_2.in' => 'Status 2 hanya boleh berisi: approved atau rejected.',
-            'note_1.string' => 'Catatan 1 harus berupa teks.',
-            'note_1.min' => 'Catatan 1 minimal harus berisi 3 karakter.',
-            'note_1.max' => 'Catatan 1 maksimal hanya boleh 100 karakter.',
-            'note_2.string' => 'Catatan 2 harus berupa teks.',
-            'note_2.min' => 'Catatan 2 minimal harus berisi 3 karakter.',
-            'note_2.max' => 'Catatan 2 maksimal hanya boleh 100 karakter.',
-        ]);
-
-        $status = '';
-
-        if ($request->has('status_1')) {
-            $officialTravel->update([
-                'status_1' => $validated['status_1'],
-                'note_1' => $validated['note_1'] ?? null
-            ]);
-            $status = $validated['status_1'];
-        } else if ($request->has('status_2')) {
-            $officialTravel->update([
-                'status_2' => $validated['status_2'],
-                'note_2' => $validated['note_2'] ?? null
-            ]);
-            $status = $validated['status_2'];
-        }
-
-        return redirect()->route('manager.official-travels.index')->with('success', 'Official travel request ' . $status . ' successfully.');
+        $service->approve($travel, Auth::user()->role, $request->status, $request->note);
+        return redirect()->route('manager.official-travels.index')
+            ->with('success', "Travel request {$request->status}.");
     }
+
 
     public function destroy(OfficialTravel $officialTravel)
     {
