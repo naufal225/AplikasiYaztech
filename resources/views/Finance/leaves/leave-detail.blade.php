@@ -151,9 +151,9 @@
                             <!-- Note -->
                             <div class="space-y-2">
                                 <label class="text-sm font-semibold text-neutral-700">Note</label>
-                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <div class="flex items-start p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                    <span class="text-neutral-900">{{ $leave->note_1 ?? '-' }}</span>
+                                    <span class="text-neutral-900 break-all whitespace-pre-line max-w-full max-h-40 overflow-y-auto">{{ $leave->note_1 ?? '-' }}</span>
                                 </div>
                             </div>
                         </div>
