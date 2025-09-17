@@ -13,7 +13,7 @@ class ProfileController extends Controller
 {
     public function index()
     {
-        return view('employee.profile.index');
+        return view('Employee.profile.index');
     }
 
     public function update(Request $request)

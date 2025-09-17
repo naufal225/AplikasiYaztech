@@ -170,6 +170,40 @@
         <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
     </div>
 
+    @if($reimbursement->marked_down)
+        <div style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            z-index: 9999;
+        ">
+            {{-- <div style="
+                    position: absolute;
+                    bottom: 20px;
+                    right: 20px;
+                    font-size: 10px;
+                    color: #444;
+                    z-index: 50;
+                ">
+                Request #RY{{ $reimbursement->id }} | {{ \Carbon\Carbon::parse($reimbursement->created_at)->format('F d, Y \a\t H:i') }} <br>
+                {{ $reimbursement->employee->email }}
+            </div> --}}
+            <img src="{{ public_path('yaztech-logo-web.png') }}" 
+                alt="Yaztech Engineering Solusindo"
+                style="
+                    position: absolute;
+                    bottom: 20px;
+                    right: 20px;
+                    width: 12rem;
+                    z-index: 100;
+                    opacity: 1;
+                ">
+        </div>
+    @endif
+
     <div class="section">
         <div class="sub-title">Reimbursement Request #RY{{ $reimbursement->id }} | {{
             \Carbon\Carbon::parse($reimbursement->created_at)->format('F d, Y \a\t H:i') }}</div>
@@ -260,21 +294,26 @@
             <tr>
                 <td class="label-col">Invoice:</td>
                 <td class="data-col">
+<<<<<<< HEAD
                     <div class="box" style="height:390px; text-align: center; line-height: 380px;">
+=======
+                    <div class="box" style="max-height:340px; text-align:center; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+>>>>>>> 80c250094c9092094a69173635f7808e97706815
                         @php
-                        $path = storage_path('app/public/' . $reimbursement->invoice_path);
-                        $base64 = '';
-                        if (file_exists($path)) {
-                        $type = pathinfo($path, PATHINFO_EXTENSION);
-                        $data = file_get_contents($path);
-                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                        }
+                            $path = storage_path('app/public/' . $reimbursement->invoice_path);
+                            $base64 = '';
+                            if (file_exists($path)) {
+                            $type = pathinfo($path, PATHINFO_EXTENSION);
+                            $data = file_get_contents($path);
+                            $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                            }
                         @endphp
+
                         @if($base64)
-                        <img src="{{ $base64 }}" alt="Invoice" class="invoice"
-                            style="vertical-align: middle; line-height: 1;">
+                            <img src="{{ $base64 }}" alt="Invoice" class="invoice"
+                                style="width:auto; height:100%; object-fit:cover;">
                         @else
-                        <span style="color: #777; font-style: italic; line-height: 1.4;">No image available</span>
+                            <span style="color: #777; font-style: italic;">No image available</span>
                         @endif
                     </div>
                 </td>
@@ -287,9 +326,12 @@
                 </td>
             </tr>
         </table>
+<<<<<<< HEAD
 
         <!-- Akhir Catatan -->
 
+=======
+>>>>>>> 80c250094c9092094a69173635f7808e97706815
     </div>
 
 </body>
