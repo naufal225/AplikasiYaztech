@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Roles;
+use App\Enums\Roles;
 use Illuminate\Database\Eloquent\Model;
 
 class Division extends Model

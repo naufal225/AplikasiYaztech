@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\AdminController;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\HelperController;
+use App\Traits\HelperController;
 use App\Models\Leave;
 use App\Models\OfficialTravel;
 use App\Models\Overtime;
 use App\Models\Reimbursement;
 use App\Models\User;
-use App\Roles;
+use App\Enums\Roles;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

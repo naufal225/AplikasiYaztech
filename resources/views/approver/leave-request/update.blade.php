@@ -55,7 +55,7 @@
         </div>
         @endif
 
-        <form action="{{ route('approver.leaves.updateSelf', $leave->id) }}" method="POST" class="p-6 space-y-6">
+        <form action="{{ route('approver.leaves.update', $leave->id) }}" method="POST" class="p-6 space-y-6">
             @csrf
             @method('PUT')
 

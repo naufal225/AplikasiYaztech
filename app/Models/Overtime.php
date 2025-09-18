@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\HasDualStatus;
+use App\Traits\HasDualStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Overtime extends Model
