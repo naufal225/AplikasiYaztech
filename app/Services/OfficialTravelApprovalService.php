@@ -6,6 +6,8 @@ use App\Models\ApprovalLink;
 use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Enums\Roles;
+use App\Events\OfficialTravelLevelAdvanced;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -33,6 +35,33 @@ class OfficialTravelApprovalService
                     'status_1' => 'approved',
                     'note_1' => $note,
                 ]);
+
+                event(new OfficialTravelLevelAdvanced($travel->fresh(), Auth::user()->division_id ?? 0, 'manager'));
+
+                $manager = User::where('role', Roles::Manager->value)->first();
+                if ($manager) {
+                    $token = Str::random(48);
+                    ApprovalLink::create([
+                        'model_type' => get_class($travel),
+                        'model_id' => $travel->id,
+                        'approver_user_id' => $manager->id,
+                        'level' => 2,
+                        'scope' => 'both',
+                        'token' => hash('sha256', $token),
+                        'expires_at' => now()->addDays(3),
+                    ]);
+
+                    $link = route('public.approval.show', $token);
+                    Mail::to($manager->email)->queue(
+                        new \App\Mail\SendMessage(
+                            namaPengaju: $travel->employee->name,
+                            namaApprover: $manager->name,
+                            linkTanggapan: $link,
+                            emailPengaju: $travel->employee->email
+                        )
+                    );
+                }
+
                 return $travel;
             }
         }
@@ -51,32 +80,6 @@ class OfficialTravelApprovalService
                 'status_2' => $status,
                 'note_2' => $note,
             ]);
-
-
-            // kirim ke manager
-            $manager = User::where('role', Roles::Manager->value)->first();
-            if ($manager) {
-                $token = Str::random(48);
-                ApprovalLink::create([
-                    'model_type' => get_class($travel),
-                    'model_id' => $travel->id,
-                    'approver_user_id' => $manager->id,
-                    'level' => 2,
-                    'scope' => 'both',
-                    'token' => hash('sha256', $token),
-                    'expires_at' => now()->addDays(3),
-                ]);
-
-                $link = route('public.approval.show', $token);
-                Mail::to($manager->email)->queue(
-                    new \App\Mail\SendMessage(
-                        namaPengaju: $travel->employee->name,
-                        namaApprover: $manager->name,
-                        linkTanggapan: $link,
-                        emailPengaju: $travel->employee->email
-                    )
-                );
-            }
         }
 
         return $travel;

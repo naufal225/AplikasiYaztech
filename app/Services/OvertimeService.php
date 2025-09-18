@@ -51,6 +51,9 @@ class OvertimeService
             $overtime->status_2 = 'pending';
             $overtime->save();
 
+            $fresh = $overtime->fresh(); // ambil ulang (punya created_at dll)
+            event(new \App\Events\OvertimeSubmitted($fresh, Auth::user()->division_id));
+
             $this->notify($overtime, $minutes);
 
             return $overtime;
@@ -91,6 +94,9 @@ class OvertimeService
             'note_1' => null,
             'note_2' => null,
         ]);
+
+        $fresh = $overtime->fresh(); // ambil ulang (punya created_at dll)
+        event(new \App\Events\OvertimeSubmitted($fresh, Auth::user()->division_id));
 
         $this->notify($overtime, $minutes);
 
