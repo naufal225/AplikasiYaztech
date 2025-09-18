@@ -33,6 +33,7 @@ class OfficialTravel extends Model
         'date_end' => 'date',
         'marked_down' => 'boolean',
         'locked_at' => 'datetime',
+        'employee_id' => 'integer'
     ];
 
     public function approver()
@@ -51,4 +52,6 @@ class OfficialTravel extends Model
     {
         return $this->employee?->division?->leader; // bisa null-safe
     }
+
+
 }
