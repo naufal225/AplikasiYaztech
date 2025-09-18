@@ -31,6 +31,10 @@ class ReimbursementService
 
             $reimbursement->save();
 
+            $fresh = $reimbursement->fresh(); // ambil ulang (punya created_at dll)
+            // dd("jalan");
+            event(new \App\Events\ReimbursementSubmitted($fresh, Auth::user()->division_id));
+
             // jika ada approver
             if ($reimbursement->approver) {
                 $token = Str::random(48);
@@ -75,6 +79,10 @@ class ReimbursementService
         $reimbursement->status_2 = 'pending';
         $reimbursement->note_1 = null;
         $reimbursement->note_2 = null;
+
+        $fresh = $reimbursement->fresh(); // ambil ulang (punya created_at dll)
+        // dd("jalan");
+        event(new \App\Events\ReimbursementSubmitted($fresh, Auth::user()->division_id));
 
         // handle file
         if (isset($data['invoice_path'])) {

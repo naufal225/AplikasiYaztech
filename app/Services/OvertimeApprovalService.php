@@ -6,6 +6,8 @@ use App\Models\Overtime;
 use App\Models\User;
 use App\Models\ApprovalLink;
 use App\Enums\Roles;
+use App\Events\OvertimeLevelAdvanced;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -33,6 +35,8 @@ class OvertimeApprovalService
                     'status_1' => 'approved',
                     'note_1' => $note,
                 ]);
+
+                event(new OvertimeLevelAdvanced($overtime->fresh(), Auth::user()->division_id, 'manager'));
 
                 // Kirim approval ke Manager
                 $manager = User::where('role', Roles::Manager->value)->first();

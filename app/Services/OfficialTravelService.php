@@ -56,6 +56,10 @@ class OfficialTravelService
                 'status_2' => 'pending',
             ]);
 
+            $fresh = $travel->fresh();
+
+            event(new \App\Events\OfficialTravelSubmitted($fresh, Auth::user()->division_id ?? 0));
+
             $this->notify($travel, $days);
 
             return $travel;
@@ -103,6 +107,11 @@ class OfficialTravelService
             'note_1' => null,
             'note_2' => null,
         ]);
+
+
+        $fresh = $travel->fresh();
+
+        event(new \App\Events\OfficialTravelSubmitted($fresh, Auth::user()->division_id ?? 0));
 
         $this->notify($travel, $days);
 

@@ -97,6 +97,10 @@ class LeaveService
             $leave->status_1 = 'pending';
             $leave->save();
 
+            $fresh = $leave->fresh();
+
+            event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, 'manager'));
+
             $this->notify($leave);
 
             return $leave;
@@ -140,6 +144,11 @@ class LeaveService
             'status_1' => 'pending',
             'note_1' => null,
         ]);
+
+        $fresh = $leave->fresh();
+
+        event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, 'manager'));
+
 
         $this->notify($leave);
 

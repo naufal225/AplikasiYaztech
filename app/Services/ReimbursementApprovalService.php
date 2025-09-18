@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Events\ReimbursementLevelAdvanced;
 use App\Models\Reimbursement;
 use App\Models\User;
 use App\Models\ApprovalLink;
 use App\Enums\Roles;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -33,6 +35,8 @@ class ReimbursementApprovalService
                     'status_1' => 'approved',
                     'note_1' => $note,
                 ]);
+
+                event(new ReimbursementLevelAdvanced($reimbursement->fresh(), Auth::user()->division_id, 'manager'));
 
                 // kirim ke manager
                 $manager = User::where('role', Roles::Manager->value)->first();
