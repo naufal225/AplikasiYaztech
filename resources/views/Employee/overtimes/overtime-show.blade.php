@@ -157,116 +157,111 @@
                     $minutes = $overtimeMinutes % 60;
                     @endphp
 
-                    <tr class="transition-colors duration-200 hover:bg-neutral-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div>
-                                <div class="text-sm font-medium text-neutral-900">#OY{{ $overtime->id }}</div>
-                                <div class="text-sm text-neutral-500">{{ $overtime->created_at->format('M d, Y') }}
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">
-                                {{ $overtime->date_start->format('M d Y, H:i') }}
-                            </div>
-                            <div class="text-sm text-neutral-500">
-                                to {{ $overtime->date_end->format('M d Y, H:i') }}
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-bold text-neutral-900">{{ $hours }}h {{ $minutes }}m</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-bold text-success-600">{{ '+Rp' . number_format($overtime->total ??
-                                0, 0, ',', '.') }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($overtime->status_1 === 'pending')
-                            <span class="badge-pending text-warning-600">
-                                <i class="mr-1 fas fa-clock"></i>
-                                Pending
-                            </span>
-                            @elseif($overtime->status_1 === 'approved')
-                            <span class="badge-approved text-success-600">
-                                <i class="mr-1 fas fa-check-circle"></i>
-                                Approved
-                            </span>
-                            @elseif($overtime->status_1 === 'rejected')
-                            <span class="badge-rejected text-error-600">
-                                <i class="mr-1 fas fa-times-circle"></i>
-                                Rejected
-                            </span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($overtime->status_2 === 'pending')
-                            <span class="badge-pending text-warning-600">
-                                <i class="mr-1 fas fa-clock"></i>
-                                Pending
-                            </span>
-                            @elseif($overtime->status_2 === 'approved')
-                            <span class="badge-approved text-success-600">
-                                <i class="mr-1 fas fa-check-circle"></i>
-                                Approved
-                            </span>
-                            @elseif($overtime->status_2 === 'rejected')
-                            <span class="badge-rejected text-error-600">
-                                <i class="mr-1 fas fa-times-circle"></i>
-                                Rejected
-                            </span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $overtime->approver->name ?? 'N/A' }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $overtime->customer ?? 'N/A' }}</div>
-                        </td>
-                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                            <div class="flex items-center space-x-2 text-base">
-                                <a href="{{ route('employee.overtimes.show', $overtime->id) }}"
-                                    class="text-primary-600 hover:text-primary-900">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                @if(Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending')
-                                <a href="{{ route('employee.overtimes.edit', $overtime->id) }}"
-                                    class="text-secondary-600 hover:text-secondary-900">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ route('employee.overtimes.destroy', $overtime->id) }}" method="POST"
-                                    class="inline" onsubmit="return confirm('Are you sure?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-error-600 hover:text-error-900">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="10" class="px-6 py-12 text-center">
-                            <div class="text-neutral-400">
-                                <i class="mb-4 text-4xl fas fa-clock"></i>
-                                <p class="text-lg font-medium">No overtime requests found</p>
-                                <p class="text-sm">Submit your first overtime request to get started</p>
-                                <a href="{{ route('employee.overtimes.create') }}"
-                                    class="inline-flex items-center px-4 py-2 mt-4 text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
-                                    <i class="mr-2 fas fa-plus"></i>
-                                    New Overtime Request
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+
+                            <tr class="hover:bg-neutral-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div>
+                                        <div class="text-sm font-medium text-neutral-900">#OY{{ $overtime->id }}</div>
+                                        <div class="text-sm text-neutral-500">{{ $overtime->created_at->format('M d, Y') }}</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">
+                                        {{ $overtime->date_start->format('M d Y, H:i') }}
+                                    </div>
+                                    <div class="text-sm text-neutral-500">
+                                        to {{ $overtime->date_end->format('M d Y, H:i') }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-bold text-neutral-900">{{ $hours }}h {{ $minutes }}m</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-bold text-success-600">{{ '+Rp' . number_format($overtime->total ?? 0, 0, ',', '.') }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($overtime->status_1 === 'pending')
+                                        <span class="badge-pending text-warning-600">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            Pending
+                                        </span>
+                                    @elseif($overtime->status_1 === 'approved')
+                                        <span class="badge-approved text-success-600">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Approved
+                                        </span>
+                                    @elseif($overtime->status_1 === 'rejected')
+                                        <span class="badge-rejected text-error-600">
+                                            <i class="fas fa-times-circle mr-1"></i>
+                                            Rejected
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($overtime->status_2 === 'pending')
+                                        <span class="badge-pending text-warning-600">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            Pending
+                                        </span>
+                                    @elseif($overtime->status_2 === 'approved')
+                                        <span class="badge-approved text-success-600">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Approved
+                                        </span>
+                                    @elseif($overtime->status_2 === 'rejected')
+                                        <span class="badge-rejected text-error-600">
+                                            <i class="fas fa-times-circle mr-1"></i>
+                                            Rejected
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $overtime->approver->name ?? 'N/A' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $overtime->customer ?? 'N/A' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ route('employee.overtimes.show', $overtime->id) }}" class="text-primary-600 hover:text-primary-900">
+                                            <i class="fas fa-eye text-lg"></i>
+                                        </a>
+                                        @if(Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending')
+                                            <a href="{{ route('employee.overtimes.edit', $overtime->id) }}" class="text-secondary-600 hover:text-secondary-900">
+                                                <i class="fas fa-edit text-lg"></i>
+                                            </a>
+                                            <form action="{{ route('employee.overtimes.destroy', $overtime->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-error-600 hover:text-error-900">
+                                                    <i class="fas fa-trash text-lg"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="10" class="px-6 py-12 text-center">
+                                    <div class="text-neutral-400">
+                                        <i class="fas fa-clock text-4xl mb-4"></i>
+                                        <p class="text-lg font-medium">No overtime requests found</p>
+                                        <p class="text-sm">Submit your first overtime request to get started</p>
+                                        <a href="{{ route('employee.overtimes.create') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">
+                                            <i class="fas fa-plus mr-2"></i>
+                                            New Overtime Request
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
         @if($overtimes->hasPages())
         <div class="px-6 py-4 border-t border-neutral-200">

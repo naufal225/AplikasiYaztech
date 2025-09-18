@@ -227,52 +227,49 @@
                             <div class="text-sm text-neutral-900">{{ $officialTravel->customer ?? 'N/A' }}</div>
                         </td>
 
-                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                            <div class="flex items-center space-x-2 text-base">
-                                <a href="{{ route('employee.official-travels.show', $officialTravel->id) }}"
-                                    class="text-primary-600 hover:text-primary-900" title="View Details">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                @if(Auth::id() === $officialTravel->employee_id && $officialTravel->status_1 ===
-                                'pending')
-                                <a href="{{ route('employee.official-travels.edit', $officialTravel->id) }}"
-                                    class="text-secondary-600 hover:text-secondary-900" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ route('employee.official-travels.destroy', $officialTravel->id) }}"
-                                    method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-error-600 hover:text-error-900" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="10" class="px-6 py-12 text-center">
-                            <div class="text-neutral-400">
-                                <i class="mb-4 text-4xl fas fa-plane"></i>
-                                <p class="text-lg font-medium">No official travel requests found</p>
-                                <p class="text-sm">Submit your first travel request to get started</p>
-                                <a href="{{ route('employee.official-travels.create') }}"
-                                    class="inline-flex items-center px-4 py-2 mt-4 text-white transition-colors duration-200 rounded-lg bg-primary-600 hover:bg-primary-700">
-                                    <i class="mr-2 fas fa-plus"></i>
-                                    New Travel Request
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        @if($officialTravels->hasPages())
-        <div class="px-6 py-4 border-t border-neutral-200">
-            {{ $officialTravels->links() }}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ route('employee.official-travels.show', $officialTravel->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
+                                            <i class="fas fa-eye text-lg"></i>
+                                        </a>
+                                        @if(Auth::id() === $officialTravel->employee_id && $officialTravel->status_1 === 'pending')
+                                            <a href="{{ route('employee.official-travels.edit', $officialTravel->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
+                                                <i class="fas fa-edit text-lg"></i>
+                                            </a>
+                                            <form action="{{ route('employee.official-travels.destroy', $officialTravel->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-error-600 hover:text-error-900" title="Delete">
+                                                    <i class="fas fa-trash text-lg"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="10" class="px-6 py-12 text-center">
+                                    <div class="text-neutral-400">
+                                        <i class="fas fa-plane text-4xl mb-4"></i>
+                                        <p class="text-lg font-medium">No official travel requests found</p>
+                                        <p class="text-sm">Submit your first travel request to get started</p>
+                                        <a href="{{ route('employee.official-travels.create') }}" class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200">
+                                            <i class="fas fa-plus mr-2"></i>
+                                            New Travel Request
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if($officialTravels->hasPages())
+                <div class="px-6 py-4 border-t border-neutral-200">
+                    {{ $officialTravels->links() }}
+                </div>
+            @endif
         </div>
         @endif
     </div>

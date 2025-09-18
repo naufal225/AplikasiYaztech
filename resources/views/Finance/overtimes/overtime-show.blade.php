@@ -287,18 +287,18 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('finance.overtimes.show', $overtime->id) }}" class="text-primary-600 hover:text-primary-900">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
 
                                         @if((Auth::id() === $overtime->employee_id && $overtime->status_1 === 'pending' && !\App\Models\Division::where('leader_id', Auth::id())->exists()) || (\App\Models\Division::where('leader_id', Auth::id())->exists() && $overtime->status_2 === 'pending'))
                                             <a href="{{ route('finance.overtimes.edit', $overtime->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                                <i class="fas fa-edit text-lg"></i>
                                             </a>
                                             <form action="{{ route('finance.overtimes.destroy', $overtime->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-error-600 hover:text-error-900" title="Delete">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fas fa-trash text-lg"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -456,7 +456,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('finance.overtimes.show', $overtime->id) }}" class="text-primary-600 hover:text-primary-900">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
                                     </div>
                                 </td>
@@ -587,7 +587,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('finance.overtimes.show', $overtime->id) }}" class="text-primary-600 hover:text-primary-900">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
                                     </div>
                                 </td>

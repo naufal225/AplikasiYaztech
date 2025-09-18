@@ -201,6 +201,12 @@ class OvertimeController extends Controller
         $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
         $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
 
+        if ($start->isToday() && $start->lt(Carbon::today()->setTime(17,0))) {
+            return back()->withErrors([
+                'date_start' => 'Jika tanggal mulai adalah hari ini, maka waktu mulai harus setelah jam 17:00.'
+            ])->withInput();
+        }
+
         // Hitung langsung dari date_start
         $overtimeMinutes = $start->diffInMinutes($end);
         $overtimeHours = $overtimeMinutes / 60;
@@ -209,7 +215,7 @@ class OvertimeController extends Controller
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
         }
 
-        $hours = round($overtimeMinutes / 60);
+        $hours = floor($overtimeMinutes / 60);
         $minutes = $overtimeMinutes % 60;
 
         DB::transaction(function () use ($start, $end, $overtimeMinutes, $hours, $minutes, $request) {
@@ -218,7 +224,19 @@ class OvertimeController extends Controller
             $overtime->customer = $request->customer;
             $overtime->date_start = $start;
             $overtime->date_end = $end;
-            $overtime->total = (int) ((int) ($hours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0));
+            // Hitung biaya overtime
+            $costPerHour = (int) env('OVERTIME_COSTS', 0);
+            $bonusCost = (int) env('OVERTIME_BONUS_COSTS', 0);
+
+            $baseTotal = $hours * $costPerHour;
+
+            // Hitung bonus tiap 24 jam
+            $bonusMultiplier = intdiv($hours, 24);
+            $bonusTotal = $bonusMultiplier * $bonusCost;
+
+            $totalOvertime = $baseTotal + $bonusTotal;
+
+            $overtime->total = $totalOvertime;
 
             // Cek apakah user adalah leader division
             $isLeader = \App\Models\Division::where('leader_id', Auth::id())->exists();
@@ -336,7 +354,7 @@ class OvertimeController extends Controller
     public function edit(Overtime $overtime)
     {
         $user = Auth::user();
-        if ($user->id !== $overtime->employee_id) {
+        if ($user->id !== (int) $overtime->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -360,7 +378,7 @@ class OvertimeController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->id !== $overtime->employee_id) {
+        if ($user->id !== (int) $overtime->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -386,9 +404,17 @@ class OvertimeController extends Controller
         $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
         $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
 
-        $overtimeMinutes = $start->diffInMinutes($end);
+        if ($start->isToday() && $start->lt(Carbon::today()->setTime(17,0))) {
+            return back()->withErrors([
+                'date_start' => 'Jika tanggal mulai adalah hari ini, maka waktu mulai harus setelah jam 17:00.'
+            ])->withInput();
+        }
 
-        $overtimeHours = round($overtimeMinutes / 60);
+        $overtimeMinutes = $start->diffInMinutes($end);
+        $overtimeHours = $overtimeMinutes / 60;
+
+        $hours = floor($overtimeMinutes / 60);
+        $minutes = $overtimeMinutes % 60;
 
         if ($overtimeHours < 0.5) {
             return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
@@ -398,7 +424,15 @@ class OvertimeController extends Controller
         $overtime->customer = $request->customer;
         $overtime->date_start = $request->date_start;
         $overtime->date_end = $request->date_end;
-        $overtime->total = (int) ($overtimeHours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0);
+        // Hitung biaya overtime
+        $costPerHour = (int) env('OVERTIME_COSTS', 0);
+        $bonusCost = (int) env('OVERTIME_BONUS_COSTS', 0);
+        $baseTotal = $hours * $costPerHour;
+        // Hitung bonus tiap 24 jam
+        $bonusMultiplier = intdiv($hours, 24);
+        $bonusTotal = $bonusMultiplier * $bonusCost;
+        $totalOvertime = $baseTotal + $bonusTotal;
+        $overtime->total = $totalOvertime;
 
          // Reset status dan catatan
 

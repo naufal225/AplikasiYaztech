@@ -121,19 +121,33 @@
                             </div>
                         </div>
 
-                        <!-- Duration -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Duration</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-clock text-secondary-600"></i>
-                                <span class="font-medium text-neutral-900">
-                                    {{ (int)
-                                    \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end,
-                                    ), false) + 1 }}
-                                    {{ (int)
-                                    \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end,
-                                    ), false) + 1 === 1 ? 'day' : 'days' }}
-                                </span>
+                            <!-- Duration -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Duration</label>
+                                <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-clock text-secondary-600"></i>
+                                    <span class="font-medium text-neutral-900">
+                                        @php
+                                            $tahunSekarang = now()->year;
+                                            $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                                ->pluck('holiday_date')
+                                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                                ->toArray();
+
+                                            $start = \Carbon\Carbon::parse($leave->date_start);
+                                            $end   = \Carbon\Carbon::parse($leave->date_end);
+
+                                            $durasi = app()->call('App\Http\Controllers\EmployeeController\LeaveController@hitungHariCuti', [
+                                                'start' => $start,
+                                                'end' => $end,
+                                                'tahunSekarang' => $tahunSekarang,
+                                                'hariLibur' => $hariLibur,
+                                            ]);
+                                        @endphp
+
+                                        {{ $durasi }} {{ $durasi === 1 ? 'day' : 'days' }}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
@@ -162,14 +176,13 @@
                             </div>
                         </div>
 
-                        <!-- Note -->
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Note</label>
-                            <div class="flex items-start p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                <span
-                                    class="max-w-full overflow-y-auto break-all whitespace-pre-line text-neutral-900 max-h-40">{{
-                                    $leave->note_1 ?? '-' }}</span>
+                            <!-- Note -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Note</label>
+                                <div class="flex items-start p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                    <span class="text-neutral-900 break-all whitespace-pre-line max-w-full max-h-40 overflow-y-auto">{{ $leave->note_1 ?? '-' }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>

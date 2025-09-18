@@ -62,7 +62,7 @@
                     <div class="mt-2">
                         <span
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {{ ucfirst(auth()->user()->role) }}
+                            {{ auth()->user()->role == 'employee' ? 'Employee' : (auth()->user()->role == 'manager' ? 'Approver 2' : (auth()->user()->role == 'approver' ? 'Approver 1' : (auth()->user()->role == 'admin' ? 'Admin' : (auth()->user()->role == 'finance' ? 'Approver 3' : 'Unknown')))) }}
                         </span>
                     </div>
                 </div>
@@ -96,7 +96,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Role</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ ucfirst(auth()->user()->role) }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->role == 'employee' ? 'Employee' : (auth()->user()->role == 'manager' ? 'Approver 2' : (auth()->user()->role == 'approver' ? 'Approver 1' : (auth()->user()->role == 'admin' ? 'Admin' : (auth()->user()->role == 'finance' ? 'Approver 3' : 'Unknown')))) }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Member Since</label>

@@ -165,23 +165,19 @@
                                 <span class="font-medium text-error-800">Rejected</span>
                                 @endif
                             </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
-                            <div class="flex items-start p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                <span
-                                    class="max-w-full overflow-y-auto break-all whitespace-pre-line text-neutral-900 max-h-40">{{
-                                    $officialTravel->note_1 ?? '-' }}</span>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
+                                <div class="flex items-start p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                    <span class="text-neutral-900 break-all whitespace-pre-line max-w-full max-h-40 overflow-y-auto">{{ $officialTravel->note_1 ?? '-' }}</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
-                            <div class="flex items-start p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                <span
-                                    class="max-w-full overflow-y-auto break-all whitespace-pre-line text-neutral-900 max-h-40">{{
-                                    $officialTravel->note_2 ?? '-' }}</span>
+                            <div class="space-y-2">
+                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
+                                <div class="flex items-start p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                    <span class="text-neutral-900 break-all whitespace-pre-line max-w-full max-h-40 overflow-y-auto">{{ $officialTravel->note_2 ?? '-' }}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
