@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Traits;
 
 use App\Models\Leave;
 use App\Models\OfficialTravel;
 use App\Models\Overtime;
 use App\Models\Reimbursement;
-use App\Roles;
-use App\TypeRequest;
+use App\Enums\Roles;
+use App\Enums\TypeRequest;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 

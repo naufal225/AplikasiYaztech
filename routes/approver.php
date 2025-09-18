@@ -21,8 +21,6 @@ Route::middleware(['auth', 'role:approver'])->prefix('approver')->name('approver
         ->name('leaves.export');
     Route::get('/leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
 
-    Route::put('/leaves/{leave}/update-self', [LeaveController::class, 'updateSelf'])->name('leaves.updateSelf');
-
     Route::resource('leaves', LeaveController::class)
         ->parameters([
             "leaves" => "leave"

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\EmployeeController;
 
 use App\Http\Controllers\Controller;
 use App\Models\Leave;
-use App\Roles;
-use App\TypeRequest;
+use App\Enums\Roles;
+use App\Enums\TypeRequest;
 use App\Models\Reimbursement;
 use App\Models\Overtime;
 use App\Models\OfficialTravel;
@@ -44,24 +44,24 @@ class DashboardController extends Controller
 
         // 🔹 Query khusus untuk count (tanpa orderBy)
         $leaveCounts = Leave::where('employee_id', $userId)->withFinalStatusCount()->first();
-        $reimCounts  = Reimbursement::where('employee_id', $userId)->withFinalStatusCount()->first();
+        $reimCounts = Reimbursement::where('employee_id', $userId)->withFinalStatusCount()->first();
         $overtimeCounts = Overtime::where('employee_id', $userId)->withFinalStatusCount()->first();
-        $travelCounts   = OfficialTravel::where('employee_id', $userId)->withFinalStatusCount()->first();
+        $travelCounts = OfficialTravel::where('employee_id', $userId)->withFinalStatusCount()->first();
 
         // Ambil hasil count (pakai null coalescing untuk aman)
-        $pendingLeaves        = $leaveCounts->pending ?? 0;
-        $approvedLeaves       = $leaveCounts->approved ?? 0;
-        $rejectedLeaves       = $leaveCounts->rejected ?? 0;
+        $pendingLeaves = $leaveCounts->pending ?? 0;
+        $approvedLeaves = $leaveCounts->approved ?? 0;
+        $rejectedLeaves = $leaveCounts->rejected ?? 0;
 
-        $pendingReimbursements  = $reimCounts->pending ?? 0;
+        $pendingReimbursements = $reimCounts->pending ?? 0;
         $approvedReimbursements = $reimCounts->approved ?? 0;
         $rejectedReimbursements = $reimCounts->rejected ?? 0;
 
-        $pendingOvertimes  = $overtimeCounts->pending ?? 0;
+        $pendingOvertimes = $overtimeCounts->pending ?? 0;
         $approvedOvertimes = $overtimeCounts->approved ?? 0;
         $rejectedOvertimes = $overtimeCounts->rejected ?? 0;
 
-        $pendingTravels  = $travelCounts->pending ?? 0;
+        $pendingTravels = $travelCounts->pending ?? 0;
         $approvedTravels = $travelCounts->approved ?? 0;
         $rejectedTravels = $travelCounts->rejected ?? 0;
 
@@ -81,12 +81,12 @@ class DashboardController extends Controller
             ->where('status_1', 'approved')
             ->where(function ($q) use ($tahunSekarang) {
                 $q->whereYear('date_start', $tahunSekarang)
-                ->orWhereYear('date_end', $tahunSekarang);
+                    ->orWhereYear('date_end', $tahunSekarang);
             })
             ->get()
             ->sum(function ($cuti) use ($tahunSekarang, $holidays) {
                 $start = \Carbon\Carbon::parse($cuti->date_start);
-                $end   = \Carbon\Carbon::parse($cuti->date_end);
+                $end = \Carbon\Carbon::parse($cuti->date_end);
 
                 if ($start->year < $tahunSekarang) {
                     $start = \Carbon\Carbon::create($tahunSekarang, 1, 1);
@@ -110,14 +110,14 @@ class DashboardController extends Controller
             ->where('status_1', 'approved')
             ->where(function ($q) {
                 $q->whereYear('date_start', now()->year)
-                ->orWhereYear('date_end', now()->year);
+                    ->orWhereYear('date_end', now()->year);
             })
-            ->get(['id','employee_id','date_start','date_end']);
+            ->get(['id', 'employee_id', 'date_start', 'date_end']);
 
         $cutiPerTanggal = [];
         foreach ($karyawanCuti as $cuti) {
             $start = \Carbon\Carbon::parse($cuti->date_start);
-            $end   = \Carbon\Carbon::parse($cuti->date_end);
+            $end = \Carbon\Carbon::parse($cuti->date_end);
             while ($start->lte($end)) {
                 $tanggal = $start->format('Y-m-d');
 
@@ -125,7 +125,7 @@ class DashboardController extends Controller
                 if (!$start->isWeekend() && !in_array($tanggal, $holidays)) {
                     $cutiPerTanggal[$tanggal][] = [
                         'employee' => $cuti->employee->name,
-                        'email'    => $cuti->employee->email,
+                        'email' => $cuti->employee->email,
                         'url_profile' => $cuti->employee->url_profile,
                     ];
                 }
@@ -136,10 +136,21 @@ class DashboardController extends Controller
 
         return view('Employee.index', compact(
             'employeeCount',
-            'pendingLeaves', 'pendingReimbursements', 'pendingOvertimes', 'pendingTravels',
-            'approvedLeaves', 'approvedReimbursements', 'approvedOvertimes', 'approvedTravels',
-            'rejectedLeaves', 'rejectedReimbursements', 'rejectedOvertimes', 'rejectedTravels',
-            'recentRequests', 'sisaCuti', 'cutiPerTanggal'
+            'pendingLeaves',
+            'pendingReimbursements',
+            'pendingOvertimes',
+            'pendingTravels',
+            'approvedLeaves',
+            'approvedReimbursements',
+            'approvedOvertimes',
+            'approvedTravels',
+            'rejectedLeaves',
+            'rejectedReimbursements',
+            'rejectedOvertimes',
+            'rejectedTravels',
+            'recentRequests',
+            'sisaCuti',
+            'cutiPerTanggal'
         ));
     }
 
