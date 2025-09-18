@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Leave;
 use App\Models\User;
-use App\Roles;
+use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -25,7 +25,7 @@ class LeaveApprovalService
 
         $leave->update([
             'status_1' => 'approved',
-            'note_1'   => $note,
+            'note_1'   => $note ?? null,
         ]);
 
         return $leave;
@@ -46,7 +46,7 @@ class LeaveApprovalService
 
         $leave->update([
             'status_1' => 'rejected',
-            'note_1'   => $note,
+            'note_1'   => $note ?? null,
         ]);
 
         return $leave;

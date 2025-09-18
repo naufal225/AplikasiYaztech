@@ -129,12 +129,12 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-500">
-                                    {{ $user->role == App\Roles::Approver->value ? "Approver 1" : (
-                                    $user->role == App\Roles::Employee->value ? "Employee" : (
-                                    $user->role == App\Roles::Manager->value ? "Approver 2" : (
-                                    $user->role == App\Roles::Admin->value ? "Admin" : (
-                                    $user->role == App\Roles::SuperAdmin->value ? "Super Admin" : (
-                                    $user->role == App\Roles::Finance->value ? "Finance" : (
+                                    {{ $user->role == App\Enums\Roles::Approver->value ? "Approver 1" : (
+                                    $user->role == App\Enums\Roles::Employee->value ? "Employee" : (
+                                    $user->role == App\Enums\Roles::Manager->value ? "Approver 2" : (
+                                    $user->role == App\Enums\Roles::Admin->value ? "Admin" : (
+                                    $user->role == App\Enums\Roles::SuperAdmin->value ? "Super Admin" : (
+                                    $user->role == App\Enums\Roles::Finance->value ? "Finance" : (
                                     $user->role
                                     )
                                     )

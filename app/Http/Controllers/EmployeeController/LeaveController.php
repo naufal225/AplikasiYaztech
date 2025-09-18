@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\EmployeeController;
 
 use App\Events\LeaveSubmitted;
-use App\Roles;
+use App\Enums\Roles;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLeaveRequest;
 use App\Http\Requests\UpdateLeaveRequest;
@@ -13,15 +13,21 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Leave;
 use App\Models\User;
 use App\Models\Division;
+use App\Services\LeaveApprovalService;
 use App\Services\LeaveService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class LeaveController extends Controller
 {
+    public function __construct(private LeaveService $leaveService)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -146,33 +152,35 @@ class LeaveController extends Controller
      */
     public function create(LeaveService $leaveService)
     {
-        $sisaCuti = $leaveService->sisaCuti(Auth::user());
+        $sisaCuti = $this->leaveService->sisaCuti(Auth::user());
+
+        $holidays = \App\Models\Holiday::pluck('holiday_date')
+            ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+            ->toArray();
 
         if ($sisaCuti <= 0) {
             abort(422, 'Sisa cuti tidak cukup.');
         }
 
-        return view('Employee.leaves.leave-request');
+        return view('Employee.leaves.leave-request', compact('sisaCuti', 'holidays'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreLeaveRequest $request, LeaveService $leaveService)
+    public function store(StoreLeaveRequest $request)
     {
-        $user = Auth::user();
-        $sisaCuti = $leaveService->sisaCuti($user);
-        $hariBaru = $leaveService->hitungHariCuti($request->date_start, $request->date_end);
+        try {
+            $this->leaveService->store($request->validated());
 
-        if ($hariBaru > $sisaCuti) {
-            return back()->with('error', "Sisa cuti hanya {$sisaCuti} hari.");
+            return redirect()->route('employee.leaves.index')
+                ->with('success', 'Leave request submitted successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $leaveService->createLeave($request->validated());
-
-        return redirect()->route('employee.leaves.index')
-            ->with('success', 'Leave request submitted successfully.');
     }
+
+
 
     /**
      * Display the specified resource.
@@ -209,37 +217,35 @@ class LeaveController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        $sisaCuti = $this->leaveService->sisaCuti(Auth::user());
+
+        $holidays = \App\Models\Holiday::pluck('holiday_date')
+            ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+            ->toArray();
+
         // Only allow editing if the leave is still pending
         if ($leave->status_1 !== 'pending') {
             return redirect()->route('employee.leaves.show', $leave->id)
                 ->with('error', 'You cannot edit a leave request that has already been processed.');
         }
 
-        return view('Employee.leaves.leave-edit', compact('leave'));
+        return view('Employee.leaves.leave-edit', compact('leave', 'sisaCuti', 'holidays'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateLeaveRequest $request, Leave $leave, LeaveService $leaveService)
+    public function update(UpdateLeaveRequest $request, Leave $leave)
     {
-        if ($leave->status_1 !== 'pending') {
-            return redirect()->route('employee.leaves.show', $leave->id)
-                ->with('error', 'Cuti sudah diproses, tidak bisa diupdate.');
+        try {
+            $this->leaveService->update($leave, $request->validated());
+
+            return redirect()->route('employee.leaves.index')
+                ->with('success', 'Leave request updated successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
 
-        $newDays = $leaveService->hitungHariCuti($request->date_start, $request->date_end);
-        $oldDays = $leaveService->hitungHariCuti($leave->date_start, $leave->date_end);
-        $sisaCuti = $leaveService->sisaCuti(Auth::user(), $leave->id);
-
-        if ($newDays > $oldDays && $sisaCuti < ($newDays - $oldDays)) {
-            return back()->with('error', 'Sisa cuti tidak mencukupi untuk memperpanjang cuti.');
-        }
-
-        $leaveService->updateLeave($leave, $request->validated());
-
-        return redirect()->route('employee.leaves.show', $leave->id)
-            ->with('success', 'Leave request updated successfully.');
     }
 
     /**

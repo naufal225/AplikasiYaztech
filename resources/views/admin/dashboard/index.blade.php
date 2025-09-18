@@ -174,26 +174,26 @@
                 onclick="window.location.href='{{ $request['url'] }}'">
                 <!-- Kiri: ikon + judul -->
                 <div class="flex items-center min-w-0">
-                    @if($request['type'] === App\TypeRequest::Leaves->value)
+                    @if($request['type'] === App\Enums\TypeRequest::Leaves->value)
                     <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-4 bg-blue-100 rounded-lg">
                         <i class="text-blue-600 fas fa-calendar-alt"></i>
                     </div>
-                    @elseif($request['type'] === App\TypeRequest::Reimbursements->value)
+                    @elseif($request['type'] === App\Enums\TypeRequest::Reimbursements->value)
                     <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-4 bg-purple-100 rounded-lg">
                         <i class="text-purple-600 fas fa-receipt"></i>
                     </div>
-                    @elseif($request['type'] === App\TypeRequest::Overtimes->value)
+                    @elseif($request['type'] === App\Enums\TypeRequest::Overtimes->value)
                     <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-4 bg-green-100 rounded-lg">
                         <i class="text-green-600 fas fa-clock"></i>
                     </div>
-                    @elseif($request['type'] === App\TypeRequest::Travels->value)
+                    @elseif($request['type'] === App\Enums\TypeRequest::Travels->value)
                     <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-4 bg-yellow-100 rounded-lg">
                         <i class="text-yellow-600 fas fa-plane"></i>
                     </div>
                     @endif
                     <div class="min-w-0">
                         <h4 class="font-medium text-gray-800 truncate">
-                            {{ $request['title'] ?? ($request['type'] === App\TypeRequest::Overtimes->value ? 'Overtime
+                            {{ $request['title'] ?? ($request['type'] === App\Enums\TypeRequest::Overtimes->value ? 'Overtime
                             Request' : 'Travel Request') }}
                         </h4>
 

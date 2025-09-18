@@ -9,10 +9,12 @@ use App\Http\Requests\UpdateLeaveRequest;
 use App\Models\ApprovalLink;
 use App\Models\Leave;
 use App\Models\User;
-use App\Roles;
+use App\Enums\Roles;
+use App\Services\LeaveApprovalService;
 use App\Services\LeaveService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +25,10 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class LeaveController extends Controller
 {
+    public function __construct(private LeaveService $leaveService, private LeaveApprovalService $leaveApprovalService)
+    {
+    }
+
     public function index(Request $request)
     {
 
@@ -106,30 +112,30 @@ class LeaveController extends Controller
         return view('super-admin.leave-request.show', compact('leave'));
     }
 
-    public function create(LeaveService $leaveService)
+    public function create()
     {
-        $sisaCuti = $leaveService->sisaCuti(Auth::user());
+        $sisaCuti = $this->leaveService->sisaCuti(Auth::user());
+
+        $holidays = \App\Models\Holiday::pluck('holiday_date')
+            ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+            ->toArray();
 
         if ($sisaCuti <= 0) {
             abort(422, 'Sisa cuti tidak cukup.');
         }
-        return view('super-admin.leave-request.create');
+        return view('super-admin.leave-request.create', compact('sisaCuti', 'holidays'));
     }
 
-    public function store(StoreLeaveRequest $request, LeaveService $leaveService)
+    public function store(StoreLeaveRequest $request)
     {
-        $user = Auth::user();
-        $sisaCuti = $leaveService->sisaCuti($user);
-        $hariBaru = $leaveService->hitungHariCuti($request->date_start, $request->date_end);
+        try {
+            $this->leaveService->store($request->validated());
 
-        if ($hariBaru > $sisaCuti) {
-            return back()->with('error', "Sisa cuti hanya {$sisaCuti} hari.");
+            return redirect()->route('super-admin.leaves.index')
+                ->with('success', 'Leave request submitted successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $leaveService->createLeave($request->validated());
-
-        return redirect()->route('super-admin.leaves.index')
-            ->with('success', 'Leave request submitted successfully.');
     }
 
     public function edit(Leave $leave)
@@ -139,6 +145,11 @@ class LeaveController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        $sisaCuti = $this->leaveService->sisaCuti(Auth::user());
+
+        $holidays = \App\Models\Holiday::pluck('holiday_date')
+            ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+            ->toArray();
 
         // Only allow editing if the leave is still pending
         if ($leave->status_1 !== 'pending') {
@@ -146,28 +157,20 @@ class LeaveController extends Controller
                 ->with('error', 'You cannot edit a leave request that has already been processed.');
         }
 
-        return view('super-admin.leave-request.update', compact('leave'));
+        return view('super-admin.leave-request.update', compact('leave', 'sisaCuti', 'holidays'));
     }
 
-    public function update(UpdateLeaveRequest $request, Leave $leave, LeaveService $leaveService)
+    public function update(UpdateLeaveRequest $request, Leave $leave)
     {
-        if ($leave->status_1 !== 'pending') {
-            return redirect()->route('super-admin.leaves.index', $leave->id)
-                ->with('error', 'Cuti sudah diproses, tidak bisa diupdate.');
+        try {
+            $this->leaveService->update($leave, $request->validated());
+
+            return redirect()->route('super-admin.leaves.index')
+                ->with('success', 'Leave request updated successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
 
-        $newDays = $leaveService->hitungHariCuti($request->date_start, $request->date_end);
-        $oldDays = $leaveService->hitungHariCuti($leave->date_start, $leave->date_end);
-        $sisaCuti = $leaveService->sisaCuti(Auth::user(), $leave->id);
-
-        if ($newDays > $oldDays && $sisaCuti < ($newDays - $oldDays)) {
-            return back()->with('error', 'Sisa cuti tidak mencukupi untuk memperpanjang cuti.');
-        }
-
-        $leaveService->updateLeave($leave, $request->validated());
-
-        return redirect()->route('super-admin.leaves.index', $leave->id)
-            ->with('success', 'Leave request updated successfully.');
     }
 
     /**

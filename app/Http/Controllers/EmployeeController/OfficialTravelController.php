@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOfficialTravelRequest;
 use App\Http\Requests\UpdateOfficialTravelRequest;
 use App\Models\ApprovalLink;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Roles;
+use App\Enums\Roles;
 use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Services\OfficialTravelService;
@@ -20,6 +21,9 @@ use Illuminate\Support\Str;
 
 class OfficialTravelController extends Controller
 {
+    public function __construct(private OfficialTravelService $officialTravelService)
+    {
+    }
     /**
      * Display a listing of the resource.
      */
@@ -154,12 +158,16 @@ class OfficialTravelController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreOfficialTravelRequest $request, OfficialTravelService $service)
+    public function store(StoreOfficialTravelRequest $request)
     {
-        $service->create($request->validated());
+        try {
+            $this->officialTravelService->store($request->validated());
 
-        return redirect()->route('employee.official-travels.index')
-            ->with('success', 'Official travel request submitted successfully');
+            return redirect()->route('employee.official-travels.index')
+                ->with('success', 'Official travel request submitted successfully');
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     /**
@@ -208,10 +216,10 @@ class OfficialTravelController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateOfficialTravelRequest $request, OfficialTravel $travel, OfficialTravelService $service)
+    public function update(UpdateOfficialTravelRequest $request, OfficialTravel $travel)
     {
         try {
-            $service->update($travel, $request->validated());
+            $this->officialTravelService->update($travel, $request->validated());
 
             return redirect()
                 ->route('employee.official-travels.show', $travel->id)

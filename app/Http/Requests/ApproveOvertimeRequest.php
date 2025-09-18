@@ -2,34 +2,28 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Roles;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
+use App\Enums\Roles;
 
-class ApproveOfficialTravelRequest extends FormRequest
+class ApproveOvertimeRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return auth()->check() && in_array(auth()->user()->role, [
-            Roles::Approver->value,
-            Roles::Manager->value
-        ]);
+        // Hanya Approver atau Manager yang boleh memproses approval
+        return Auth::check()
+            && in_array(Auth::user()->role, [
+                Roles::Approver->value,
+                Roles::Manager->value
+            ]);
     }
 
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
             'status_1' => 'required|string|in:approved,rejected',
-            'status_2' => 'required|string|in:approved,rejected',
             'note_1' => 'nullable|string|min:3|max:100',
+            'status_2' => 'required|string|in:approved,rejected',
             'note_2' => 'nullable|string|min:3|max:100',
         ];
     }
@@ -41,8 +35,10 @@ class ApproveOfficialTravelRequest extends FormRequest
             'status_1.in' => 'Status hanya boleh approved/rejected.',
             'status_2.required' => 'Status wajib diisi.',
             'status_2.in' => 'Status hanya boleh approved/rejected.',
+            'note_1.string' => 'Catatan harus berupa teks.',
             'note_1.min' => 'Catatan minimal 3 karakter.',
             'note_1.max' => 'Catatan maksimal 100 karakter.',
+            'note_2.string' => 'Catatan harus berupa teks.',
             'note_2.min' => 'Catatan minimal 3 karakter.',
             'note_2.max' => 'Catatan maksimal 100 karakter.',
         ];

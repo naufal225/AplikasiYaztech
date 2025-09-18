@@ -6,21 +6,23 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ApproveOfficialTravelRequest;
 use App\Http\Requests\StoreOfficialTravelRequest;
 use App\Http\Requests\UpdateOfficialTravelRequest;
-use App\Models\ApprovalLink;
 use App\Models\OfficialTravel;
 use App\Models\User;
-use App\Roles;
+use App\Enums\Roles;
+use App\Services\OfficialTravelApprovalService;
 use App\Services\OfficialTravelService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
 class OfficialTravelController extends Controller
 {
+    public function __construct(private OfficialTravelService $officialTravelService, private OfficialTravelApprovalService $officialTravelApprovalService)
+    {
+    }
+
     public function index(Request $request)
     {
         // Query for user's own requests (all statuses)
@@ -113,8 +115,6 @@ class OfficialTravelController extends Controller
         return view('manager.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
-
-
     public function show(OfficialTravel $officialTravel)
     {
         $officialTravel->load(['employee', 'approver']);
@@ -131,10 +131,14 @@ class OfficialTravelController extends Controller
      */
     public function store(StoreOfficialTravelRequest $request, OfficialTravelService $service)
     {
-        $service->create($request->validated());
+        try {
+            $service->store($request->validated());
 
-        return redirect()->route('manager.official-travels.index')
-            ->with('success', 'Official travel request submitted successfully');
+            return redirect()->route('manager.official-travels.index')
+                ->with('success', 'Official travel request submitted successfully');
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function edit(OfficialTravel $officialTravel)
@@ -154,10 +158,10 @@ class OfficialTravelController extends Controller
         return view('manager.official-travel.update', compact('officialTravel'));
     }
 
-    public function updateSelf(UpdateOfficialTravelRequest $request, OfficialTravel $travel, OfficialTravelService $service)
+    public function updateSelf(UpdateOfficialTravelRequest $request, OfficialTravel $travel)
     {
         try {
-            $service->update($travel, $request->validated());
+            $this->officialTravelService->update($travel, $request->validated());
 
             return redirect()
                 ->route('manager.official-travels.index', $travel->id)
@@ -168,11 +172,17 @@ class OfficialTravelController extends Controller
     }
 
 
-    public function update(ApproveOfficialTravelRequest $request, OfficialTravel $travel, OfficialTravelService $service)
+    public function update(ApproveOfficialTravelRequest $request, OfficialTravel $travel)
     {
-        $service->approve($travel, Auth::user()->role, $request->status, $request->note);
-        return redirect()->route('manager.official-travels.index')
-            ->with('success', "Travel request {$request->status}.");
+        try {
+            $level = Auth::user()->role == Roles::Manager->value ? 'status_2' : 'status_1';
+
+            $this->officialTravelApprovalService->handleApproval($travel, status: $request->status_2, note: $request->note_2, level: $level);
+            return redirect()->route('manager.official-travels.index')
+                ->with('success', "Travel request {$request->status}.");
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
 
