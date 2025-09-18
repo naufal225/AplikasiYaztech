@@ -27,7 +27,7 @@ class StoreReimbursementRequest extends FormRequest
             'total' => 'required|numeric|min:0',
             'date' => 'required|date',
             'reimbursement_type_id' => 'required|exists:reimbursement_types,id',
-            'invoice_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'invoice_path' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'remove_invoice_path' => 'nullable|boolean'
         ];
     }
@@ -41,6 +41,7 @@ class StoreReimbursementRequest extends FormRequest
             'total.min' => 'Total tidak boleh kurang dari 0.',
             'date.required' => 'Tanggal harus diisi.',
             'date.date' => 'Format tanggal tidak valid.',
+            'invoice_path.required' => 'Invoice harus dilampirkan.',
             'invoice_path.mimes' => 'File harus berupa jpg, jpeg, png, atau pdf.',
             'invoice_path.max' => 'Ukuran file maksimal 2MB.',
             'reimbursement_type_id.required' => 'Tipe reimbursement wajib dipilih.',

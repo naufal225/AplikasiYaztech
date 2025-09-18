@@ -22,6 +22,7 @@ class OfficialTravel extends Model
         'marked_down',
         'locked_by',
         'locked_at',
+        'customer'
     ];
 
     public function employee() {
