@@ -23,7 +23,8 @@ class Reimbursement extends Model
         'reimbursement_type_id'
     ];
 
-    public function employee() {
+    public function employee()
+    {
         return $this->belongsTo(User::class, 'employee_id');
     }
 
@@ -31,6 +32,7 @@ class Reimbursement extends Model
         'date' => 'date',
         'marked_down' => 'boolean',
         'locked_at' => 'datetime',
+        'employee_id' => 'integer'
     ];
 
     public function approver()
@@ -50,7 +52,8 @@ class Reimbursement extends Model
         return $this->employee?->division?->leader; // bisa null-safe
     }
 
-    public function type() {
+    public function type()
+    {
         return $this->belongsTo(ReimbursementType::class, 'reimbursement_type_id');
     }
 }

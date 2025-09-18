@@ -22,7 +22,8 @@ class Overtime extends Model
         'locked_at',
     ];
 
-    public function employee() {
+    public function employee()
+    {
         return $this->belongsTo(User::class, 'employee_id');
     }
 
@@ -31,6 +32,7 @@ class Overtime extends Model
         'date_end' => 'datetime',
         'marked_down' => 'boolean',
         'locked_at' => 'datetime',
+        'employee_id' => 'integer'
     ];
 
     public function approver()

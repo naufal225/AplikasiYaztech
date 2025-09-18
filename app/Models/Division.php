@@ -14,16 +14,19 @@ class Division extends Model
         'name'
     ];
 
-    public function members() {
+    public function members()
+    {
         return $this->hasMany(User::class, 'division_id')
             ->where('role', Roles::Employee->value);
     }
 
-    public function leader() {
+    public function leader()
+    {
         return $this->belongsTo(User::class, 'leader_id');
     }
 
-    public function reimbusements() {
+    public function reimbusements()
+    {
         return $this->hasManyThrough(
             Reimbursement::class,
             User::class,
@@ -32,7 +35,8 @@ class Division extends Model
         )->where('users.role', Roles::Employee->value);
     }
 
-    public function leaves() {
+    public function leaves()
+    {
         return $this->hasManyThrough(
             Leave::class,
             User::class,
@@ -41,7 +45,8 @@ class Division extends Model
         )->where('users.role', Roles::Employee->value);
     }
 
-    public function officialTravels() {
+    public function officialTravels()
+    {
         return $this->hasManyThrough(
             OfficialTravel::class,
             User::class,
@@ -50,7 +55,8 @@ class Division extends Model
         )->where('users.role', Roles::Employee->value);
     }
 
-    public function overtimes() {
+    public function overtimes()
+    {
         return $this->hasManyThrough(
             Overtime::class,
             User::class,
@@ -58,4 +64,8 @@ class Division extends Model
             'id'
         )->where('users.role', Roles::Employee->value);
     }
+
+    protected $casts = [
+        'leader_id' => 'integer',
+    ];
 }
