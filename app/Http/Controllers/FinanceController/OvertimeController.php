@@ -4,7 +4,8 @@ namespace App\Http\Controllers\FinanceController;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Roles;
+use App\Enums\Roles;
+use App\Helpers\CostSettingsHelper;
 use App\TypeRequest;
 use App\Models\Overtime;
 use App\Models\User;
@@ -35,13 +36,17 @@ class OvertimeController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
-            $yourOvertimesQuery->where('date_start', '>=',
+            $yourOvertimesQuery->where(
+                'date_start',
+                '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $yourOvertimesQuery->where('date_end', '<=',
+            $yourOvertimesQuery->where(
+                'date_end',
+                '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -51,21 +56,21 @@ class OvertimeController extends Controller
             $yourOvertimesQuery->where(function ($q) use ($status) {
                 if ($status === 'rejected') {
                     $q->where('status_1', 'rejected')
-                    ->orWhere('status_2', 'rejected');
+                        ->orWhere('status_2', 'rejected');
                 } elseif ($status === 'approved') {
                     $q->where('status_1', 'approved')
-                    ->where('status_2', 'approved');
+                        ->where('status_2', 'approved');
                 } elseif ($status === 'pending') {
                     $q->where(function ($sub) {
                         $sub->where('status_1', 'pending')
                             ->orWhere('status_2', 'pending');
                     })
-                    ->where('status_1', '!=', 'rejected')
-                    ->where('status_2', '!=', 'rejected')
-                    ->where(function ($sub) {
-                        $sub->where('status_1', '!=', 'approved')
-                            ->orWhere('status_2', '!=', 'approved');
-                    });
+                        ->where('status_1', '!=', 'rejected')
+                        ->where('status_2', '!=', 'rejected')
+                        ->where(function ($sub) {
+                            $sub->where('status_1', '!=', 'approved')
+                                ->orWhere('status_2', '!=', 'approved');
+                        });
                 }
             });
         }
@@ -80,13 +85,17 @@ class OvertimeController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
-            $allOvertimesDoneQuery->where('date_start', '>=',
+            $allOvertimesDoneQuery->where(
+                'date_start',
+                '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $allOvertimesDoneQuery->where('date_end', '<=',
+            $allOvertimesDoneQuery->where(
+                'date_end',
+                '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -102,24 +111,28 @@ class OvertimeController extends Controller
                 ->where('marked_down', false)
                 ->where(function ($q) use ($userId) {
                     $q->whereNull('locked_by')
-                    ->orWhere(function ($q2) {
-                        $q2->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) < ?', [now()]);
-                    })
-                    ->orWhere(function ($q3) use ($userId) {
-                        $q3->where('locked_by', $userId)
-                            ->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) >= ?', [now()]);
-                    });
+                        ->orWhere(function ($q2) {
+                            $q2->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) < ?', [now()]);
+                        })
+                        ->orWhere(function ($q3) use ($userId) {
+                            $q3->where('locked_by', $userId)
+                                ->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) >= ?', [now()]);
+                        });
                 })
                 ->orderBy('created_at', 'asc');
 
             if (request()->filled('from_date')) {
-                $query->where('date_start', '>=',
+                $query->where(
+                    'date_start',
+                    '>=',
                     Carbon::parse(request()->from_date)->startOfDay()->timezone('Asia/Jakarta')
                 );
             }
 
             if (request()->filled('to_date')) {
-                $query->where('date_end', '<=',
+                $query->where(
+                    'date_end',
+                    '<=',
                     Carbon::parse(request()->to_date)->endOfDay()->timezone('Asia/Jakarta')
                 );
             }
@@ -201,7 +214,7 @@ class OvertimeController extends Controller
         $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
         $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
 
-        if ($start->isToday() && $start->lt(Carbon::today()->setTime(17,0))) {
+        if ($start->isToday() && $start->lt(Carbon::today()->setTime(17, 0))) {
             return back()->withErrors([
                 'date_start' => 'Jika tanggal mulai adalah hari ini, maka waktu mulai harus setelah jam 17:00.'
             ])->withInput();
@@ -225,8 +238,8 @@ class OvertimeController extends Controller
             $overtime->date_start = $start;
             $overtime->date_end = $end;
             // Hitung biaya overtime
-            $costPerHour = (int) env('OVERTIME_COSTS', 0);
-            $bonusCost = (int) env('OVERTIME_BONUS_COSTS', 0);
+            $costPerHour = (int) CostSettingsHelper::get('OVERTIME_COSTS', 25000);
+            $bonusCost = (int) CostSettingsHelper::get('OVERTIME_BONUS_COSTS', 30000);
 
             $baseTotal = $hours * $costPerHour;
 
@@ -404,7 +417,7 @@ class OvertimeController extends Controller
         $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
         $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
 
-        if ($start->isToday() && $start->lt(Carbon::today()->setTime(17,0))) {
+        if ($start->isToday() && $start->lt(Carbon::today()->setTime(17, 0))) {
             return back()->withErrors([
                 'date_start' => 'Jika tanggal mulai adalah hari ini, maka waktu mulai harus setelah jam 17:00.'
             ])->withInput();
@@ -425,8 +438,8 @@ class OvertimeController extends Controller
         $overtime->date_start = $request->date_start;
         $overtime->date_end = $request->date_end;
         // Hitung biaya overtime
-        $costPerHour = (int) env('OVERTIME_COSTS', 0);
-        $bonusCost = (int) env('OVERTIME_BONUS_COSTS', 0);
+        $costPerHour = (int) CostSettingsHelper::get('OVERTIME_COSTS', 25000);
+        $bonusCost = (int) CostSettingsHelper::get('OVERTIME_BONUS_COSTS', 30000);
         $baseTotal = $hours * $costPerHour;
         // Hitung bonus tiap 24 jam
         $bonusMultiplier = intdiv($hours, 24);
@@ -434,7 +447,7 @@ class OvertimeController extends Controller
         $totalOvertime = $baseTotal + $bonusTotal;
         $overtime->total = $totalOvertime;
 
-         // Reset status dan catatan
+        // Reset status dan catatan
 
         if ($isLeader) {
             $overtime->status_1 = 'approved';
@@ -557,8 +570,8 @@ class OvertimeController extends Controller
                 foreach ($records as $rec) {
                     $rec->update([
                         'marked_down' => true,
-                        'locked_by'   => null,
-                        'locked_at'   => null,
+                        'locked_by' => null,
+                        'locked_at' => null,
                     ]);
                 }
             });
@@ -584,9 +597,9 @@ class OvertimeController extends Controller
         $query = Overtime::with('employee')->where('status_1', 'approved')->where('status_2', 'approved')->where('marked_down', true);
 
         if ($dateFrom && $dateTo) {
-            $query->where(function($q) use ($dateFrom, $dateTo) {
+            $query->where(function ($q) use ($dateFrom, $dateTo) {
                 $q->whereDate('date_start', '<=', $dateTo)
-                ->whereDate('date_end', '>=', $dateFrom);
+                    ->whereDate('date_end', '>=', $dateFrom);
             });
         }
 

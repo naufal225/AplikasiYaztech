@@ -4,7 +4,8 @@ namespace App\Http\Controllers\FinanceController;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Roles;
+use App\Enums\Roles;
+use App\Helpers\CostSettingsHelper;
 use App\TypeRequest;
 use App\Models\OfficialTravel;
 use App\Models\User;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\ApprovalLink;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 use ZipArchive;
 use Illuminate\Support\Str;
@@ -211,13 +213,13 @@ class OfficialTravelController extends Controller
         $divisionId = $user->division_id;
 
         // Hitung biaya per hari
-        $weekDayCost = (int) env('TRAVEL_COSTS_WEEK_DAY', 0);
-        $weekEndCost = (int) env('TRAVEL_COSTS_WEEK_END', 0);
+        $weekDayCost = (int) CostSettingsHelper::get('TRAVEL_COSTS_WEEK_DAY', 150000);
+        $weekEndCost = (int) CostSettingsHelper::get('TRAVEL_COSTS_WEEK_END', 225000);
 
         // Ambil semua holiday dari DB
-        $holidayDates = \App\Models\Holiday::pluck('holiday_date')->map(fn($d) => \Carbon\Carbon::parse($d)->toDateString())->toArray();
+        $holidayDates = \App\Models\Holiday::pluck('holiday_date')->map(fn($d) => Carbon::parse($d)->toDateString())->toArray();
 
-        $period = \Carbon\CarbonPeriod::create($start, $end);
+        $period = CarbonPeriod::create($start, $end);
 
         $totalCost = 0;
         foreach ($period as $date) {
@@ -259,7 +261,7 @@ class OfficialTravelController extends Controller
                 $manager = User::where('role', Roles::Manager->value)->first();
 
                 if ($manager) {
-                    $token = \Illuminate\Support\Str::random(48);
+                    $token = Str::random(48);
                     ApprovalLink::create([
                         'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
                         'model_id' => $officialTravel->id,
@@ -299,7 +301,7 @@ class OfficialTravelController extends Controller
             } else {
                 // --- Kalau bukan leader, jalur normal ke approver (team lead)
                 if ($officialTravel->approver) {
-                    $token = \Illuminate\Support\Str::random(48);
+                    $token = Str::random(48);
                     ApprovalLink::create([
                         'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
                         'model_id' => $officialTravel->id,
@@ -450,13 +452,13 @@ class OfficialTravelController extends Controller
         $totalDays = $start->diffInDays($end) + 1;
 
         // Hitung biaya per hari
-        $weekDayCost = (int) env('TRAVEL_COSTS_WEEK_DAY', 0);
-        $weekEndCost = (int) env('TRAVEL_COSTS_WEEK_END', 0);
+        $weekDayCost = (int) CostSettingsHelper::get('TRAVEL_COSTS_WEEK_DAY', 150000);
+        $weekEndCost = (int) CostSettingsHelper::get('TRAVEL_COSTS_WEEK_END', 225000);
 
         // Ambil semua holiday dari DB
-        $holidayDates = \App\Models\Holiday::pluck('holiday_date')->map(fn($d) => \Carbon\Carbon::parse($d)->toDateString())->toArray();
+        $holidayDates = \App\Models\Holiday::pluck('holiday_date')->map(fn($d) => Carbon::parse($d)->toDateString())->toArray();
 
-        $period = \Carbon\CarbonPeriod::create($start, $end);
+        $period = CarbonPeriod::create($start, $end);
 
         $totalCost = 0;
         foreach ($period as $date) {
@@ -494,7 +496,7 @@ class OfficialTravelController extends Controller
                 $manager = User::where('role', Roles::Manager->value)->first();
 
                 if ($manager) {
-                    $token = \Illuminate\Support\Str::random(48);
+                    $token = Str::random(48);
                     ApprovalLink::create([
                         'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
                         'model_id' => $officialTravel->id,
@@ -534,7 +536,7 @@ class OfficialTravelController extends Controller
             } else {
                 // --- Kalau bukan leader, jalur normal ke approver (team lead)
                 if ($officialTravel->approver) {
-                    $token = \Illuminate\Support\Str::random(48);
+                    $token = Str::random(48);
                     ApprovalLink::create([
                         'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
                         'model_id' => $officialTravel->id,
@@ -591,8 +593,8 @@ class OfficialTravelController extends Controller
                 ->with('error', 'You cannot delete a travel request that has already been processed.');
         }
 
-        if (\App\Models\ApprovalLink::where('model_id', $officialTravel->id)->where('model_type', get_class($officialTravel))->exists()) {
-            \App\Models\ApprovalLink::where('model_id', $officialTravel->id)->where('model_type', get_class($officialTravel))->delete();
+        if (ApprovalLink::where('model_id', $officialTravel->id)->where('model_type', get_class($officialTravel))->exists()) {
+            ApprovalLink::where('model_id', $officialTravel->id)->where('model_type', get_class($officialTravel))->delete();
         }
 
         $officialTravel->delete();

@@ -13,6 +13,28 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('yaztech-icon.jpg') }}">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
+    <style>
+        /* Custom scrollbar untuk sidebar */
+        .sidebar-scroll::-webkit-scrollbar {
+            position: absolute;
+            right: 0;
+            width: 6px;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
     @stack('styles')
 </head>
 

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\CostSettingsHelper;
 use App\Models\Overtime;
 use App\Models\ApprovalLink;
 use App\Mail\SendMessage;
@@ -40,8 +41,8 @@ class OvertimeService
             $overtime->date_end = $end;
 
             // Hitung biaya overtime
-            $costPerHour = (int) env('OVERTIME_COSTS', 0);
-            $bonusCost = (int) env('OVERTIME_BONUS_COSTS', 0);
+            $costPerHour = (int) CostSettingsHelper::get('OVERTIME_COSTS', 25000);
+            $bonusCost = (int)CostSettingsHelper::get('OVERTIME_BONUS_COSTS', 30000);
 
             $baseTotal = $hours * $costPerHour;
             $bonusTotal = intdiv($hours, 24) * $bonusCost;
@@ -81,8 +82,8 @@ class OvertimeService
             throw new \Exception('Minimum overtime is 0.5 hours.');
         }
 
-        $baseTotal = floor($hours) * (int) env('OVERTIME_COSTS', 0);
-        $bonusTotal = intdiv(floor($hours), 24) * (int) env('OVERTIME_BONUS_COSTS', 0);
+        $baseTotal = floor($hours) * (int) CostSettingsHelper::get('OVERTIME_COSTS', 25000);
+        $bonusTotal = intdiv(floor($hours), 24) * (int)CostSettingsHelper::get('OVERTIME_BONUS_COSTS', 30000);
 
         $overtime->update([
             'customer' => $data['customer'],

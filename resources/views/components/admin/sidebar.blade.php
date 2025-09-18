@@ -1,5 +1,5 @@
 <!-- Sidebar -->
-<div class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 text-white transition-transform duration-300 ease-in-out transform -translate-x-full bg-primary-800 shadow-medium lg:relative lg:translate-x-0"
+<div class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 text-white transition-transform duration-300 ease-in-out transform -translate-x-full sidebar-container bg-primary-800 shadow-medium lg:relative lg:translate-x-0"
     id="sidebar">
     <div class="flex items-center justify-between px-6 py-4 bg-primary-900">
         <div class="w-full">
@@ -11,7 +11,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-1 px-4 py-6 space-y-2">
+    <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto sidebar-scroll">
         <a href="{{ route('admin.dashboard') }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.dashboard') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-tachometer-alt"></i>
@@ -93,6 +93,13 @@
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-briefcase"></i>
             <span class="font-medium">Official Travel Requests</span>
+        </a>
+
+        <!-- Cost Settings Menu -->
+        <a href="{{ route('admin.cost-settings.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('admin.cost-settings.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+            <i class="w-5 mr-3 text-center fas fa-cog"></i>
+            <span class="font-medium">Cost Settings</span>
         </a>
     </nav>
 

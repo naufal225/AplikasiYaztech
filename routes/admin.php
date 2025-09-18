@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController\ApproverController;
+use App\Http\Controllers\AdminController\CostSettingController;
 use App\Http\Controllers\AdminController\CustomerController;
 use App\Http\Controllers\AdminController\DashboardController;
 use App\Http\Controllers\AdminController\DivisionController;
@@ -72,4 +73,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
     Route::resource('profile', ProfileController::class);
+
+    // Cost Settings Routes
+    Route::get('/cost-settings', [CostSettingController::class, 'index'])->name('cost-settings.index');
+    Route::get('/cost-settings/{costSetting}/edit', [CostSettingController::class, 'edit'])->name('cost-settings.edit');
+    Route::put('/cost-settings/{costSetting}', [CostSettingController::class, 'update'])->name('cost-settings.update');
+    Route::post('/cost-settings/update-multiple', [CostSettingController::class, 'updateMultiple'])->name('cost-settings.update-multiple');
 });

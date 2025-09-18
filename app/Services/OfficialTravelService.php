@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\CostSettingsHelper;
 use App\Models\OfficialTravel;
 use App\Models\ApprovalLink;
 use App\Models\Holiday;
@@ -24,8 +25,8 @@ class OfficialTravelService
             $days = $start->diffInDays($end) + 1;
 
             // Hitung biaya per hari
-            $weekDayCost = (int) env('TRAVEL_COSTS_WEEK_DAY', 0);
-            $weekEndCost = (int) env('TRAVEL_COSTS_WEEK_END', 0);
+            $weekDayCost = (int) CostSettingsHelper::get('TRAVEL_COSTS_WEEK_DAY', 150000);
+            $weekEndCost = (int) CostSettingsHelper::get('TRAVEL_COSTS_WEEK_END', 225000);
 
             // Ambil semua holiday dari DB
             $holidayDates = Holiday::pluck('holiday_date')
@@ -76,8 +77,8 @@ class OfficialTravelService
         $end = Carbon::parse($data['date_end'])->startOfDay();
         $days = $start->diffInDays($end) + 1;
 
-        $weekDayCost = (int) env('TRAVEL_COSTS_WEEK_DAY', 0);
-        $weekEndCost = (int) env('TRAVEL_COSTS_WEEK_END', 0);
+        $weekDayCost = (int) CostSettingsHelper::get('TRAVEL_COSTS_WEEK_DAY', 150000);
+        $weekEndCost = (int) CostSettingsHelper::get('TRAVEL_COSTS_WEEK_END', 225000);
 
         $holidayDates = Holiday::pluck('holiday_date')
             ->map(fn($d) => Carbon::parse($d)->toDateString())
