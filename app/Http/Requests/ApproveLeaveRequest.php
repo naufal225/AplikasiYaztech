@@ -2,13 +2,14 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\Roles;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ApproveLeaveRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return auth()->check() && auth()->user()->role === \App\Roles::Manager->value;
+        return auth()->check() && auth()->user()->role === Roles::Manager->value;
     }
 
     public function rules(): array

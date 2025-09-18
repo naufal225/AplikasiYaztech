@@ -9,10 +9,11 @@ use App\Http\Requests\UpdateOfficialTravelRequest;
 use App\Models\ApprovalLink;
 use App\Models\OfficialTravel;
 use App\Models\User;
-use App\Roles;
+use App\Enums\Roles;
 use App\Services\OfficialTravelService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +26,8 @@ use ZipArchive;
 
 class OfficialTravelController extends Controller
 {
+    public function __construct(private OfficialTravelService $officialTravelService) {}
+
     public function index(Request $request)
     {
         // Query for user's own requests (all statuses)
@@ -129,12 +132,16 @@ class OfficialTravelController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreOfficialTravelRequest $request, OfficialTravelService $service)
+    public function store(StoreOfficialTravelRequest $request)
     {
-        $service->create($request->validated());
+        try {
+            $this->officialTravelService->store($request->validated());
 
-        return redirect()->route('admin.official-travels.index')
-            ->with('success', 'Official travel request submitted successfully');
+            return redirect()->route('admin.official-travels.index')
+                ->with('success', 'Official travel request submitted successfully');
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function edit(OfficialTravel $officialTravel)
@@ -154,10 +161,10 @@ class OfficialTravelController extends Controller
         return view('admin.official-travel.update', compact('officialTravel'));
     }
 
-    public function update(UpdateOfficialTravelRequest $request, OfficialTravel $travel, OfficialTravelService $service)
+    public function update(UpdateOfficialTravelRequest $request, OfficialTravel $travel)
     {
         try {
-            $service->update($travel, $request->validated());
+            $this->officialTravelService->update($travel, $request->validated());
 
             return redirect()
                 ->route('admin.official-travels.index', $travel->id)

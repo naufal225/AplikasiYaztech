@@ -2,14 +2,21 @@
 
 namespace App\Http\Controllers\ManagerController;
 
+use App\Enums\Roles as EnumsRoles;
 use App\Exports\OvertimesExport;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApproveReimbursementRequest;
+use App\Http\Requests\StoreReimbursementRequest;
+use App\Http\Requests\UpdateReimbursementRequest;
 use App\Models\ApprovalLink;
 use App\Models\Reimbursement;
 use App\Models\User;
-use App\Roles;
+use App\Enums\Roles;
+use App\Services\ReimbursementApprovalService;
+use App\Services\ReimbursementService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,6 +27,9 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ReimbursementController extends Controller
 {
+    public function __construct(private ReimbursementService $reimbursementService, private ReimbursementApprovalService $reimbursementApprovalService)
+    {
+    }
     public function index(Request $request)
     {
         // Query for user's own requests (all statuses)
@@ -113,7 +123,6 @@ class ReimbursementController extends Controller
         return view('manager.reimbursement.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
 
     }
-
     public function show($id)
     {
         $reimbursement = Reimbursement::findOrFail($id);
@@ -128,129 +137,39 @@ class ReimbursementController extends Controller
         return view('manager.reimbursement.create', compact('types'));
     }
 
-    public function store(Request $request)
+    public function store(StoreReimbursementRequest $request)
     {
-        $request->validate([
-            'customer' => 'required',
-            'total' => 'required|numeric|min:0',
-            'date' => 'required|date',
-            'reimbursement_type_id' => 'required|exists:reimbursement_types,id',
-            'invoice_path' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ], [
-            'customer.required' => 'Customer harus dipilih.',
-            'customer.exists' => 'Customer tidak valid.',
-            'total.required' => 'Total harus diisi.',
-            'total.numeric' => 'Total harus berupa angka.',
-            'total.min' => 'Total tidak boleh kurang dari 0.',
-            'date.required' => 'Tanggal harus diisi.',
-            'date.date' => 'Format tanggal tidak valid.',
-            'invoice_path.required' => 'Bukti pengeluaran harus diupload.',
-            'invoice_path.file' => 'File yang diupload tidak valid.',
-            'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
-            'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
-            'reimbursement_type_id.required' => 'Tipe reimbursement harus dipilih.',
-            'reimbursement_type_id.exists' => 'Tipe reimbursement tidak valid.',
-        ]);
+        try {
+            $this->reimbursementService->store($request->validated());
 
-        DB::transaction(function () use ($request) {
-            $reimbursement = new Reimbursement();
-            $reimbursement->employee_id = Auth::id();
-            $reimbursement->customer = $request->customer;
-            $reimbursement->reimbursement_type_id = $request->reimbursement_type_id;
-            $reimbursement->total = $request->total;
-            $reimbursement->date = $request->date;
-            $reimbursement->status_1 = 'pending';
-            $reimbursement->status_2 = 'pending';
-
-            if ($request->hasFile('invoice_path')) {
-                $path = $request->file('invoice_path')->store('reimbursement_invoices', 'public');
-                $reimbursement->invoice_path = $path;
-            }
-
-            $reimbursement->save();
-
-            $token = null;
-            // Send notification email to the approver
-            if ($reimbursement->approver) {
-                $token = \Illuminate\Support\Str::random(48);
-                ApprovalLink::create([
-                    'model_type' => get_class($reimbursement),   // App\Models\reim$reimbursement
-                    'model_id' => $reimbursement->id,
-                    'approver_user_id' => $reimbursement->approver->id,
-                    'level' => 1, // level 1 berarti arahnya ke team lead
-                    'scope' => 'both',             // boleh approve & reject
-                    'token' => hash('sha256', $token), // simpan hash, kirim raw
-                    'expires_at' => now()->addDays(3),  // masa berlaku
-                ]);
-
-            }
-
-            DB::afterCommit(function () use ($reimbursement, $request, $token) {
-                $fresh = $reimbursement->fresh(); // ambil ulang (punya created_at dll)
-                // dd("jalan");
-                event(new \App\Events\ReimbursementSubmitted($fresh, Auth::user()->division_id));
-
-                // Kalau tidak ada approver atau token, jangan kirim email
-                if (!$fresh || !$fresh->approver || !$token) {
-                    return;
-                }
-
-                $linkTanggapan = route('public.approval.show', $token);
-
-                Mail::to($reimbursement->approver->email)->queue(
-                    new \App\Mail\SendMessage(
-                        namaPengaju: Auth::user()->name,
-                        namaApprover: $reimbursement->approver->name,
-                        linkTanggapan: $linkTanggapan,
-                        emailPengaju: Auth::user()->email,
-                        attachmentPath: $reimbursement->invoice_path
-                    )
-                );
-            });
-
-        });
-
-        return redirect()->route('manager.reimbursements.index')
-            ->with('success', 'Reimbursement request submitted successfully.');
-    }
-
-    public function update(Request $request, Reimbursement $reimbursement)
-    {
-        $validated = $request->validate([
-            'status_1' => 'nullable|string|in:approved,rejected',
-            'status_2' => 'nullable|string|in:approved,rejected',
-            'note_1' => 'nullable|string|min:3|max:100',
-            'note_2' => 'nullable|string|min:3|max:100',
-        ], [
-            'status_1.in' => 'Status 1 hanya boleh berisi: approved atau rejected.',
-            'status_2.in' => 'Status 2 hanya boleh berisi: approved atau rejected.',
-            'note_1.string' => 'Catatan 1 harus berupa teks.',
-            'note_1.min' => 'Catatan 1 minimal harus berisi 3 karakter.',
-            'note_1.max' => 'Catatan 1 maksimal hanya boleh 100 karakter.',
-            'note_2.string' => 'Catatan 2 harus berupa teks.',
-            'note_2.min' => 'Catatan 2 minimal harus berisi 3 karakter.',
-            'note_2.max' => 'Catatan 2 maksimal hanya boleh 100 karakter.',
-        ]);
-
-
-        $status = '';
-
-        if ($request->has('status_1')) {
-            $reimbursement->update([
-                'status_1' => $validated['status_1'],
-                'note_1' => $validated['note_1'] ?? null
-            ]);
-            $status = $validated['status_1'];
-        } else if ($request->has('status_2')) {
-            $reimbursement->update([
-                'status_2' => $validated['status_2'],
-                'note_2' => $validated['note_2'] ?? null
-            ]);
-            $status = $validated['status_2'];
+            return redirect()->route('manager.reimbursements.index')
+                ->with('success', 'Reimbursement request submitted successfully.');
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
-
-        return redirect()->route('manager.reimbursements.index')->with('success', 'Reimbursement request ' . $status . ' successfully.');
     }
+
+    public function update(ApproveReimbursementRequest $request, Reimbursement $reimbursement)
+    {
+        try {
+            // bedakan level status berdasarkan role
+            $level = auth()->user()->role === Roles::Manager->value ? 'status_2' : 'status_1';
+
+            $this->reimbursementApprovalService->handleApproval(
+                reimbursement: $reimbursement,
+                status: $request->input('status'),
+                note: $request->input('note'),
+                level: $level
+            );
+
+            return redirect()
+                ->route('approver.reimbursements.index')
+                ->with('success', "Reimbursement request {$request->status} successfully.");
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
 
     public function edit(Reimbursement $reimbursement)
     {
@@ -271,93 +190,17 @@ class ReimbursementController extends Controller
         return view('manager.reimbursement.update', compact('reimbursement', 'types'));
     }
 
-    public function updateSelf(Request $request, Reimbursement $reimbursement)
+    public function updateSelf(UpdateReimbursementRequest $request, Reimbursement $reimbursement)
     {
-        $user = Auth::user();
-        if ($user->id !== $reimbursement->employee_id) {
-            abort(403, 'Unauthorized action.');
+        try {
+            $this->reimbursementService->update($reimbursement, $request->validated());
+
+            return redirect()->route('manager.reimbursements.index', $reimbursement->id)
+                ->with('success', 'Reimbursement request updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
-
-        if ($reimbursement->status_1 !== 'pending' || $reimbursement->status_2 !== 'pending') {
-            return redirect()->route('manager.reimbursements.show', $reimbursement->id)
-                ->with('error', 'You cannot update a reimbursement request that has already been processed.');
-        }
-
-        $request->validate([
-            'customer' => 'required',
-            'total' => 'required|numeric|min:0',
-            'date' => 'required|date',
-            'invoice_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'reimbursement_type_id' => 'required|exists:reimbursement_types,id',
-        ], [
-            'customer.required' => 'Customer harus dipilih.',
-            'customer.exists' => 'Customer tidak valid.',
-            'total.required' => 'Total harus diisi.',
-            'total.numeric' => 'Total harus berupa angka.',
-            'total.min' => 'Total tidak boleh kurang dari 0.',
-            'date.required' => 'Tanggal harus diisi.',
-            'date.date' => 'Format tanggal tidak valid.',
-            'invoice_path.file' => 'File yang diupload tidak valid.',
-            'invoice_path.mimes' => 'File harus berupa: jpg, jpeg, png, pdf.',
-            'invoice_path.max' => 'Ukuran file tidak boleh lebih dari 2MB.',
-            'invoice_path.required' => 'Bukti pengeluaran harus diupload.',
-            'reimbursement_type_id.required' => 'Tipe reimbursement harus dipilih.',
-            'reimbursement_type_id.exists' => 'Tipe reimbursement tidak valid.',
-        ]);
-
-        $reimbursement->customer = $request->customer;
-        $reimbursement->total = $request->total;
-        $reimbursement->date = $request->date;
-        $reimbursement->reimbursement_type_id = $request->reimbursement_type_id;
-        $reimbursement->status_1 = 'pending';
-        $reimbursement->status_2 = 'pending';
-        $reimbursement->note_1 = NULL;
-        $reimbursement->note_2 = NULL;
-
-        if ($request->hasFile('invoice_path')) {
-            if ($reimbursement->invoice_path) {
-                Storage::disk('public')->delete($reimbursement->invoice_path);
-            }
-            $path = $request->file('invoice_path')->store('reimbursement_invoices', 'public');
-            $reimbursement->invoice_path = $path;
-        } elseif ($request->input('remove_invoice_path')) {
-            if ($reimbursement->invoice_path) {
-                Storage::disk('public')->delete($reimbursement->invoice_path);
-                $reimbursement->invoice_path = null;
-            }
-        }
-
-        $reimbursement->save();
-
-        // Send notification email to the approver
-        if ($reimbursement->approver) {
-            $token = \Illuminate\Support\Str::random(48);
-            ApprovalLink::create([
-                'model_type' => get_class($reimbursement),   // App\Models\reim$reimbursement
-                'model_id' => $reimbursement->id,
-                'approver_user_id' => $reimbursement->approver->id,
-                'level' => 1, // level 1 berarti arahnya ke team lead
-                'scope' => 'both',             // boleh approve & reject
-                'token' => hash('sha256', $token), // simpan hash, kirim raw
-                'expires_at' => now()->addDays(3),  // masa berlaku
-            ]);
-            $linkTanggapan = route('public.approval.show', $token);
-
-            Mail::to($reimbursement->approver->email)->send(
-                new \App\Mail\SendMessage(
-                    namaPengaju: Auth::user()->name,
-                    namaApprover: $reimbursement->approver->name,
-                    linkTanggapan: $linkTanggapan,
-                    emailPengaju: Auth::user()->email,
-                    attachmentPath: $reimbursement->invoice_path
-                )
-            );
-        }
-
-        return redirect()->route('manager.reimbursements.index', $reimbursement->id)
-            ->with('success', 'Reimbursement request updated successfully.');
     }
-
 
     public function destroy(Reimbursement $reimbursement)
     {

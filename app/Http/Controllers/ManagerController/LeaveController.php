@@ -9,11 +9,12 @@ use App\Http\Requests\UpdateLeaveRequest;
 use App\Models\ApprovalLink;
 use App\Models\Leave;
 use App\Models\User;
-use App\Roles;
+use App\Enums\Roles;
 use App\Services\LeaveApprovalService;
 use App\Services\LeaveService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,10 @@ use Illuminate\Support\Str;
 
 class LeaveController extends Controller
 {
+    public function __construct(private LeaveService $leaveService, private LeaveApprovalService $leaveApprovalService)
+    {
+    }
+
     public function index(Request $request)
     {
 
@@ -116,34 +121,50 @@ class LeaveController extends Controller
     {
         $sisaCuti = $leaveService->sisaCuti(Auth::user());
 
+        $holidays = \App\Models\Holiday::pluck('holiday_date')
+            ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+            ->toArray();
+
         if ($sisaCuti <= 0) {
             abort(422, 'Sisa cuti tidak cukup.');
         }
-        return view('manager.leave-request.create');
+        return view('manager.leave-request.create', compact('sisaCuti', 'holidays'));
     }
 
-    public function store(StoreLeaveRequest $request, LeaveService $leaveService)
+    public function store(StoreLeaveRequest $request)
     {
-        $user = Auth::user();
-        $sisaCuti = $leaveService->sisaCuti($user);
-        $hariBaru = $leaveService->hitungHariCuti($request->date_start, $request->date_end);
+        try {
+            $this->leaveService->store($request->validated());
 
-        if ($hariBaru > $sisaCuti) {
-            return back()->with('error', "Sisa cuti hanya {$sisaCuti} hari.");
+            return redirect()->route('manager.leaves.index')
+                ->with('success', 'Leave request submitted successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $leaveService->createLeave($request->validated());
-
-        return redirect()->route('manager.leaves.index')
-            ->with('success', 'Leave request submitted successfully.');
     }
 
     public function edit(Leave $leave)
     {
-        return view('manager.leave-request.update', compact('leave'));
+        // Check if the user has permission to edit this leave
+        $user = Auth::user();
+        if ($user->id !== $leave->employee_id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $sisaCuti = $this->leaveService->sisaCuti(Auth::user());
+
+        $holidays = \App\Models\Holiday::pluck('holiday_date')
+            ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+            ->toArray();
+
+        // Only allow editing if the leave is still pending
+        if ($leave->status_1 !== 'pending') {
+            return redirect()->route('manager.leaves.index', $leave->id)
+                ->with('error', 'You cannot edit a leave request that has already been processed.');
+        }
+
+        return view('manager.leaves.update', compact('leave', 'sisaCuti', 'holidays'));
     }
-
-
 
     public function destroy(Leave $leave)
     {
@@ -167,42 +188,35 @@ class LeaveController extends Controller
 
     public function update(ApproveLeaveRequest $request, Leave $leave)
     {
-        if ($leave->status_1 !== 'pending') {
-            return back()->with('error', 'Leave sudah diproses dan tidak dapat diubah lagi.');
+        try {
+            if ($request->status_1 == 'approved') {
+                $this->leaveApprovalService->approve($leave, $request->note_1 ?? null);
+            } else {
+                $this->leaveApprovalService->reject($leave, $request->note_1 ?? null);
+            }
+
+            return redirect()
+                ->route('manager.leaves.index')
+                ->with('success', "Leave request {$request->status_1} successfully.");
+
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
         }
 
-        $validated = $request->validated();
-
-        $leave->update([
-            'status_1' => $validated['status_1'],
-            'note_1' => $validated['note_1'] ?? null,
-        ]);
-
-        return redirect()
-            ->route('manager.leaves.index')
-            ->with('success', "Leave request {$validated['status_1']} successfully.");
     }
 
 
-    public function updateSelf(UpdateLeaveRequest $request, Leave $leave, LeaveService $leaveService)
+    public function updateSelf(UpdateLeaveRequest $request, Leave $leave)
     {
-        if ($leave->status_1 !== 'pending') {
-            return redirect()->route('manager.leaves.index', $leave->id)
-                ->with('error', 'Cuti sudah diproses, tidak bisa diupdate.');
+        try {
+            $this->leaveService->update($leave, $request->validated());
+
+            return redirect()->route('manager.leaves.index')
+                ->with('success', 'Leave request updated successfully.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
 
-        $newDays = $leaveService->hitungHariCuti($request->date_start, $request->date_end);
-        $oldDays = $leaveService->hitungHariCuti($leave->date_start, $leave->date_end);
-        $sisaCuti = $leaveService->sisaCuti(Auth::user(), $leave->id);
-
-        if ($newDays > $oldDays && $sisaCuti < ($newDays - $oldDays)) {
-            return back()->with('error', 'Sisa cuti tidak mencukupi untuk memperpanjang cuti.');
-        }
-
-        $leaveService->updateLeave($leave, $request->validated());
-
-        return redirect()->route('manager.leaves.index', $leave->id)
-            ->with('success', 'Leave request updated successfully.');
     }
 
     public function exportPdf(Leave $leave)

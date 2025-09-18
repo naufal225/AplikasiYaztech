@@ -5,17 +5,16 @@ namespace App\Http\Requests;
 use App\Enums\Roles;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ApproveOfficialTravelRequest extends FormRequest
+class ApproveReimbursementRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return auth()->check() && in_array(auth()->user()->role, [
-            Roles::Approver->value,
-            Roles::Manager->value
-        ]);
+        // hanya manager atau approver yang boleh approve
+        return auth()->check()
+            && in_array(auth()->user()->role, [Roles::Manager->value, Roles::Approver->value]);
     }
 
 
@@ -47,4 +46,5 @@ class ApproveOfficialTravelRequest extends FormRequest
             'note_2.max' => 'Catatan maksimal 100 karakter.',
         ];
     }
+
 }
