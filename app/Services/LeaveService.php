@@ -71,7 +71,7 @@ class LeaveService
         return max(0, (int) env('CUTI_TAHUNAN', 20) - $total);
     }
 
-    public function store(array $data): Leave
+    public function dgbstore(array $data): Leave
     {
         $user = Auth::user();
         $tahunSekarang = now()->year;

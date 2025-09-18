@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
-use App\Roles;
+use App\Enums\Roles;
 
 Broadcast::channel('approver.division.{divisionId}', function ($user, $divisionId) {
     return $user
