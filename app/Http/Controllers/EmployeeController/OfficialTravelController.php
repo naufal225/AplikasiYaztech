@@ -225,7 +225,7 @@ class OfficialTravelController extends Controller
             return redirect()
                 ->route('employee.official-travels.show', $travel->id)
                 ->with('success', 'Official travel updated successfully.');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
 
@@ -247,8 +247,8 @@ class OfficialTravelController extends Controller
                 ->with('error', 'You cannot delete a travel request that has already been processed.');
         }
 
-        if (\App\Models\ApprovalLink::where('model_id', $officialTravel->id)->where('model_type', get_class($officialTravel))->exists()) {
-            \App\Models\ApprovalLink::where('model_id', $officialTravel->id)->where('model_type', get_class($officialTravel))->delete();
+        if (ApprovalLink::where('model_id', $officialTravel->id)->where('model_type', get_class($officialTravel))->exists()) {
+            ApprovalLink::where('model_id', $officialTravel->id)->where('model_type', get_class($officialTravel))->delete();
         }
 
         $officialTravel->delete();
