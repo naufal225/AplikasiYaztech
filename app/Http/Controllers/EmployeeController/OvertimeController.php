@@ -199,7 +199,7 @@ class OvertimeController extends Controller
     public function edit(Overtime $overtime)
     {
         $user = Auth::user();
-        if ($user->id !== $overtime->employee_id) {
+        if ($user->id !== (int) $overtime->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 

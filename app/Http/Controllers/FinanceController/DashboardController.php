@@ -28,6 +28,8 @@ class DashboardController extends Controller
         $thisYear = now()->year;
         $thisMonth = now()->month;
 
+        $holidays = \App\Models\Holiday::pluck('holiday_date')->map(fn($d) => Carbon::parse($d)->toDateString())->toArray();
+
         // =========================
         // DATA PRIBADI FINANCE (YOURS)
         // =========================
@@ -152,16 +154,17 @@ class DashboardController extends Controller
 
         $cutiPerTanggal = [];
         foreach ($karyawanCuti as $cuti) {
-            $start = Carbon::parse($cuti->date_start);
-            $end   = Carbon::parse($cuti->date_end);
-            while ($start->lte($end)) {
-                $tanggal = $start->format('Y-m-d');
-                $cutiPerTanggal[$tanggal][] = [
-                    'employee' => $cuti->employee->name,
-                    'email'    => $cuti->employee->email,
-                    'url_profile' => $cuti->employee->url_profile,
-                ];
-                $start->addDay();
+            $period = \Carbon\CarbonPeriod::create($cuti->date_start, $cuti->date_end);
+
+            foreach ($period as $date) {
+                if (!$date->isWeekend() && !in_array($date->toDateString(), $holidays)) {
+                    $tanggal = $date->format('Y-m-d');
+                    $cutiPerTanggal[$tanggal][] = [
+                        'employee'    => $cuti->employee->name,
+                        'email'       => $cuti->employee->email,
+                        'url_profile' => $cuti->employee->url_profile,
+                    ];
+                }
             }
         }
 
@@ -175,14 +178,21 @@ class DashboardController extends Controller
                 ->orWhereYear('date_end', $thisYear);
             })
             ->get()
-            ->sum(function($cuti) use ($thisYear){
-                $start = Carbon::parse($cuti->date_start);
-                $end   = Carbon::parse($cuti->date_end);
+            ->sum(function ($cuti) use ($thisYear, $holidays) {
+                $start = \Carbon\Carbon::parse($cuti->date_start);
+                $end   = \Carbon\Carbon::parse($cuti->date_end);
 
-                if ($start->year < $thisYear) $start = Carbon::create($thisYear, 1, 1);
-                if ($end->year > $thisYear)   $end   = Carbon::create($thisYear, 12, 31);
+                if ($start->year < $thisYear) $start = \Carbon\Carbon::create($thisYear, 1, 1);
+                if ($end->year > $thisYear)   $end   = \Carbon\Carbon::create($thisYear, 12, 31);
 
-                return $start->lte($end) ? $start->diffInDays($end) + 1 : 0;
+                if ($start->lte($end)) {
+                    $period = \Carbon\CarbonPeriod::create($start, $end);
+                    return collect($period)->filter(fn($d) =>
+                        !$d->isWeekend() &&
+                        !in_array($d->toDateString(), $holidays)
+                    )->count();
+                }
+                return 0;
             });
 
         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;

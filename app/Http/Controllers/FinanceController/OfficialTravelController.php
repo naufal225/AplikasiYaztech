@@ -203,20 +203,41 @@ class OfficialTravelController extends Controller
         $start = Carbon::parse($validated['date_start']);
         $end = Carbon::parse($validated['date_end']);
 
-        $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
+        $totalDays = $start->diffInDays($end) + 1;
 
         $user = Auth::user();
         $userName = $user->name;
         $userEmail = $user->email;
         $divisionId = $user->division_id;
 
-        DB::transaction(function () use ($request, $start, $end, $totalDays, $user, $userName, $userEmail, $divisionId) {
+        // Hitung biaya per hari
+        $weekDayCost = (int) env('TRAVEL_COSTS_WEEK_DAY', 0);
+        $weekEndCost = (int) env('TRAVEL_COSTS_WEEK_END', 0);
+
+        // Ambil semua holiday dari DB
+        $holidayDates = \App\Models\Holiday::pluck('holiday_date')->map(fn($d) => \Carbon\Carbon::parse($d)->toDateString())->toArray();
+
+        $period = \Carbon\CarbonPeriod::create($start, $end);
+
+        $totalCost = 0;
+        foreach ($period as $date) {
+            $isWeekend = $date->isWeekend();
+            $isHoliday = in_array($date->toDateString(), $holidayDates);
+
+            if ($isWeekend || $isHoliday) {
+                $totalCost += $weekEndCost;
+            } else {
+                $totalCost += $weekDayCost;
+            }
+        }
+
+        DB::transaction(function () use ($request, $start, $end, $totalDays, $user, $userName, $userEmail, $divisionId, $totalCost) {
             $officialTravel = new OfficialTravel();
             $officialTravel->customer = $request->customer;
             $officialTravel->employee_id = Auth::id();
             $officialTravel->date_start = $start;
             $officialTravel->date_end = $end;
-            $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
+            $officialTravel->total = $totalCost;
 
             // Cek apakah user adalah leader division
             $isLeader = \App\Models\Division::where('leader_id', Auth::id())->exists();
@@ -374,7 +395,7 @@ class OfficialTravelController extends Controller
     public function edit(OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id) {
+        if ($user->id !== (int) $officialTravel->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -396,7 +417,7 @@ class OfficialTravelController extends Controller
     public function update(Request $request, OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id) {
+        if ($user->id !== (int) $officialTravel->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -426,7 +447,28 @@ class OfficialTravelController extends Controller
         $start = Carbon::parse($request->date_start);
         $end = Carbon::parse($request->date_end);
 
-        $totalDays = $start->startOfDay()->diffInDays($end->startOfDay()) + 1;
+        $totalDays = $start->diffInDays($end) + 1;
+
+        // Hitung biaya per hari
+        $weekDayCost = (int) env('TRAVEL_COSTS_WEEK_DAY', 0);
+        $weekEndCost = (int) env('TRAVEL_COSTS_WEEK_END', 0);
+
+        // Ambil semua holiday dari DB
+        $holidayDates = \App\Models\Holiday::pluck('holiday_date')->map(fn($d) => \Carbon\Carbon::parse($d)->toDateString())->toArray();
+
+        $period = \Carbon\CarbonPeriod::create($start, $end);
+
+        $totalCost = 0;
+        foreach ($period as $date) {
+            $isWeekend = $date->isWeekend();
+            $isHoliday = in_array($date->toDateString(), $holidayDates);
+
+            if ($isWeekend || $isHoliday) {
+                $totalCost += $weekEndCost;
+            } else {
+                $totalCost += $weekDayCost;
+            }
+        }
 
         $officialTravel->customer = $request->customer;
         $officialTravel->date_start = $request->date_start;
@@ -442,7 +484,7 @@ class OfficialTravelController extends Controller
 
         $officialTravel->note_1 = NULL;
         $officialTravel->note_2 = NULL;
-        $officialTravel->total = (int) ((int) $totalDays * (int) env('TRAVEL_COSTS_PER_DAY', 0));
+        $officialTravel->total = $totalCost;
         $officialTravel->save();
 
         $token = null;

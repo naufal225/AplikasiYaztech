@@ -95,7 +95,7 @@ class DashboardController extends Controller
                     $end = \Carbon\Carbon::create($tahunSekarang, 12, 31);
                 }
 
-                return $start->lte($end)
+                return $start->lte($end) 
                     ? collect(\Carbon\CarbonPeriod::create($start, $end))->filter(function ($date) use ($holidays) {
                         return !$date->isWeekend() && !in_array($date->toDateString(), $holidays);
                     })->count()

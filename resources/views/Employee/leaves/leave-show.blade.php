@@ -116,13 +116,14 @@
                     <i class="mr-2 fas fa-search"></i>
                     Filter
                 </button>
-
-                <!-- Reset Button -->
-                <button onclick="window.location.href = '{{ route('employee.leaves.index') }}'" type="button"
+                
+                
+                 <button onclick="window.location.href = '{{ route('employee.leaves.index') }}'" type="button"
                     class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-300 bg-gray-100 shadow-sm cursor-pointer justify-center-safe rounded-xl hover:bg-gray-200 hover:shadow-md">
                     <i class="mr-2 fas fa-refresh"></i>
                     Reset
                 </button>
+
             </div>
         </form>
     </div>
@@ -130,124 +131,115 @@
     <!-- Divider -->
     <div class="mt-6 mb-10 transform scale-y-50 border-t border-gray-300/80"></div>
 
-    <!-- Leaves Table -->
-    <div class="overflow-hidden bg-white border rounded-xl shadow-soft border-neutral-200">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-neutral-200">
-                <thead class="bg-neutral-50">
-                    <tr>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Request ID</th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Duration</th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Status</th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Approver 2</th>
-                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-neutral-200">
-                    @forelse($leaves as $leave)
-                    <tr class="transition-colors duration-200 hover:bg-neutral-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div>
-                                <div class="text-sm font-medium text-neutral-900">#LY{{ $leave->id }}</div>
-                                <div class="text-sm text-neutral-500">{{ $leave->created_at->format('M d, Y') }}</div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">
-                                {{ \Carbon\Carbon::parse($leave->date_start)->format('M d') }} - {{
-                                \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
-                            </div>
-                            <div class="text-sm text-neutral-500">
-                                @php
-                                $tahunSekarang = now()->year;
-                                $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
-                                ->pluck('holiday_date')
-                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
-                                ->toArray();
+        <!-- Leaves Table -->
+        <div class="bg-white rounded-xl shadow-soft border border-neutral-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-neutral-200">
+                    <thead class="bg-neutral-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Request ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Duration</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 2</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-neutral-200">
+                        @forelse($leaves as $leave)
+                            <tr class="hover:bg-neutral-50 transition-colors duration-200">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div>
+                                        <div class="text-sm font-medium text-neutral-900">#LY{{ $leave->id }}</div>
+                                        <div class="text-sm text-neutral-500">{{ $leave->created_at->format('M d, Y') }}</div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">
+                                        {{ \Carbon\Carbon::parse($leave->date_start)->format('M d') }} - {{ \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
+                                    </div>
+                                    <div class="text-sm text-neutral-500">
+                                        @php
+                                            $tahunSekarang = now()->year;
+                                            $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                                ->pluck('holiday_date')
+                                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                                ->toArray();
 
-                                $start = \Carbon\Carbon::parse($leave->date_start);
-                                $end = \Carbon\Carbon::parse($leave->date_end);
+                                            $start = \Carbon\Carbon::parse($leave->date_start);
+                                            $end   = \Carbon\Carbon::parse($leave->date_end);
 
-                                $durasi =
-                                app()->call('App\Http\Controllers\EmployeeController\LeaveController@hitungHariCuti', [
-                                'start' => $start,
-                                'end' => $end,
-                                'tahunSekarang' => $tahunSekarang,
-                                'hariLibur' => $hariLibur,
-                                ]);
-                                @endphp
+                                            $durasi = app()->call('App\Http\Controllers\EmployeeController\LeaveController@hitungHariCuti', [
+                                                'start' => $start,
+                                                'end' => $end,
+                                                'tahunSekarang' => $tahunSekarang,
+                                                'hariLibur' => $hariLibur,
+                                            ]);
+                                        @endphp
 
-                                {{ $durasi }} {{ $durasi === 1 ? 'day' : 'days' }}
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($leave->status_1 === 'pending')
-                            <span class="badge-pending text-warning-600">
-                                <i class="mr-1 fas fa-clock"></i>
-                                Pending
-                            </span>
-                            @elseif($leave->status_1 === 'approved')
-                            <span class="badge-approved text-success-600">
-                                <i class="mr-1 fas fa-check-circle"></i>
-                                Approved
-                            </span>
-                            @elseif($leave->status_1 === 'rejected')
-                            <span class="badge-rejected text-error-600">
-                                <i class="mr-1 fas fa-times-circle"></i>
-                                Rejected
-                            </span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
-                        </td>
-                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
-                            <div class="flex items-center space-x-2 text-base">
-                                <a href="{{ route('employee.leaves.show', $leave->id) }}"
-                                    class="text-primary-600 hover:text-primary-900" title="View Details">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                @if(Auth::id() === $leave->employee_id && $leave->status_1 === 'pending')
-                                <a href="{{ route('employee.leaves.edit', $leave->id) }}"
-                                    class="text-secondary-600 hover:text-secondary-900" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ route('employee.leaves.destroy', $leave->id) }}" method="POST"
-                                    class="inline" onsubmit="return confirm('Are you sure?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-error-600 hover:text-error-900" title="Delete">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="h-64 text-center align-middle">
-                            <div class="flex flex-col items-center justify-center h-full text-neutral-400">
-                                <i class="mb-4 text-4xl fas fa-inbox"></i>
-                                <p class="text-lg font-medium">No leave requests found</p>
-                                <p class="text-sm">Create your first leave request to get started</p>
-                                <button onclick="window.location.href='{{ route('employee.leaves.create') }}'"
-                                    @if($sisaCuti <=0) disabled @endif
-                                    class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 @if($sisaCuti <= 0) cursor-not-allowed @else cursor-pointer @endif">
-                                    <i class="mr-2 fas fa-plus"></i>
-                                    New Leave Request
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                        {{ $durasi }} {{ $durasi === 1 ? 'day' : 'days' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($leave->status_1 === 'pending')
+                                        <span class="badge-pending text-warning-600">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            Pending
+                                        </span>
+                                    @elseif($leave->status_1 === 'approved')
+                                        <span class="badge-approved text-success-600">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Approved
+                                        </span>
+                                    @elseif($leave->status_1 === 'rejected')
+                                        <span class="badge-rejected text-error-600">
+                                            <i class="fas fa-times-circle mr-1"></i>
+                                            Rejected
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center space-x-2">
+                                        <a href="{{ route('employee.leaves.show', $leave->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
+                                            <i class="fas fa-eye text-lg"></i>
+                                        </a>
+                                        @if(Auth::id() === $leave->employee_id && $leave->status_1 === 'pending')
+                                            <a href="{{ route('employee.leaves.edit', $leave->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
+                                                <i class="fas fa-edit text-lg"></i>
+                                            </a>
+                                            <form action="{{ route('employee.leaves.destroy', $leave->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-error-600 hover:text-error-900" title="Delete">
+                                                    <i class="fas fa-trash text-lg"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="h-64 text-center align-middle">
+                                    <div class="flex flex-col items-center justify-center h-full text-neutral-400">
+                                        <i class="fas fa-inbox text-4xl mb-4"></i>
+                                        <p class="text-lg font-medium">No leave requests found</p>
+                                        <p class="text-sm">Create your first leave request to get started</p>
+                                        <button
+                                            onclick="window.location.href='{{ route('employee.leaves.create') }}'"
+                                            @if($sisaCuti <= 0) disabled @endif
+                                            class="mt-4 inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 @if($sisaCuti <= 0) cursor-not-allowed @else cursor-pointer @endif">
+                                                <i class="fas fa-plus mr-2"></i>
+                                                New Leave Request
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
         </div>
 
         @if($leaves->hasPages())
