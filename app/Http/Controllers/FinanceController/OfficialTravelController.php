@@ -189,11 +189,153 @@ class OfficialTravelController extends Controller
         try {
             $this->officialTravelService->store($request->validated());
 
+<<<<<<< HEAD
             return redirect()->route('finance.official-travels.index')
                 ->with('success', 'Official travel request submitted successfully.');
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
+=======
+        $start = Carbon::parse($validated['date_start']);
+        $end = Carbon::parse($validated['date_end']);
+
+        $totalDays = $start->diffInDays($end) + 1;
+
+        $user = Auth::user();
+        $userName = $user->name;
+        $userEmail = $user->email;
+        $divisionId = $user->division_id;
+
+        // Hitung biaya per hari
+        $weekDayCost = (int) env('TRAVEL_COSTS_WEEK_DAY', 0);
+        $weekEndCost = (int) env('TRAVEL_COSTS_WEEK_END', 0);
+
+        // Ambil semua holiday dari DB
+        $holidayDates = \App\Models\Holiday::pluck('holiday_date')->map(fn($d) => \Carbon\Carbon::parse($d)->toDateString())->toArray();
+
+        $period = \Carbon\CarbonPeriod::create($start, $end);
+
+        $totalCost = 0;
+        foreach ($period as $date) {
+            $isWeekend = $date->isWeekend();
+            $isHoliday = in_array($date->toDateString(), $holidayDates);
+
+            if ($isWeekend || $isHoliday) {
+                $totalCost += $weekEndCost;
+            } else {
+                $totalCost += $weekDayCost;
+            }
+        }
+
+        DB::transaction(function () use ($request, $start, $end, $totalDays, $user, $userName, $userEmail, $divisionId, $totalCost) {
+            $officialTravel = new OfficialTravel();
+            $officialTravel->customer = $request->customer;
+            $officialTravel->employee_id = Auth::id();
+            $officialTravel->date_start = $start;
+            $officialTravel->date_end = $end;
+            $officialTravel->total = $totalCost;
+
+            // Cek apakah user adalah leader division
+            $isLeader = \App\Models\Division::where('leader_id', Auth::id())->exists();
+
+            if ($isLeader) {
+                $officialTravel->status_1 = 'approved';
+                $officialTravel->status_2 = 'pending';
+            } else {
+                $officialTravel->status_1 = 'pending';
+                $officialTravel->status_2 = 'pending';
+            }
+
+            $officialTravel->save();
+
+            $token = null;
+
+            if ($isLeader) {
+                // --- Jika leader, langsung kirim ke Manager (level 2)
+                $manager = User::where('role', Roles::Manager->value)->first();
+
+                if ($manager) {
+                    $token = \Illuminate\Support\Str::random(48);
+                    ApprovalLink::create([
+                        'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
+                        'model_id' => $officialTravel->id,
+                        'approver_user_id' => $manager->id,
+                        'level' => 2, // level 2 berarti arahnya ke manager
+                        'scope' => 'both',             // boleh approve & reject
+                        'token' => hash('sha256', $token), // simpan hash, kirim raw
+                        'expires_at' => now()->addDays(3),  // masa berlaku
+                    ]);
+                }
+
+                DB::afterCommit(function () use ($officialTravel, $token) {
+                    $fresh = $officialTravel->fresh();
+                    event(new \App\Events\OfficialTravelLevelAdvanced(
+                        $fresh,
+                        Auth::user()->division_id,
+                        'manager'
+                    ));
+
+                    if (!$fresh || !$token) {
+                        return;
+                    }
+
+                    $linkTanggapan = route('public.approval.show', $token);
+
+                    $manager = User::where('role', Roles::Manager->value)->first();
+                    Mail::to($manager->email)->queue(
+                        new \App\Mail\SendMessage(
+                            namaPengaju: Auth::user()->name,
+                            namaApprover: $manager->name,
+                            linkTanggapan: $linkTanggapan,
+                            emailPengaju: Auth::user()->email,
+                        )
+                    );
+                });
+
+            } else {
+                // --- Kalau bukan leader, jalur normal ke approver (team lead)
+                if ($officialTravel->approver) {
+                    $token = \Illuminate\Support\Str::random(48);
+                    ApprovalLink::create([
+                        'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
+                        'model_id' => $officialTravel->id,
+                        'approver_user_id' => $officialTravel->approver->id,
+                        'level' => 1, // level 1 berarti arahnya ke team lead
+                        'scope' => 'both',             // boleh approve & reject
+                        'token' => hash('sha256', $token), // simpan hash, kirim raw
+                        'expires_at' => now()->addDays(3),  // masa berlaku
+                    ]);
+
+                }
+
+                DB::afterCommit(function () use ($officialTravel, $request, $token) {
+                    $fresh = $officialTravel->fresh(); // ambil ulang (punya created_at dll)
+                    // dd("jalan");
+                    event(new \App\Events\OfficialTravelSubmitted($fresh, Auth::user()->division_id));
+
+                    // Kalau tidak ada approver atau token, jangan kirim email
+                    if (!$fresh || !$fresh->approver || !$token) {
+                        return;
+                    }
+
+                    $linkTanggapan = route('public.approval.show', $token);
+
+                    Mail::to($officialTravel->approver->email)->queue(
+                        new \App\Mail\SendMessage(
+                            namaPengaju: Auth::user()->name,
+                            namaApprover: $officialTravel->approver->name,
+                            linkTanggapan: $linkTanggapan,
+                            emailPengaju: Auth::user()->email,
+                        )
+                    );
+                });
+            }
+
+        });
+
+        return redirect()->route('finance.official-travels.index')
+            ->with('success', 'Official travel request submitted successfully. Total days: ' . $totalDays);
+>>>>>>> 1a42a6f436ab20e0edcc41816a8f1d352383722b
     }
 
 
@@ -251,7 +393,7 @@ class OfficialTravelController extends Controller
     public function edit(OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id) {
+        if ($user->id !== (int) $officialTravel->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -273,8 +415,12 @@ class OfficialTravelController extends Controller
     public function update(UpdateOfficialTravelRequest $request, OfficialTravel $officialTravel)
     {
         $user = Auth::user();
+<<<<<<< HEAD
 
         if ($user->id !== $officialTravel->employee_id) {
+=======
+        if ($user->id !== (int) $officialTravel->employee_id) {
+>>>>>>> 1a42a6f436ab20e0edcc41816a8f1d352383722b
             abort(403, 'Unauthorized action.');
         }
 
@@ -286,6 +432,154 @@ class OfficialTravelController extends Controller
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
+<<<<<<< HEAD
+=======
+
+        $request->validate([
+            'customer' => 'required',
+            'date_start' => 'required|date|after_or_equal:today',
+            'date_end' => 'required|date|after_or_equal:date_start',
+        ], [
+            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
+            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
+            'date_start.after_or_equal' => 'Tanggal/Waktu Mulai harus hari ini atau setelahnya.',
+            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
+            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
+            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
+            'date_end.after_or_equal' => 'Tanggal/Waktu Akhir harus hari ini atau setelahnya.',
+            'customer.required' => 'Customer harus diisi.',
+        ]);
+
+        // Calculate total days
+        $start = Carbon::parse($request->date_start);
+        $end = Carbon::parse($request->date_end);
+
+        $totalDays = $start->diffInDays($end) + 1;
+
+        // Hitung biaya per hari
+        $weekDayCost = (int) env('TRAVEL_COSTS_WEEK_DAY', 0);
+        $weekEndCost = (int) env('TRAVEL_COSTS_WEEK_END', 0);
+
+        // Ambil semua holiday dari DB
+        $holidayDates = \App\Models\Holiday::pluck('holiday_date')->map(fn($d) => \Carbon\Carbon::parse($d)->toDateString())->toArray();
+
+        $period = \Carbon\CarbonPeriod::create($start, $end);
+
+        $totalCost = 0;
+        foreach ($period as $date) {
+            $isWeekend = $date->isWeekend();
+            $isHoliday = in_array($date->toDateString(), $holidayDates);
+
+            if ($isWeekend || $isHoliday) {
+                $totalCost += $weekEndCost;
+            } else {
+                $totalCost += $weekDayCost;
+            }
+        }
+
+        $officialTravel->customer = $request->customer;
+        $officialTravel->date_start = $request->date_start;
+        $officialTravel->date_end = $request->date_end;
+
+        if ($isLeader) {
+            $officialTravel->status_1 = 'approved';
+            $officialTravel->status_2 = 'pending';
+        } else {
+            $officialTravel->status_1 = 'pending';
+            $officialTravel->status_2 = 'pending';
+        }
+
+        $officialTravel->note_1 = NULL;
+        $officialTravel->note_2 = NULL;
+        $officialTravel->total = $totalCost;
+        $officialTravel->save();
+
+        $token = null;
+
+            if ($isLeader) {
+                // --- Jika leader, langsung kirim ke Manager (level 2)
+                $manager = User::where('role', Roles::Manager->value)->first();
+
+                if ($manager) {
+                    $token = \Illuminate\Support\Str::random(48);
+                    ApprovalLink::create([
+                        'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
+                        'model_id' => $officialTravel->id,
+                        'approver_user_id' => $manager->id,
+                        'level' => 2, // level 2 berarti arahnya ke manager
+                        'scope' => 'both',             // boleh approve & reject
+                        'token' => hash('sha256', $token), // simpan hash, kirim raw
+                        'expires_at' => now()->addDays(3),  // masa berlaku
+                    ]);
+                }
+
+                DB::afterCommit(function () use ($officialTravel, $token) {
+                    $fresh = $officialTravel->fresh();
+                    event(new \App\Events\OfficialTravelLevelAdvanced(
+                        $fresh,
+                        Auth::user()->division_id,
+                        'manager'
+                    ));
+
+                    if (!$fresh || !$token) {
+                        return;
+                    }
+
+                    $linkTanggapan = route('public.approval.show', $token);
+
+                    $manager = User::where('role', Roles::Manager->value)->first();
+                    Mail::to($manager->email)->queue(
+                        new \App\Mail\SendMessage(
+                            namaPengaju: Auth::user()->name,
+                            namaApprover: $manager->name,
+                            linkTanggapan: $linkTanggapan,
+                            emailPengaju: Auth::user()->email,
+                        )
+                    );
+                });
+
+            } else {
+                // --- Kalau bukan leader, jalur normal ke approver (team lead)
+                if ($officialTravel->approver) {
+                    $token = \Illuminate\Support\Str::random(48);
+                    ApprovalLink::create([
+                        'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
+                        'model_id' => $officialTravel->id,
+                        'approver_user_id' => $officialTravel->approver->id,
+                        'level' => 1, // level 1 berarti arahnya ke team lead
+                        'scope' => 'both',             // boleh approve & reject
+                        'token' => hash('sha256', $token), // simpan hash, kirim raw
+                        'expires_at' => now()->addDays(3),  // masa berlaku
+                    ]);
+
+                }
+
+                DB::afterCommit(function () use ($officialTravel, $request, $token) {
+                    $fresh = $officialTravel->fresh(); // ambil ulang (punya created_at dll)
+                    // dd("jalan");
+                    event(new \App\Events\OfficialTravelSubmitted($fresh, Auth::user()->division_id));
+
+                    // Kalau tidak ada approver atau token, jangan kirim email
+                    if (!$fresh || !$fresh->approver || !$token) {
+                        return;
+                    }
+
+                    $linkTanggapan = route('public.approval.show', $token);
+
+                    Mail::to($officialTravel->approver->email)->queue(
+                        new \App\Mail\SendMessage(
+                            namaPengaju: Auth::user()->name,
+                            namaApprover: $officialTravel->approver->name,
+                            linkTanggapan: $linkTanggapan,
+                            emailPengaju: Auth::user()->email,
+                        )
+                    );
+                });
+            }
+
+        return redirect()->route('finance.official-travels.show', $officialTravel->id)
+            ->with('success', 'Official travel request updated successfully. Total days: ' . $totalDays);
+>>>>>>> 1a42a6f436ab20e0edcc41816a8f1d352383722b
     }
 
 

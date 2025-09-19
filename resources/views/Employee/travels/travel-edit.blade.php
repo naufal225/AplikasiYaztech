@@ -93,6 +93,18 @@
                         onchange="calculateDays()">
                 </div>
             </div>
+
+            Travel Duration Display 
+                <div id="duration-calculation" class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-calculator text-green-600 mr-3 mt-0.5"></i>
+                        <div>
+                            <h4 class="text-sm font-semibold text-green-800 mb-1">Travel Duration</h4>
+                            <p id="duration-total" class="text-sm font-bold text-green-800">Total Duration: {{ $officialTravel->date_start->diffInDays($officialTravel->date_end) + 1 }} days</p>
+                        </div>
+                    </div>
+                </div>
+
             <div class="flex justify-end pt-6 space-x-4 border-t border-neutral-200">
                 <a href="{{ url()->previous() }}"
                     class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
@@ -107,23 +119,31 @@
         </form>
     </div>
 </div>
-
+@endsection
 @push('scripts')
-function calculateDays() {
-const startInput = document.getElementById('date_start');
-const endInput = document.getElementById('date_end');
-const calculationDiv = document.getElementById('duration-calculation');
-const totalP = document.getElementById('duration-total');
-
-const startDate = new Date(startInput.value);
-const endDate = new Date(endInput.value);
-
-if (endDate < startDate) { totalP.textContent=`Total Duration: 0 days`; return; } if (startInput.value==="" ||
-    endInput.value==="" ) { totalP.textContent=`Total Duration: 0 days`; return; } const timeDiff=endDate.getTime() -
-    startDate.getTime(); const daysDiff=Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; if (daysDiff> 0) {
-    calculationDiv.style.display = 'block';
-    totalP.textContent = `Total Duration: ${daysDiff} day${daysDiff > 1 ? 's' : ''}`;
+    function calculateDays() {
+        const startInput = document.getElementById('date_start');
+        const endInput = document.getElementById('date_end');
+        const calculationDiv = document.getElementById('duration-calculation');
+        const totalP = document.getElementById('duration-total');
+        
+        const startDate = new Date(startInput.value);
+        const endDate = new Date(endInput.value);
+        
+        if (endDate < startDate) {
+            totalP.textContent = `Total Duration: 0 days`;
+            return;
+        }
+        if (startInput.value === "" || endInput.value === "") {
+            totalP.textContent = `Total Duration: 0 days`;
+            return;
+        }
+        const timeDiff = endDate.getTime() - startDate.getTime();
+        const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+        
+        if (daysDiff > 0) {
+            calculationDiv.style.display = 'block';
+            totalP.textContent = `Total Duration: ${daysDiff} day${daysDiff > 1 ? 's' : ''}`;
+        }
     }
-    }
-    @endpush
-    @endsection
+@endpush

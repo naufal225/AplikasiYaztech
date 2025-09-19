@@ -217,7 +217,25 @@
                                         {{ \Carbon\Carbon::parse($leave->date_start)->format('M d') }} - {{ \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
                                     </div>
                                     <div class="text-sm text-neutral-500">
-                                        {{ \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end)) + 1 }} days
+                                        @php
+                                            $tahunSekarang = now()->year;
+                                            $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                                ->pluck('holiday_date')
+                                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                                ->toArray();
+
+                                            $start = \Carbon\Carbon::parse($leave->date_start);
+                                            $end   = \Carbon\Carbon::parse($leave->date_end);
+
+                                            $durasi = app()->call('App\Http\Controllers\EmployeeController\LeaveController@hitungHariCuti', [
+                                                'start' => $start,
+                                                'end' => $end,
+                                                'tahunSekarang' => $tahunSekarang,
+                                                'hariLibur' => $hariLibur,
+                                            ]);
+                                        @endphp
+
+                                        {{ $durasi }} {{ $durasi === 1 ? 'day' : 'days' }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -244,17 +262,17 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('finance.leaves.show', $leave->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
                                         @if(Auth::id() === $leave->employee_id && $leave->status_1 === 'pending')
                                             <a href="{{ route('finance.leaves.edit', $leave->id) }}" class="text-secondary-600 hover:text-secondary-900" title="Edit">
-                                                <i class="fas fa-edit"></i>
+                                                <i class="fas fa-edit text-lg"></i>
                                             </a>
                                             <form action="{{ route('finance.leaves.destroy', $leave->id) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure?')">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-error-600 hover:text-error-900" title="Delete">
-                                                    <i class="fas fa-trash"></i>
+                                                    <i class="fas fa-trash text-lg"></i>
                                                 </button>
                                             </form>
                                         @endif
@@ -335,7 +353,25 @@
                                         {{ \Carbon\Carbon::parse($leave->date_start)->format('M d') }} - {{ \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
                                     </div>
                                     <div class="text-sm text-neutral-500">
-                                        {{ \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end)) + 1 }} days
+                                        @php
+                                            $tahunSekarang = now()->year;
+                                            $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                                ->pluck('holiday_date')
+                                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                                ->toArray();
+
+                                            $start = \Carbon\Carbon::parse($leave->date_start);
+                                            $end   = \Carbon\Carbon::parse($leave->date_end);
+
+                                            $durasi = app()->call('App\Http\Controllers\EmployeeController\LeaveController@hitungHariCuti', [
+                                                'start' => $start,
+                                                'end' => $end,
+                                                'tahunSekarang' => $tahunSekarang,
+                                                'hariLibur' => $hariLibur,
+                                            ]);
+                                        @endphp
+
+                                        {{ $durasi }} {{ $durasi === 1 ? 'day' : 'days' }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -360,9 +396,9 @@
                                     <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div class="flex items-center space-x-2">
+                                    <div class="flex items-center text-base space-x-2">
                                         <a href="{{ route('finance.leaves.show', $leave->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fas fa-eye text-lg"></i>
                                         </a>
                                     </div>
                                 </td>

@@ -201,7 +201,7 @@ class ReimbursementController extends Controller
     {
         // Check if the user has permission to edit this reimbursement
         $user = Auth::user();
-        if ($user->id !== $reimbursement->employee_id) {
+        if ($user->id !== (int) $reimbursement->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
