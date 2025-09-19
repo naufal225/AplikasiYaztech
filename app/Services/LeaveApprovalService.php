@@ -2,9 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Leave;
-use App\Models\User;
 use App\Enums\Roles;
+use App\Models\Leave;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -19,13 +18,13 @@ class LeaveApprovalService
 
         if ($leave->status_1 !== 'pending') {
             throw ValidationException::withMessages([
-                'status_1' => 'Leave sudah diproses, tidak dapat diubah lagi.'
+                'status_1' => 'Leave sudah diproses, tidak dapat diubah lagi.',
             ]);
         }
 
         $leave->update([
             'status_1' => 'approved',
-            'note_1'   => $note ?? null,
+            'note_1' => $note ?? null,
         ]);
 
         return $leave;
@@ -40,13 +39,13 @@ class LeaveApprovalService
 
         if ($leave->status_1 !== 'pending') {
             throw ValidationException::withMessages([
-                'status_1' => 'Leave sudah diproses, tidak dapat diubah lagi.'
+                'status_1' => 'Leave sudah diproses, tidak dapat diubah lagi.',
             ]);
         }
 
         $leave->update([
             'status_1' => 'rejected',
-            'note_1'   => $note ?? null,
+            'note_1' => $note ?? null,
         ]);
 
         return $leave;
@@ -54,8 +53,10 @@ class LeaveApprovalService
 
     private function authorizeManager(): void
     {
-        if (Auth::user()->role !== Roles::Manager->value) {
-            abort(403, 'Unauthorized – hanya Manager yang bisa approve/reject leave.');
+        $user = Auth::user();
+
+        if (!$user || $user->role !== Roles::Manager->value) {
+            abort(403, 'Unauthorized - hanya Manager yang bisa approve/reject leave.');
         }
     }
 }

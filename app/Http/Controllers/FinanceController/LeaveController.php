@@ -2,102 +2,117 @@
 
 namespace App\Http\Controllers\FinanceController;
 
-use App\Events\LeaveSubmitted;
-use App\Roles;
+use App\Enums\Roles;
 use App\Http\Controllers\Controller;
-use App\Models\ApprovalLink;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StoreLeaveRequest;
+use App\Http\Requests\UpdateLeaveRequest;
 use App\Models\Leave;
 use App\Models\User;
-use App\Models\Division;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Mail;
+use App\Services\LeaveService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
-use Illuminate\Support\Str;
 
 class LeaveController extends Controller
 {
+    public function __construct(private LeaveService $leaveService)
+    {
+    }
+
     public function index(Request $request)
     {
         $userId = Auth::id();
         $tahunSekarang = now()->year;
 
-        // --- Query untuk "Your Leaves"
         $yourLeavesQuery = Leave::with(['employee', 'approver'])
             ->where('employee_id', $userId)
-            ->orderBy('created_at', 'desc');
+            ->orderByDesc('created_at');
 
         if ($request->filled('from_date')) {
-            $yourLeavesQuery->where('date_start', '>=',
+            $yourLeavesQuery->where(
+                'date_start',
+                '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $yourLeavesQuery->where('date_end', '<=',
+            $yourLeavesQuery->where(
+                'date_end',
+                '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('status')) {
             $status = $request->status;
-            $yourLeavesQuery->where(function ($q) use ($status) {
-                if ($status === 'pending' || $status === 'approved' || $status === 'rejected') {
-                    $q->where('status_1', $status);
+            $yourLeavesQuery->where(function ($query) use ($status) {
+                if (in_array($status, ['pending', 'approved', 'rejected'], true)) {
+                    $query->where('status_1', $status);
                 }
             });
         }
 
-        $yourLeaves = $yourLeavesQuery->paginate(10, ['*'], 'your_page')->withQueryString();
+        $yourLeaves = $yourLeavesQuery
+            ->paginate(10, ['*'], 'your_page')
+            ->withQueryString();
 
-        // --- Query untuk "All Leaves" (approved)
         $allLeavesQuery = Leave::with(['employee', 'approver'])
             ->where('status_1', 'approved')
-            ->orderBy('created_at', 'desc');
+            ->orderByDesc('created_at');
 
         if ($request->filled('from_date')) {
-            $allLeavesQuery->where('date_start', '>=',
+            $allLeavesQuery->where(
+                'date_start',
+                '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $allLeavesQuery->where('date_start', '<=',
+            $allLeavesQuery->where(
+                'date_start',
+                '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
 
-        $allLeaves = $allLeavesQuery->paginate(10, ['*'], 'all_page')->withQueryString();
+        $allLeaves = $allLeavesQuery
+            ->paginate(10, ['*'], 'all_page')
+            ->withQueryString();
 
-        // --- Hitung counts (sebelum paginate!)
         $counts = (clone $allLeavesQuery)->withFinalStatusCount()->first();
         $totalRequests = Leave::count();
-        $approvedRequests = $counts ? (int) $counts->approved : 0;
+        $approvedRequests = (int) ($counts->approved ?? 0);
 
         $countsYours = (clone $yourLeavesQuery)->withFinalStatusCount()->first();
-        $totalYoursRequests = $countsYours ? (int) ($countsYours->total ?? 0) : 0;
-        $pendingYoursRequests = $countsYours ? (int) $countsYours->pending : 0;
-        $approvedYoursRequests = $countsYours ? (int) $countsYours->approved : 0;
-        $rejectedYoursRequests = $countsYours ? (int) $countsYours->rejected : 0;
+        $totalYoursRequests = (int) ($countsYours->total ?? 0);
+        $pendingYoursRequests = (int) ($countsYours->pending ?? 0);
+        $approvedYoursRequests = (int) ($countsYours->approved ?? 0);
+        $rejectedYoursRequests = (int) ($countsYours->rejected ?? 0);
 
-        // --- Hitung sisa cuti
         $totalHariCuti = Leave::where('employee_id', $userId)
             ->where('status_1', 'approved')
-            ->where(function ($q) use ($tahunSekarang) {
-                $q->whereYear('date_start', $tahunSekarang)
-                ->orWhereYear('date_end', $tahunSekarang);
+            ->where(function ($query) use ($tahunSekarang) {
+                $query->whereYear('date_start', $tahunSekarang)
+                    ->orWhereYear('date_end', $tahunSekarang);
             })
             ->get()
             ->sum(function ($cuti) use ($tahunSekarang) {
                 $start = Carbon::parse($cuti->date_start);
                 $end = Carbon::parse($cuti->date_end);
 
-                if ($start->year < $tahunSekarang) $start = Carbon::create($tahunSekarang, 1, 1);
-                if ($end->year > $tahunSekarang) $end = Carbon::create($tahunSekarang, 12, 31);
+                if ($start->year < $tahunSekarang) {
+                    $start = Carbon::create($tahunSekarang, 1, 1);
+                }
+
+                if ($end->year > $tahunSekarang) {
+                    $end = Carbon::create($tahunSekarang, 12, 31);
+                }
 
                 return $start->lte($end) ? $start->diffInDays($end) + 1 : 0;
             });
@@ -120,150 +135,56 @@ class LeaveController extends Controller
         ));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $tahunSekarang = now()->year;
-
-        $totalHariCuti = (int) Leave::where('employee_id', Auth::id())
-            ->with(['employee', 'approver'])
-            ->orderBy('created_at', 'desc')
-            ->where('status_1', 'approved')
-            ->where(function ($q) use ($tahunSekarang) {
-                $q->whereYear('date_start', $tahunSekarang)
-                ->orWhereYear('date_end', $tahunSekarang);
-            })
-            ->get()
-            ->sum(function ($cuti) use ($tahunSekarang) {
-                $start = \Carbon\Carbon::parse($cuti->date_start);
-                $end   = \Carbon\Carbon::parse($cuti->date_end);
-
-                // Batasi tanggal ke dalam tahun berjalan
-                if ($start->year < $tahunSekarang) {
-                    $start = \Carbon\Carbon::create($tahunSekarang, 1, 1);
-                }
-                if ($end->year > $tahunSekarang) {
-                    $end = \Carbon\Carbon::create($tahunSekarang, 12, 31);
-                }
-
-                return $start->lte($end) ? $start->diffInDays($end) + 1 : 0;
-            });
-
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
+        $sisaCuti = $this->leaveService->sisaCuti(Auth::user());
 
         if ($sisaCuti <= 0) {
             abort(422, 'Sisa cuti tidak cukup.');
         }
 
-        return view('Finance.leaves.leave-request');
+        return view('Finance.leaves.leave-request', compact('sisaCuti'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreLeaveRequest $request)
     {
-        $request->validate([
-            'date_start' => 'required|date',
-            'date_end' => 'required|date|after_or_equal:date_start',
-            'reason' => 'required|string|max:1000',
-        ], [
-            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
-            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
-            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
-            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
-            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
-            'reason.required' => 'Alasan harus diisi.',
-            'reason.string' => 'Alasan harus berupa teks.',
-            'reason.max' => 'Alasan tidak boleh lebih dari 1000 karakter.',
-        ]);
+        try {
+            $this->leaveService->store($request->validated());
 
-        DB::transaction(function () use ($request) {
-            $leave = new Leave();
-            $leave->employee_id = Auth::id();
-            $leave->date_start = $request->date_start;
-            $leave->date_end = $request->date_end;
-            $leave->reason = $request->reason;
-            $leave->status_1 = 'pending';
-            $leave->save();
-
-            $tokenRaw = null;
-            $manager = User::where('role', Roles::Manager->value)->first();
-            if ($manager) {
-                $token = Str::random(48);
-                ApprovalLink::create([
-                    'model_type' => get_class($leave),   // App\Models\Leave
-                    'model_id' => $leave->id,
-                    'approver_user_id' => $manager->id,
-                    'level' => 2,
-                    'scope' => 'both',             // boleh approve & reject
-                    'token' => hash('sha256', $token), // simpan hash, kirim raw
-                    'expires_at' => now()->addDays(3),  // masa berlaku
-                ]);
-            }
-
-            // pastikan broadcast SETELAH commit
-            DB::afterCommit(function () use ($leave, $request, $tokenRaw, $manager) {
-                $fresh = $leave->fresh(); // ambil ulang (punya created_at dll)
-
-                event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, 'manager'));
-
-                if (!$fresh || !$fresh->approver || !$tokenRaw) {
-                    return;
-                }
-
-                $linkTanggapan = route('public.approval.show', $tokenRaw); // pastikan route param sesuai
-
-                // Gunakan queue
-                Mail::to($manager->email)->queue(
-                    new \App\Mail\SendMessage(
-                        namaPengaju: $leave->employee->name,
-                        namaApprover: $manager->name,
-                        linkTanggapan: $linkTanggapan,
-                        emailPengaju: $leave->employee->email
-                    )
-                );
-            });
-        });
-
-        return redirect()->route('finance.leaves.index')
-            ->with('success', 'Leave request submitted successfully.');
+            return redirect()
+                ->route('finance.leaves.index')
+                ->with('success', 'Leave request submitted successfully.');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Leave $leave)
     {
         $leave->load(['employee', 'approver']);
+
         return view('Finance.leaves.leave-detail', compact('leave'));
     }
 
-    /**
-     * Export the specified resource as a PDF.
-     */
     public function exportPdf(Leave $leave)
     {
         $pdf = Pdf::loadView('Finance.leaves.pdf', compact('leave'));
+
         return $pdf->download('leave-details-finance.pdf');
     }
 
-    /**
-     * Bulk export approved requests as PDFs in a ZIP file.
-     */
     public function bulkExport(Request $request)
     {
         $dateFrom = $request->input('from_date');
         $dateTo = $request->input('date_to');
 
-        $query = Leave::with('employee')->where('status_1', 'approved');
+        $query = Leave::with('employee')
+            ->where('status_1', 'approved');
 
         if ($dateFrom && $dateTo) {
-            $query->where(function($q) use ($dateFrom, $dateTo) {
-                $q->whereDate('date_start', '<=', $dateTo)
-                ->whereDate('date_end', '>=', $dateFrom);
+            $query->where(function ($query) use ($dateFrom, $dateTo) {
+                $query->whereDate('date_start', '<=', $dateTo)
+                    ->whereDate('date_end', '>=', $dateFrom);
             });
         }
 
@@ -276,7 +197,6 @@ class LeaveController extends Controller
         $zipFileName = 'LeaveRequests_' . Carbon::now()->format('YmdHis') . '.zip';
         $zipPath = Storage::disk('public')->path($zipFileName);
 
-        // Folder sementara untuk menyimpan PDF
         $tempFolder = 'temp_leaves';
         if (!Storage::disk('public')->exists($tempFolder)) {
             Storage::disk('public')->makeDirectory($tempFolder);
@@ -286,14 +206,13 @@ class LeaveController extends Controller
 
         foreach ($leaves as $leave) {
             $pdf = Pdf::loadView('Finance.leaves.pdf', compact('leave'));
-            $fileName = "leave_{$leave->employee->name}_" . $leave->id . ".pdf";
+            $fileName = "leave_{$leave->employee->name}_{$leave->id}.pdf";
             $filePath = "{$tempFolder}/{$fileName}";
             Storage::disk('public')->put($filePath, $pdf->output());
             $files[] = Storage::disk('public')->path($filePath);
         }
 
-        // Buat ZIP
-        $zip = new ZipArchive;
+        $zip = new ZipArchive();
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             foreach ($files as $file) {
                 $zip->addFile($file, basename($file));
@@ -301,29 +220,21 @@ class LeaveController extends Controller
             $zip->close();
         }
 
-        // Bersihkan file sementara
         foreach ($files as $file) {
             @unlink($file);
         }
         Storage::disk('public')->deleteDirectory($tempFolder);
 
-        // Return download
         return response()->download($zipPath)->deleteFileAfterSend(true);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Leave $leave)
     {
-        // Check if the user has permission to edit this leave
         $user = Auth::user();
         if ($user->id !== $leave->employee_id) {
             abort(403, 'Unauthorized action.');
         }
 
-
-        // Only allow editing if the leave is still pending
         if ($leave->status_1 !== 'pending') {
             return redirect()->route('finance.leaves.show', $leave->id)
                 ->with('error', 'You cannot edit a leave request that has already been processed.');
@@ -332,142 +243,35 @@ class LeaveController extends Controller
         return view('Finance.leaves.leave-edit', compact('leave'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Leave $leave)
+    public function update(UpdateLeaveRequest $request, Leave $leave)
     {
-        $user = Auth::user();
-        if ($user->id !== $leave->employee_id) {
-            abort(403, 'Unauthorized action.');
+        try {
+            $this->leaveService->update($leave, $request->validated());
+
+            return redirect()
+                ->route('finance.leaves.index')
+                ->with('success', 'Leave request updated successfully.');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        if ($leave->status_1 !== 'pending') {
-            return redirect()->route('finance.leaves.show', $leave->id)
-                ->with('error', 'You cannot update a leave request that has already been processed.');
-        }
-
-        $request->validate([
-            'date_start' => 'required|date',
-            'date_end'   => 'required|date|after_or_equal:date_start',
-            'reason'     => 'required|string|max:1000',
-        ], [
-            'date_start.required'    => 'Tanggal/Waktu Mulai harus diisi.',
-            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
-            'date_end.required'      => 'Tanggal/Waktu Akhir harus diisi.',
-            'date_end.date_format'   => 'Format Tanggal/Waktu Akhir tidak valid.',
-            'date_end.after'         => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
-            'reason.required'        => 'Alasan harus diisi.',
-            'reason.string'          => 'Alasan harus berupa teks.',
-            'reason.max'             => 'Alasan tidak boleh lebih dari 1000 karakter.',
-        ]);
-
-        // --- Hitung lama cuti baru
-        $newStart = \Carbon\Carbon::parse($request->date_start);
-        $newEnd   = \Carbon\Carbon::parse($request->date_end);
-        $newDays  = $newStart->diffInDays($newEnd) + 1;
-
-        // --- Hitung lama cuti lama (sebelum update)
-        $oldStart = \Carbon\Carbon::parse($leave->date_start);
-        $oldEnd   = \Carbon\Carbon::parse($leave->date_end);
-        $oldDays  = $oldStart->diffInDays($oldEnd) + 1;
-
-        // --- Hitung sisa cuti tahun berjalan (exclude cuti yg sedang diupdate)
-        $tahunSekarang = now()->year;
-        $totalHariCuti = (int) Leave::where('employee_id', $user->id)
-            ->where('id', '!=', $leave->id) // exclude cuti yg sedang diupdate
-            ->where('status_1', 'approved')
-            ->where(function ($q) use ($tahunSekarang) {
-                $q->whereYear('date_start', $tahunSekarang)
-                ->orWhereYear('date_end', $tahunSekarang);
-            })
-            ->get()
-            ->sum(function ($cuti) use ($tahunSekarang) {
-                $start = \Carbon\Carbon::parse($cuti->date_start);
-                $end   = \Carbon\Carbon::parse($cuti->date_end);
-
-                if ($start->year < $tahunSekarang) {
-                    $start = \Carbon\Carbon::create($tahunSekarang, 1, 1);
-                }
-                if ($end->year > $tahunSekarang) {
-                    $end = \Carbon\Carbon::create($tahunSekarang, 12, 31);
-                }
-
-                return $start->lte($end) ? $start->diffInDays($end) + 1 : 0;
-            });
-
-        $jatahCuti = (int) env('CUTI_TAHUNAN', 20);
-        $sisaCuti  = $jatahCuti - $totalHariCuti;
-
-        // --- Kalau cuti baru lebih panjang dari sebelumnya, cek dulu sisa cuti
-        if ($newDays > $oldDays) {
-            $butuhTambahan = $newDays - $oldDays;
-            if ($sisaCuti < $butuhTambahan) {
-                return back()->with('error', 'Sisa cuti tidak mencukupi untuk memperpanjang cuti.');
-            }
-        }
-
-        // --- Update data cuti
-        $leave->date_start = $request->date_start;
-        $leave->date_end   = $request->date_end;
-        $leave->reason     = $request->reason;
-        $leave->status_1   = 'pending';
-        $leave->note_1     = NULL;
-        $leave->save();
-
-        // --- Kirim notifikasi ke manager
-        $manager = User::where('role', Roles::Manager->value)->first();
-        if ($manager) {
-            $token = Str::random(48);
-            ApprovalLink::create([
-                'model_type'      => get_class($leave),
-                'model_id'        => $leave->id,
-                'approver_user_id'=> $manager->id,
-                'level'           => 1,
-                'scope'           => 'both',
-                'token'           => hash('sha256', $token),
-                'expires_at'      => now()->addDays(3),
-            ]);
-            $linkTanggapan = route('public.approval.show', $token);
-
-            Mail::to($manager->email)->send(
-                new \App\Mail\SendMessage(
-                    namaPengaju: $user->name,
-                    namaApprover: $manager->name,
-                    linkTanggapan: $linkTanggapan,
-                    emailPengaju: $user->email
-                )
-            );
-        }
-
-        return redirect()->route('finance.leaves.show', $leave->id)
-            ->with('success', 'Leave request updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Leave $leave)
     {
-        // Check if the user has permission to delete this leave
         $user = Auth::user();
         if ($user->id !== $leave->employee_id && $user->role !== Roles::Admin->value) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Only allow deleting if the leave is still pending
-        if (($leave->status_1 !== 'pending') && $user->role !== Roles::Admin->value) {
+        if ($leave->status_1 !== 'pending' && $user->role !== Roles::Admin->value) {
             return redirect()->route('finance.leaves.show', $leave->id)
                 ->with('error', 'You cannot delete a leave request that has already been processed.');
         }
 
-        if (\App\Models\ApprovalLink::where('model_id', $leave->id)->where('model_type', get_class($leave))->exists()) {
-            \App\Models\ApprovalLink::where('model_id', $leave->id)->where('model_type', get_class($leave))->delete();
-        }
-
         $leave->delete();
 
-        return redirect()->route('finance.leaves.index')
+        return redirect()
+            ->route('finance.leaves.index')
             ->with('success', 'Leave request deleted successfully.');
     }
 }

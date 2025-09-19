@@ -2,26 +2,28 @@
 
 namespace App\Http\Controllers\FinanceController;
 
+use App\Enums\Roles;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Roles;
-use App\TypeRequest;
+use App\Http\Requests\StoreOvertimeRequest;
+use App\Http\Requests\UpdateOvertimeRequest;
 use App\Models\Overtime;
 use App\Models\User;
-use App\Models\Reimbursement;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
+use App\Services\OvertimeService;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Models\ApprovalLink;
-use Illuminate\Support\Facades\DB;
-use ZipArchive;
-use Illuminate\Support\Str;
+use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use ZipArchive;
 
 class OvertimeController extends Controller
 {
+    public function __construct(private OvertimeService $overtimeService)
+    {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -182,144 +184,18 @@ class OvertimeController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreOvertimeRequest $request)
     {
-        $validated = $request->validate([
-            'customer' => 'required',
-            'date_start' => 'required|date_format:Y-m-d\TH:i',
-            'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
-        ], [
-            'customer.required' => 'Customer harus diisi.',
-            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
-            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
-            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
-            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
-            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
-        ]);
+        try {
+            $this->overtimeService->store($request->validated());
 
-        // Parsing waktu input
-        $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
-        $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
-
-        // Hitung langsung dari date_start
-        $overtimeMinutes = $start->diffInMinutes($end);
-        $overtimeHours = $overtimeMinutes / 60;
-
-        if ($overtimeHours < 0.5) {
-            return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
+            return redirect()->route('finance.overtimes.index')
+                ->with('success', 'Overtime request submitted successfully.');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $hours = round($overtimeMinutes / 60);
-        $minutes = $overtimeMinutes % 60;
-
-        DB::transaction(function () use ($start, $end, $overtimeMinutes, $hours, $minutes, $request) {
-            $overtime = new Overtime();
-            $overtime->employee_id = Auth::id();
-            $overtime->customer = $request->customer;
-            $overtime->date_start = $start;
-            $overtime->date_end = $end;
-            $overtime->total = (int) ((int) ($hours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0));
-
-            // Cek apakah user adalah leader division
-            $isLeader = \App\Models\Division::where('leader_id', Auth::id())->exists();
-
-            if ($isLeader) {
-                $overtime->status_1 = 'approved';
-                $overtime->status_2 = 'pending';
-            } else {
-                $overtime->status_1 = 'pending';
-                $overtime->status_2 = 'pending';
-            }
-
-            $overtime->save();
-
-            $token = null;
-
-            if ($isLeader) {
-                // --- Jika leader, langsung kirim ke Manager (level 2)
-                $manager = User::where('role', Roles::Manager->value)->first();
-
-                if ($manager) {
-                    $token = \Illuminate\Support\Str::random(48);
-                    ApprovalLink::create([
-                        'model_type' => get_class($overtime),   // App\Models\overtime
-                        'model_id' => $overtime->id,
-                        'approver_user_id' => $manager->id,
-                        'level' => 2, // level 2 berarti arahnya ke manager
-                        'scope' => 'both',             // boleh approve & reject
-                        'token' => hash('sha256', $token), // simpan hash, kirim raw
-                        'expires_at' => now()->addDays(3),  // masa berlaku
-                    ]);
-                }
-
-                DB::afterCommit(function () use ($overtime, $token) {
-                    $fresh = $overtime->fresh();
-                    event(new \App\Events\OvertimeLevelAdvanced(
-                        $fresh,
-                        Auth::user()->division_id,
-                        'manager'
-                    ));
-
-                    if (!$fresh || !$token) {
-                        return;
-                    }
-
-                    $linkTanggapan = route('public.approval.show', $token);
-
-                    $manager = User::where('role', Roles::Manager->value)->first();
-                    Mail::to($manager->email)->queue(
-                        new \App\Mail\SendMessage(
-                            namaPengaju: Auth::user()->name,
-                            namaApprover: $manager->name,
-                            linkTanggapan: $linkTanggapan,
-                            emailPengaju: Auth::user()->email,
-                        )
-                    );
-                });
-
-            } else {
-                // --- Kalau bukan leader, jalur normal ke approver (team lead)
-                if ($overtime->approver) {
-                    $token = \Illuminate\Support\Str::random(48);
-                    ApprovalLink::create([
-                        'model_type' => get_class($overtime),   // App\Models\overtime
-                        'model_id' => $overtime->id,
-                        'approver_user_id' => $overtime->approver->id,
-                        'level' => 1, // level 1 berarti arahnya ke team lead
-                        'scope' => 'both',             // boleh approve & reject
-                        'token' => hash('sha256', $token), // simpan hash, kirim raw
-                        'expires_at' => now()->addDays(3),  // masa berlaku
-                    ]);
-
-                }
-
-                DB::afterCommit(function () use ($overtime, $request, $token) {
-                    $fresh = $overtime->fresh(); // ambil ulang (punya created_at dll)
-                    // dd("jalan");
-                    event(new \App\Events\OvertimeSubmitted($fresh, Auth::user()->division_id));
-
-                    // Kalau tidak ada approver atau token, jangan kirim email
-                    if (!$fresh || !$fresh->approver || !$token) {
-                        return;
-                    }
-
-                    $linkTanggapan = route('public.approval.show', $token);
-
-                    Mail::to($overtime->approver->email)->queue(
-                        new \App\Mail\SendMessage(
-                            namaPengaju: Auth::user()->name,
-                            namaApprover: $overtime->approver->name,
-                            linkTanggapan: $linkTanggapan,
-                            emailPengaju: Auth::user()->email,
-                        )
-                    );
-                });
-            }
-        });
-
-        return redirect()->route('finance.overtimes.index')
-            ->with('success', 'Overtime submitted. Total: ' . $hours . ' hours ' . $minutes . ' minutes');
     }
+
 
     /**
      * Display the specified resource.
@@ -356,7 +232,7 @@ class OvertimeController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Overtime $overtime)
+    public function update(UpdateOvertimeRequest $request, Overtime $overtime)
     {
         $user = Auth::user();
 
@@ -364,141 +240,16 @@ class OvertimeController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $isLeader = \App\Models\Division::where('leader_id', $user->id)->exists();
+        try {
+            $this->overtimeService->update($overtime, $request->validated());
 
-        if (($isLeader && $overtime->status_2 !== 'pending') || (!$isLeader && $overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending')) {
-            return redirect()->route('finance.overtimes.show', $overtime->id)
-                ->with('error', 'You cannot update an overtime request that has already been processed.');
+            return redirect()->route('finance.overtimes.index')
+                ->with('success', 'Overtime request updated successfully.');
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $request->validate([
-            'customer' => 'required',
-            'date_start' => 'required|date_format:Y-m-d\TH:i',
-            'date_end' => 'required|date_format:Y-m-d\TH:i|after:date_start',
-        ], [
-            'date_start.required' => 'Tanggal/Waktu Mulai harus diisi.',
-            'date_start.date_format' => 'Format Tanggal/Waktu Mulai tidak valid.',
-            'date_end.required' => 'Tanggal/Waktu Akhir harus diisi.',
-            'date_end.date_format' => 'Format Tanggal/Waktu Akhir tidak valid.',
-            'date_end.after' => 'Tanggal/Waktu Akhir harus setelah Tanggal/Waktu Mulai.',
-        ]);
-
-        $start = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_start, 'Asia/Jakarta');
-        $end = Carbon::createFromFormat('Y-m-d\TH:i', $request->date_end, 'Asia/Jakarta');
-
-        $overtimeMinutes = $start->diffInMinutes($end);
-
-        $overtimeHours = round($overtimeMinutes / 60);
-
-        if ($overtimeHours < 0.5) {
-            return back()->withErrors(['date_end' => 'Minimum overtime is 0.5 hours. Please adjust your end time.']);
-        }
-
-        // Simpan data
-        $overtime->customer = $request->customer;
-        $overtime->date_start = $request->date_start;
-        $overtime->date_end = $request->date_end;
-        $overtime->total = (int) ($overtimeHours * (int) env('OVERTIME_COSTS', 0)) + (int) env('MEAL_COSTS', 0);
-
-         // Reset status dan catatan
-
-        if ($isLeader) {
-            $overtime->status_1 = 'approved';
-            $overtime->status_2 = 'pending';
-        } else {
-            $overtime->status_1 = 'pending';
-            $overtime->status_2 = 'pending';
-        }
-
-        $overtime->note_1 = NULL;
-        $overtime->note_2 = NULL;
-        $overtime->save();
-
-        $token = null;
-
-        if ($isLeader) {
-            // --- Jika leader, langsung kirim ke Manager (level 2)
-            $manager = User::where('role', Roles::Manager->value)->first();
-
-            if ($manager) {
-                $token = \Illuminate\Support\Str::random(48);
-                ApprovalLink::create([
-                    'model_type' => get_class($overtime),   // App\Models\overtime
-                    'model_id' => $overtime->id,
-                    'approver_user_id' => $manager->id,
-                    'level' => 2, // level 2 berarti arahnya ke manager
-                    'scope' => 'both',             // boleh approve & reject
-                    'token' => hash('sha256', $token), // simpan hash, kirim raw
-                    'expires_at' => now()->addDays(3),  // masa berlaku
-                ]);
-            }
-
-            DB::afterCommit(function () use ($overtime, $token) {
-                $fresh = $overtime->fresh();
-                event(new \App\Events\OvertimeLevelAdvanced(
-                    $fresh,
-                    Auth::user()->division_id,
-                    'manager'
-                ));
-
-                if (!$fresh || !$token) {
-                    return;
-                }
-
-                $linkTanggapan = route('public.approval.show', $token);
-
-                $manager = User::where('role', Roles::Manager->value)->first();
-                Mail::to($manager->email)->queue(
-                    new \App\Mail\SendMessage(
-                        namaPengaju: Auth::user()->name,
-                        namaApprover: $manager->name,
-                        linkTanggapan: $linkTanggapan,
-                        emailPengaju: Auth::user()->email,
-                    )
-                );
-            });
-
-        } else {
-            // --- Kalau bukan leader, jalur normal ke approver (team lead)
-            if ($overtime->approver) {
-                $token = \Illuminate\Support\Str::random(48);
-                ApprovalLink::create([
-                    'model_type' => get_class($overtime),   // App\Models\overtime
-                    'model_id' => $overtime->id,
-                    'approver_user_id' => $overtime->approver->id,
-                    'level' => 1, // level 1 berarti arahnya ke team lead
-                    'scope' => 'both',             // boleh approve & reject
-                    'token' => hash('sha256', $token), // simpan hash, kirim raw
-                    'expires_at' => now()->addDays(3),  // masa berlaku
-                ]);
-            }
-
-            DB::afterCommit(function () use ($overtime, $request, $token) {
-                $fresh = $overtime->fresh(); // ambil ulang (punya created_at dll)
-                // dd("jalan");
-                event(new \App\Events\OvertimeSubmitted($fresh, Auth::user()->division_id));
-
-                // Kalau tidak ada approver atau token, jangan kirim email
-                if (!$fresh || !$fresh->approver || !$token) {
-                    return;
-                }
-
-                $linkTanggapan = route('public.approval.show', $token);
-
-                Mail::to($overtime->approver->email)->queue(
-                    new \App\Mail\SendMessage(
-                        namaPengaju: Auth::user()->name,
-                        namaApprover: $overtime->approver->name,
-                        linkTanggapan: $linkTanggapan,
-                        emailPengaju: Auth::user()->email,
-                    )
-                );
-            });
-        }
-
-        return redirect()->route('finance.overtimes.index')
-            ->with('success', 'Overtime request updated successfully. Total overtime: ' . $overtimeHours . ' hours ' . $overtimeMinutes . ' minutes');
     }
+
 
     /**
      * Mark selected overtimes as done (marked_down = true).
