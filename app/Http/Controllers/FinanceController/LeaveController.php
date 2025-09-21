@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\FinanceController;
 
 use App\Events\LeaveSubmitted;
-use App\Roles;
+use App\Enums\Roles;
 use App\Http\Controllers\Controller;
 use App\Models\ApprovalLink;
 use Illuminate\Http\Request;
