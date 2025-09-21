@@ -4,7 +4,7 @@ namespace App\Http\Controllers\FinanceController;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Roles;
+use App\Enums\Roles;
 use App\TypeRequest;
 use App\Models\Leave;
 use App\Models\User;
@@ -398,7 +398,7 @@ class ReimbursementController extends Controller
             $reimbursement->status_1 = 'pending';
             $reimbursement->status_2 = 'pending';
         }
-        
+
         $reimbursement->note_1 = NULL;
         $reimbursement->note_2 = NULL;
 
@@ -633,7 +633,7 @@ class ReimbursementController extends Controller
             return redirect()->route('finance.reimbursements.show', $reimbursement->id)
                 ->with('error', 'You cannot delete a reimbursement request that has already been processed.');
         }
-        
+
         if ($reimbursement->invoice_path) {
             Storage::disk('public')->delete($reimbursement->invoice_path);
         }
