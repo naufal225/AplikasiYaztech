@@ -21,6 +21,7 @@ class LeaveService
         $start = Carbon::parse($dateStart)->copy();
         $end = Carbon::parse($dateEnd)->copy();
 
+        // Batas tahun
         if ($start->year < $tahun) {
             $start = Carbon::create($tahun, 1, 1);
         }
@@ -32,18 +33,30 @@ class LeaveService
             return 0;
         }
 
+        // pastikan format holiday sesuai Y-m-d
+        $holidayDates = array_map(fn($d) => Carbon::parse($d)->format('Y-m-d'), $hariLibur);
+
         $hariCuti = 0;
         while ($start->lte($end)) {
-            if ($start->isWeekend() || in_array($start->format('Y-m-d'), $hariLibur)) {
+            // skip weekend
+            if ($start->isWeekend()) {
                 $start->addDay();
                 continue;
             }
+
+            // skip holiday
+            if (in_array($start->format('Y-m-d'), $holidayDates, true)) {
+                $start->addDay();
+                continue;
+            }
+
             $hariCuti++;
             $start->addDay();
         }
 
         return $hariCuti;
     }
+
 
     public function sisaCuti(User $user, $excludeLeaveId = null): int
     {

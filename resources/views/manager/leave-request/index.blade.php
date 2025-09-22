@@ -184,9 +184,24 @@
                                 \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
                             </div>
                             <div class="text-sm text-neutral-500">
-                                {{
-                                \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
-                                + 1 }} days
+                                @php
+                                $tahunSekarang = now()->year;
+                                $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                ->pluck('holiday_date')
+                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                ->toArray();
+
+                                $start = \Carbon\Carbon::parse($leave->date_start);
+                                $end = \Carbon\Carbon::parse($leave->date_end);
+
+                                $durasi = app()->call(\App\Services\LeaveService::class.'@hitungHariCuti', [
+                                'dateStart' => $start,
+                                'dateEnd' => $end,
+                                'tahun' => $tahunSekarang,
+                                'hariLibur' => $hariLibur,
+                                ]);
+                                @endphp
+                                {{ $durasi }} {{ $durasi > 1 ? 'days' : 'day' }}
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -319,9 +334,24 @@
                                 \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
                             </div>
                             <div class="text-sm text-neutral-500">
-                                {{
-                                \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
-                                + 1 }} days
+                                @php
+                                $tahunSekarang = now()->year;
+                                $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                ->pluck('holiday_date')
+                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                ->toArray();
+
+                                $start = \Carbon\Carbon::parse($leave->date_start);
+                                $end = \Carbon\Carbon::parse($leave->date_end);
+
+                                $durasi = app()->call(\App\Services\LeaveService::class.'@hitungHariCuti', [
+                                'dateStart' => $start,
+                                'dateEnd' => $end,
+                                'tahun' => $tahunSekarang,
+                                'hariLibur' => $hariLibur,
+                                ]);
+                                @endphp
+                                {{ $durasi }} {{ $durasi > 1 ? 'days' : 'day' }}
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
