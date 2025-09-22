@@ -3,8 +3,6 @@
 namespace App\Exports;
 
 use App\Models\OfficialTravel;
-use App\Models\User;
-use App\Roles;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -28,13 +26,11 @@ class OfficialTravelsExport implements FromCollection, WithHeadings, WithMapping
         $query = OfficialTravel::with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
 
-         if (!empty($this->filters['status'])) {
+        if (!empty($this->filters['status'])) {
             $query->where('status_1', $this->filters['status'])
-                ->orWhere('status_2', $this->filters['status']);
+                  ->orWhere('status_2', $this->filters['status']);
         }
 
-
-        // Pakai whereDate untuk kolom DATE; lebih aman
         if (!empty($this->filters['from_date'])) {
             $query->whereDate('date_start', '>=', Carbon::parse($this->filters['from_date'])->toDateString());
         }
@@ -57,13 +53,14 @@ class OfficialTravelsExport implements FromCollection, WithHeadings, WithMapping
             'Total',
             'Status 1',
             'Status 2',
-            'Approver 1',
-            'Applied Date',
+            'Approver',
             'Updated Date',
+            'Approved Date',
+            'Rejected Date',
+            'Applied Date', // Pojok kanan
         ];
     }
 
-    // Perbaiki nama variabel + gunakan optional() agar aman null
     public function map($officialTravel): array
     {
         $startDate = Carbon::parse($officialTravel->date_start);
@@ -71,19 +68,20 @@ class OfficialTravelsExport implements FromCollection, WithHeadings, WithMapping
         $duration  = $startDate->diffInDays($endDate) + 1;
 
         return [
-            '#'.$officialTravel->id,
-            optional($officialTravel->employee)->name ?? 'N/A',
-            optional($officialTravel->employee)->email ?? 'N/A',
+            '#' . $officialTravel->id,
+            $officialTravel->employee->name ?? 'N/A',
+            $officialTravel->employee->email ?? 'N/A',
             $startDate->format('M d, Y'),
             $endDate->format('M d, Y'),
             $duration,
             $officialTravel->total ?? 0,
             ucfirst((string) $officialTravel->status_1),
             ucfirst((string) $officialTravel->status_2),
-            optional($officialTravel->approver)->name ?? 'N/A',
-            optional(User::where('role', Roles::Manager->value)->first())->name ?? 'N/A',
-            $officialTravel->created_at?->format('M d, Y H:i') ?? '-',
+            $officialTravel->approver->name ?? 'N/A',
             $officialTravel->updated_at?->format('M d, Y H:i') ?? '-',
+            $officialTravel->approved_date ? $officialTravel->approved_date->format('M d, Y H:i') : '-',
+            $officialTravel->rejected_date ? $officialTravel->rejected_date->format('M d, Y H:i') : '-',
+            $officialTravel->created_at?->format('M d, Y H:i') ?? '-', // Applied Date pojok kanan
         ];
     }
 
