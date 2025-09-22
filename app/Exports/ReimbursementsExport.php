@@ -4,7 +4,7 @@ namespace App\Exports;
 
 use App\Models\Reimbursement;
 use App\Models\User;
-use App\Roles;
+use App\Enums\Roles;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -28,23 +28,20 @@ class ReimbursementsExport implements FromCollection, WithHeadings, WithMapping,
         $query = Reimbursement::with(['employee', 'approver'])
             ->orderBy('created_at', 'desc');
 
-         if (!empty($this->filters['status'])) {
+        if (!empty($this->filters['status'])) {
             $query->where('status_1', $this->filters['status'])
-                ->orWhere('status_2', $this->filters['status']);
+                  ->orWhere('status_2', $this->filters['status']);
         }
 
-
-        // Pakai whereDate untuk kolom DATE; lebih aman
         if (!empty($this->filters['from_date'])) {
-            $query->whereDate('date_start', '>=', Carbon::parse($this->filters['from_date'])->toDateString());
+            $query->whereDate('date', '>=', Carbon::parse($this->filters['from_date'])->toDateString());
         }
         if (!empty($this->filters['to_date'])) {
-            $query->whereDate('date_start', '<=', Carbon::parse($this->filters['to_date'])->toDateString());
+            $query->whereDate('date', '<=', Carbon::parse($this->filters['to_date'])->toDateString());
         }
 
         return $query->get();
     }
-
 
     public function headings(): array
     {
@@ -58,28 +55,31 @@ class ReimbursementsExport implements FromCollection, WithHeadings, WithMapping,
             'Status 2',
             'Approver 1',
             'Approver 2',
-            'Applied Date',
             'Updated Date',
+            'Approved Date',
+            'Rejected Date',
+            'Applied Date', // pojok kanan
         ];
     }
 
-    // Perbaiki nama variabel + gunakan optional() agar aman null
     public function map($reimbursement): array
     {
         $date = Carbon::parse($reimbursement->date);
 
         return [
-            '#'.$reimbursement->id,
-            optional($reimbursement->employee)->name ?? 'N/A',
-            optional($reimbursement->employee)->email ?? 'N/A',
+            '#' . $reimbursement->id,
+            $reimbursement->employee->name ?? 'N/A',
+            $reimbursement->employee->email ?? 'N/A',
             $date->format('M d, Y'),
             $reimbursement->total ?? 0,
             ucfirst((string) $reimbursement->status_1),
             ucfirst((string) $reimbursement->status_2),
-            optional($reimbursement->approver)->name ?? 'N/A',
+            $reimbursement->approver->name ?? 'N/A',
             optional(User::where('role', Roles::Manager->value)->first())->name ?? 'N/A',
-            $reimbursement->created_at?->format('M d, Y H:i') ?? '-',
             $reimbursement->updated_at?->format('M d, Y H:i') ?? '-',
+            $reimbursement->approved_date ? $reimbursement->approved_date->format('M d, Y H:i') : '-',
+            $reimbursement->rejected_date ? $reimbursement->rejected_date->format('M d, Y H:i') : '-',
+            $reimbursement->created_at?->format('M d, Y H:i') ?? '-', // Applied Date
         ];
     }
 

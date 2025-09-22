@@ -32,13 +32,17 @@ class LeavesExport implements FromCollection, WithHeadings, WithMapping, WithSty
         }
 
         if (!empty($this->filters['from_date'])) {
-            $query->where('date_start', '>=',
+            $query->where(
+                'date_start',
+                '>=',
                 Carbon::parse($this->filters['from_date'])->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if (!empty($this->filters['to_date'])) {
-            $query->where('date_start', '<=',
+            $query->where(
+                'date_start',
+                '<=',
                 Carbon::parse($this->filters['to_date'])->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -58,8 +62,10 @@ class LeavesExport implements FromCollection, WithHeadings, WithMapping, WithSty
             'Reason',
             'Status',
             'Approver ',
-            'Applied Date',
             'Updated Date',
+            'Approved Date',
+            'Rejected Date',
+            'Applied Date',
         ];
     }
 
@@ -79,8 +85,10 @@ class LeavesExport implements FromCollection, WithHeadings, WithMapping, WithSty
             $leave->reason ?? 'N/A',
             ucfirst($leave->status_1),
             $leave->approver->name ?? 'N/A',
-            $leave->created_at->format('M d, Y H:i'),
             $leave->updated_at->format('M d, Y H:i'),
+            $leave->approved_date ? $leave->approved_date->format('M d, Y H:i') : '-', // Approved Date
+            $leave->rejected_date ? $leave->rejected_date->format('M d, Y H:i') : '-', // Rejected Date
+            $leave->created_at->format('M d, Y H:i'),
         ];
     }
 
