@@ -20,6 +20,8 @@ class Overtime extends Model
         'marked_down',
         'locked_by',
         'locked_at',
+        'approved_date',
+        'rejected_date'
     ];
 
     public function employee()
@@ -32,7 +34,9 @@ class Overtime extends Model
         'date_end' => 'datetime',
         'marked_down' => 'boolean',
         'locked_at' => 'datetime',
-        'employee_id' => 'integer'
+        'employee_id' => 'integer',
+        'approved_date' => 'datetime',
+        'rejected_date' => 'datetime',
     ];
 
     public function approver()

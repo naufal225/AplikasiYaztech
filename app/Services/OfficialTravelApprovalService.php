@@ -7,6 +7,7 @@ use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Enums\Roles;
 use App\Events\OfficialTravelLevelAdvanced;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -24,8 +25,9 @@ class OfficialTravelApprovalService
             if ($status === 'rejected') {
                 $travel->update([
                     'status_1' => 'rejected',
-                    'note_1' => $note,
                     'status_2' => 'rejected', // cascade reject
+                    'rejected_date' => Carbon::now(),
+                    'note_1' => $note,
                 ]);
                 return $travel;
             }
@@ -38,6 +40,7 @@ class OfficialTravelApprovalService
 
                 event(new OfficialTravelLevelAdvanced($travel->fresh(), Auth::user()->division_id ?? 0, 'manager'));
 
+                // Buat approval link untuk Manager
                 $manager = User::where('role', Roles::Manager->value)->first();
                 if ($manager) {
                     $token = Str::random(48);
@@ -80,6 +83,16 @@ class OfficialTravelApprovalService
                 'status_2' => $status,
                 'note_2' => $note,
             ]);
+
+            if ($status === 'approved') {
+                $travel->update([
+                    'approved_date' => Carbon::now(),
+                ]);
+            } else {
+                $travel->update([
+                    'rejected_date' => Carbon::now(),
+                ]);
+            }
         }
 
         return $travel;

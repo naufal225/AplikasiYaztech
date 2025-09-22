@@ -20,7 +20,9 @@ class Reimbursement extends Model
         'marked_down',
         'locked_by',
         'locked_at',
-        'reimbursement_type_id'
+        'reimbursement_type_id',
+        'approved_date',
+        'rejected_date'
     ];
 
     public function employee()
@@ -32,7 +34,9 @@ class Reimbursement extends Model
         'date' => 'date',
         'marked_down' => 'boolean',
         'locked_at' => 'datetime',
-        'employee_id' => 'integer'
+        'employee_id' => 'integer',
+        'approved_date' => 'datetime',
+        'rejected_date' => 'datetime',
     ];
 
     public function approver()

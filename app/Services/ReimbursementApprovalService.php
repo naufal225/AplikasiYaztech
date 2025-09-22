@@ -7,6 +7,7 @@ use App\Models\Reimbursement;
 use App\Models\User;
 use App\Models\ApprovalLink;
 use App\Enums\Roles;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -15,7 +16,7 @@ class ReimbursementApprovalService
 {
     public function handleApproval(Reimbursement $reimbursement, string $status, ?string $note, string $level): void
     {
-        // Validasi: tidak boleh update jika sudah final
+        // === LEVEL 1 (APPROVER) ===
         if ($level === 'status_1') {
             if ($reimbursement->status_1 !== 'pending') {
                 throw new \Exception('Status 1 sudah final dan tidak dapat diubah.');
@@ -24,8 +25,9 @@ class ReimbursementApprovalService
             if ($status === 'rejected') {
                 $reimbursement->update([
                     'status_1' => 'rejected',
+                    'status_2' => 'rejected', // cascade reject
+                    'rejected_date' => Carbon::now(),
                     'note_1' => $note,
-                    'status_2' => 'rejected', // cascade
                 ]);
                 return;
             }
@@ -36,9 +38,9 @@ class ReimbursementApprovalService
                     'note_1' => $note,
                 ]);
 
-                event(new ReimbursementLevelAdvanced($reimbursement->fresh(), Auth::user()->division_id, 'manager'));
+                event(new ReimbursementLevelAdvanced($reimbursement->fresh(), Auth::user()->division_id ?? 0, 'manager'));
 
-                // kirim ke manager
+                // kirim approval link ke Manager
                 $manager = User::where('role', Roles::Manager->value)->first();
                 if ($manager) {
                     $token = Str::random(48);
@@ -65,6 +67,7 @@ class ReimbursementApprovalService
             }
         }
 
+        // === LEVEL 2 (MANAGER) ===
         if ($level === 'status_2') {
             if ($reimbursement->status_1 !== 'approved') {
                 throw new \Exception('Status 2 hanya dapat diubah setelah status 1 disetujui.');
@@ -78,6 +81,16 @@ class ReimbursementApprovalService
                 'status_2' => $status,
                 'note_2' => $note,
             ]);
+
+            if ($status === 'approved') {
+                $reimbursement->update([
+                    'approved_date' => Carbon::now(),
+                ]);
+            } else {
+                $reimbursement->update([
+                    'rejected_date' => Carbon::now(),
+                ]);
+            }
         }
     }
 }

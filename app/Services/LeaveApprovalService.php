@@ -1,10 +1,11 @@
-<?php
+﻿<?php
 
 namespace App\Services;
 
 use App\Models\Leave;
 use App\Models\User;
 use App\Enums\Roles;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
@@ -25,6 +26,7 @@ class LeaveApprovalService
 
         $leave->update([
             'status_1' => 'approved',
+            'approved_date' => Carbon::now(),
             'note_1'   => $note ?? null,
         ]);
 
@@ -46,6 +48,7 @@ class LeaveApprovalService
 
         $leave->update([
             'status_1' => 'rejected',
+            'rejected_date' => Carbon::now(),
             'note_1'   => $note ?? null,
         ]);
 

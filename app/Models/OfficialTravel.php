@@ -22,7 +22,9 @@ class OfficialTravel extends Model
         'marked_down',
         'locked_by',
         'locked_at',
-        'customer'
+        'customer',
+        'approved_date',
+        'rejected_date'
     ];
 
     public function employee() {
@@ -34,7 +36,9 @@ class OfficialTravel extends Model
         'date_end' => 'date',
         'marked_down' => 'boolean',
         'locked_at' => 'datetime',
-        'employee_id' => 'integer'
+        'employee_id' => 'integer',
+        'approved_date' => 'datetime',
+        'rejected_date' => 'datetime',
     ];
 
     public function approver()
