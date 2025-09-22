@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Services;
 
@@ -27,7 +27,7 @@ class LeaveApprovalService
         $leave->update([
             'status_1' => 'approved',
             'approved_date' => Carbon::now(),
-            'note_1'   => $note ?? null,
+            'note_1' => $note ?? null,
         ]);
 
         return $leave;
@@ -49,7 +49,7 @@ class LeaveApprovalService
         $leave->update([
             'status_1' => 'rejected',
             'rejected_date' => Carbon::now(),
-            'note_1'   => $note ?? null,
+            'note_1' => $note ?? null,
         ]);
 
         return $leave;

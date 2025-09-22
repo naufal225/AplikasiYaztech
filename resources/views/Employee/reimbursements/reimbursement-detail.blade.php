@@ -166,20 +166,14 @@
                                 @endif
                             </div>
                         </div>
-                            <!-- Note -->
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
-                                <div class="flex items-start p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                    <span class="text-neutral-900 break-all whitespace-pre-line max-w-full max-h-40 overflow-y-auto">{{ $reimbursement->note_1 ?? '-' }}</span>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
-                                <div class="flex items-start p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                    <i class="mr-3 fas fa-sticky-note text-info-600"></i>
-                                    <span class="text-neutral-900 break-all whitespace-pre-line max-w-full max-h-40 overflow-y-auto">{{ $reimbursement->note_2 ?? '-' }}</span>
-                                </div>
+                        <!-- Note -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
+                            <div class="flex items-start p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                                <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                                <span
+                                    class="max-w-full overflow-y-auto break-all whitespace-pre-line text-neutral-900 max-h-40">{{
+                                    $reimbursement->note_1 ?? '-' }}</span>
                             </div>
                         </div>
                         <div class="space-y-2">
@@ -192,20 +186,29 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Invoice Path (was Attachment) -->
-                    <div class="py-6 space-y-2">
-                        <label class="text-sm font-semibold text-neutral-700">Invoice</label>
-                        <div class="p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                            @if($reimbursement->invoice_path)
-                            <a href="{{ Storage::url($reimbursement->invoice_path) }}" target="_blank"
-                                class="flex items-center font-medium text-primary-600 hover:text-primary-800">
-                                <i class="mr-2 fas fa-file-alt"></i>
-                                View Invoice ({{ pathinfo($reimbursement->invoice_path, PATHINFO_EXTENSION) }})
-                            </a>
-                            @else
-                            <p class="text-neutral-500">No invoice provided.</p>
-                            @endif
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
+                        <div class="flex items-start p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                            <i class="mr-3 fas fa-sticky-note text-info-600"></i>
+                            <span
+                                class="max-w-full overflow-y-auto break-all whitespace-pre-line text-neutral-900 max-h-40">{{
+                                $reimbursement->note_2 ?? '-' }}</span>
                         </div>
+                    </div>
+                </div>
+                <!-- Invoice Path (was Attachment) -->
+                <div class="py-6 space-y-2">
+                    <label class="text-sm font-semibold text-neutral-700">Invoice</label>
+                    <div class="p-3 border rounded-lg bg-neutral-50 border-neutral-200">
+                        @if($reimbursement->invoice_path)
+                        <a href="{{ Storage::url($reimbursement->invoice_path) }}" target="_blank"
+                            class="flex items-center font-medium text-primary-600 hover:text-primary-800">
+                            <i class="mr-2 fas fa-file-alt"></i>
+                            View Invoice ({{ pathinfo($reimbursement->invoice_path, PATHINFO_EXTENSION) }})
+                        </a>
+                        @else
+                        <p class="text-neutral-500">No invoice provided.</p>
+                        @endif
                     </div>
                 </div>
             </div>
