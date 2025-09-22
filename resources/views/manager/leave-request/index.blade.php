@@ -225,7 +225,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-neutral-900">{{ $manager->name ?? "N/A" }}</div>
                         </td>
-                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                        <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
                             <div class="flex items-center space-x-2">
                                 {{-- Added full CRUD actions for own requests --}}
                                 <a href="{{ route('manager.leaves.show', $leave->id) }}"
@@ -375,7 +375,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-neutral-900">{{ $manager->name ?? "N/A" }}</div>
                         </td>
-                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                        <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
                             <div class="flex items-center space-x-2">
                                 {{-- Fixed permissions - own requests get full CRUD, others get view only --}}
                                 <a href="{{ route('manager.leaves.show', $leave->id) }}"

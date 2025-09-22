@@ -129,11 +129,21 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-500">
-                                    {{ $user->role == App\Roles::Approver->value ? "team leader" : ($user->role ==
-                                    App\Roles::Employee->value ? "regular employee" : ($user->role == App\Roles::SuperAdmin->value ? "super admin" : $user->role)) }}
+                                    {{ $user->role == App\Enums\Roles::Approver->value ? "Approver 1" : (
+                                    $user->role == App\Enums\Roles::Employee->value ? "Employee" : (
+                                    $user->role == App\Enums\Roles::Manager->value ? "Approver 2" : (
+                                    $user->role == App\Enums\Roles::Admin->value ? "Admin" : (
+                                    $user->role == App\Enums\Roles::SuperAdmin->value ? "Super Admin" : (
+                                    $user->role == App\Enums\Roles::Finance->value ? "Finance" : (
+                                    $user->role
+                                    )
+                                    )
+                                    )
+                                    )
+                                    )) }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                            <td class="px-6 py-4 font-medium text-md whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('super-admin.users.edit', $user->id) }}"
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">
@@ -383,5 +393,5 @@ Import Excel Modal with Enhanced Drag & Drop
 @endsection --}}
 
 @push('scripts')
-@vite("resources/js/super-admin/user/script-main.js")
+@vite("resources/js/admin/user/script-main.js")
 @endpush

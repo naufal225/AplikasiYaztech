@@ -93,7 +93,7 @@
                                 {{ $holiday->created_at->format('M d, Y') }}
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                        <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
                             <div class="flex items-center space-x-2">
                                 <a href="{{ route('admin.holidays.show', $holiday->id) }}"
                                     class="text-primary-600 hover:text-primary-900" title="View Details">

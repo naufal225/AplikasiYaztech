@@ -21,6 +21,7 @@ trait HelperController
         // Tentukan prefix route sesuai role
         $routePrefix = match ($role) {
             Roles::Admin->value => 'admin',
+            Roles::SuperAdmin->value => 'super-admin',
             Roles::Approver->value => 'approver',
             Roles::Manager->value => 'manager',
             default => 'employee',
@@ -39,6 +40,7 @@ trait HelperController
                     break;
 
                 case Roles::Manager->value:
+                case Roles::SuperAdmin->value:
                 case Roles::Admin->value:
                     // Semua data -> tanpa filter
                     break;

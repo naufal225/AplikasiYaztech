@@ -82,13 +82,7 @@ class LeaveController extends Controller
         $ownRequests = $ownRequestsQuery->paginate(10, ['*'], 'own_page');
         $allUsersRequests = $allUsersQuery->paginate(10, ['*'], 'all_page');
 
-
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20)
-            - (int) Leave::where('employee_id', Auth::id())
-                ->where('status_1', 'approved')
-                ->whereYear('date_start', now()->year)
-                ->select(DB::raw('SUM(DATEDIFF(date_end, date_start) + 1) as total_days'))
-                ->value('total_days');
+        $sisaCuti = $this->leaveService->sisaCuti(Auth::user());
 
         $totalRequests = Leave::count();
         $pendingRequests = Leave::where('status_1', 'pending')->count();
@@ -141,8 +135,6 @@ class LeaveController extends Controller
             return back()->with('error', $e->getMessage());
         }
     }
-
-
 
     public function edit(Leave $leave)
     {

@@ -128,6 +128,8 @@
 
 @push('scripts')
 <script>
+    const holidays = @json($holidays);
+
     function calculateDuration() {
             const startDate = document.getElementById('date_start').value;
             const endDate = document.getElementById('date_end').value;
@@ -144,11 +146,15 @@
                     let workingDays = 0;
                     let currentDate = new Date(start);
 
-                    while (currentDate <= end) {
+                   while (currentDate <= end) {
                         const dayOfWeek = currentDate.getDay();
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Sunday (0) | Saturday (6)
+                        const formattedDate = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD
+
+                        // Hanya hitung jika bukan Sabtu, Minggu, dan bukan hari libur
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6 && !holidays.includes(formattedDate)) {
                             workingDays++;
                         }
+
                         currentDate.setDate(currentDate.getDate() + 1);
                     }
 

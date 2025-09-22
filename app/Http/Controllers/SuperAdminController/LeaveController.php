@@ -84,9 +84,8 @@ class LeaveController extends Controller
         $allUsersRequests = $allUsersQuery->paginate(10, ['*'], 'all_page');
 
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - (int) Leave::where('employee_id', Auth::id())
-            ->whereYear('date_start', now()->year)->count();
-
+        $sisaCuti = $this->leaveService->sisaCuti(Auth::user());
+        
         $totalRequests = Leave::count();
         $pendingRequests = Leave::where('status_1', 'pending')->count();
         $approvedRequests = Leave::where('status_1', 'approved')->count();

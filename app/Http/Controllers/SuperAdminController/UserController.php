@@ -7,11 +7,12 @@ use App\Mail\ResetPasswordMail;
 use App\Models\Division;
 use App\Models\Leave;
 use App\Models\User;
-use App\Roles;
+use App\Enums\Roles;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -19,6 +20,7 @@ class UserController extends Controller
     {
         $search = request('search');
         $users = User::where('name', 'like', '%' . $search . '%')
+            ->whereNotIn('role', [Roles::SuperAdmin->value])
             ->orderByRaw("
                 CASE role
                     WHEN ? THEN 1
@@ -44,7 +46,16 @@ class UserController extends Controller
         $divisions = Division::latest()->get();
         $roles = collect(Roles::cases())
             ->values();
-        return view('super-admin.user.create', compact('divisions', 'roles'));
+        $roleLabels = [
+            Roles::Approver->value => 'Approver 1',
+            Roles::Employee->value => 'Employee',
+            Roles::Manager->value => 'Approver 2',
+            Roles::Admin->value => 'Admin',
+            Roles::SuperAdmin->value => 'Super Admin',
+            Roles::Finance->value => 'Finance',
+        ];
+
+        return view('super-admin.user.create', compact('divisions', 'roles', 'roleLabels'));
     }
 
     public function store(Request $request)
@@ -65,6 +76,22 @@ class UserController extends Controller
             'email.unique' => 'This email address is already taken.'
         ]);
 
+        if ($validated['role'] === Roles::Approver->value) {
+            // Pastikan division_id ada
+            if (empty($validated['division_id'])) {
+                throw ValidationException::withMessages([
+                    'division_id' => 'Division is required when assigning role approver.'
+                ]);
+            }
+
+            $division = Division::find($validated['division_id']);
+            if (!$division) {
+                throw ValidationException::withMessages([
+                    'division_id' => 'Division not found for approver role.'
+                ]);
+            }
+        }
+
         $user = User::create([
             "email" => $validated["email"],
             "name" => $validated["name"],
@@ -72,6 +99,35 @@ class UserController extends Controller
             'division_id' => $validated['division_id'],
             "password" => bcrypt("password")
         ]);
+
+        if ($validated['role'] === Roles::Approver->value) {
+            // Pastikan division_id ada
+            if (empty($validated['division_id'])) {
+                throw ValidationException::withMessages([
+                    'division_id' => 'Division is required when assigning role approver.'
+                ]);
+            }
+
+            $division = Division::find($validated['division_id']);
+            if (!$division) {
+                throw ValidationException::withMessages([
+                    'division_id' => 'Division not found for approver role.'
+                ]);
+            }
+
+            // Kalau divisi belum ada leader
+            if ($division->leader_id === null) {
+                $division->update(['leader_id' => $user->id]);
+            } else {
+                // Kalau sudah ada leader → overwrite
+                $oldLeader = $division->leader;
+                if ($oldLeader) {
+                    $oldLeader->update(['role' => Roles::Employee->value]);
+                }
+                $division->update(['leader_id' => $user->id]);
+            }
+        }
+
 
         $token = Password::createToken($user);
 
@@ -82,7 +138,7 @@ class UserController extends Controller
 
         Mail::to($user->email)->queue(new ResetPasswordMail($user->name, $resetUrl));
 
-        return redirect()->route('super-admin.users.index')->with('success', 'Successfully create user.');
+        return redirect()->route('admin.users.index')->with('success', 'Successfully create user.');
     }
 
     public function edit(User $user)
@@ -91,7 +147,16 @@ class UserController extends Controller
         $roles = collect(Roles::cases())
             ->values();
 
-        return view('super-admin.user.update', compact('user', 'divisions', 'roles'));
+        $roleLabels = [
+            Roles::Approver->value => 'Approver 1',
+            Roles::Employee->value => 'Employee',
+            Roles::Manager->value => 'Approver 2',
+            Roles::Admin->value => 'Admin',
+            Roles::SuperAdmin->value => 'Super Admin',
+            Roles::Finance->value => 'Finance',
+        ];
+
+        return view('super-admin.user.update', compact('user', 'divisions', 'roles', 'roleLabels'));
     }
 
     public function update(User $user, Request $request)
@@ -100,7 +165,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email:dns|unique:users,email,' . $user->id . ',id',
             'role' => 'required|string|in:employee,approver,manager,finance,admin',
-            'division_id' => 'required|exists:divisions,id'
+            'division_id' => 'exists:divisions,id'
         ], [
             'name.required' => 'The name field is required.',
             'name.string' => 'The name must be a valid string.',
@@ -118,8 +183,27 @@ class UserController extends Controller
             'division_id.exists' => 'The division field must be exists.'
         ]);
 
-        if (($user->division_id == $validated['division_id'] && $user->division->leader_id == $user->id)) {
-            $user->division->leader_id = null;
+        // jika pindah divisi padahal dia leader, copot dia
+        if (($user->division_id != $validated['division_id'] && $user->division != null && $user->division->leader_id !== null)) {
+            if ($user->division->leader_id == $user->id) {
+                $user->division->update(['leader_id' => null]);
+            }
+        }
+
+        if ($validated['role'] === Roles::Approver->value) {
+            // Pastikan division_id ada
+            if (empty($validated['division_id'])) {
+                throw ValidationException::withMessages([
+                    'division_id' => 'Division is required when assigning role approver.'
+                ]);
+            }
+
+            $division = Division::find($validated['division_id']);
+            if (!$division) {
+                throw ValidationException::withMessages([
+                    'division_id' => 'Division not found for approver role.'
+                ]);
+            }
         }
 
         $role = Auth::user()->role;
@@ -130,6 +214,34 @@ class UserController extends Controller
             'division_id' => $validated['division_id'],
             "role" => $validated['role'],
         ]);
+
+        if ($validated['role'] === Roles::Approver->value) {
+            // Pastikan division_id ada
+            if (empty($validated['division_id'])) {
+                throw ValidationException::withMessages([
+                    'division_id' => 'Division is required when assigning role approver.'
+                ]);
+            }
+
+            $division = Division::find($validated['division_id']);
+            if (!$division) {
+                throw ValidationException::withMessages([
+                    'division_id' => 'Division not found for approver role.'
+                ]);
+            }
+
+            // Kalau divisi belum ada leader
+            if ($division->leader_id === null) {
+                $division->update(['leader_id' => $user->id]);
+            } else {
+                // Kalau sudah ada leader → overwrite
+                $oldLeader = $division->leader;
+                if ($oldLeader) {
+                    $oldLeader->update(['role' => Roles::Employee->value]);
+                }
+                $division->update(['leader_id' => $user->id]);
+            }
+        }
 
         if (Auth::id() == $user->id && $role != $user->role) {
             Auth::logout();
@@ -145,13 +257,14 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-         if ($user->division->leader_id == $user->id) {
-            $user->division->leader_id = null;
+        if ($user->division->leader_id == $user->id) {
+            $user->division->update(['leader_id' => null]);
         }
 
         $user->delete();
 
         return redirect()->route('super-admin.users.index')->with('success', 'Successfully delete user.');
     }
+
 
 }

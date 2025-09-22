@@ -12,15 +12,18 @@ use App\Models\User;
 use App\Enums\Roles;
 use App\Services\OfficialTravelApprovalService;
 use App\Services\OfficialTravelService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use ZipArchive;
 
 class OfficialTravelController extends Controller
 {
@@ -219,5 +222,138 @@ class OfficialTravelController extends Controller
 
         return redirect()->route('super-admin.official-travels.index')
             ->with('success', 'Official travel request deleted successfully.');
+    }
+
+
+    public function exportPdf(OfficialTravel $officialTravel)
+    {
+        $pdf = Pdf::loadView('admin.travels.pdf', compact('officialTravel'));
+        return $pdf->download('official-travel-details.pdf');
+    }
+
+    public function exportPdfAllData(Request $request)
+    {
+        try {
+            // Authorization: Only Admin
+            if (Auth::user()->role !== Roles::SuperAdmin->value) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            // (opsional) disable debugbar
+            if (app()->bound('debugbar')) {
+                app('debugbar')->disable();
+            }
+
+            // Bersihkan buffer
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+
+            // Bangun query dasar untuk semua official travel
+            $query = OfficialTravel::with(['employee', 'approver', 'admin.division']);
+
+            // Terapkan filter status
+            if ($request->filled('status')) {
+                $statusFilter = $request->status;
+                switch ($statusFilter) {
+                    case 'approved':
+                        $query->where('status_1', 'approved')
+                            ->where('status_2', 'approved');
+                        break;
+                    case 'rejected':
+                        $query->where(function ($q) {
+                            $q->where('status_1', 'rejected')
+                                ->orWhere('status_2', 'rejected');
+                        });
+                        break;
+                    case 'pending':
+                        $query->where(function ($q) {
+                            $q->where(function ($qq) {
+                                $qq->where('status_1', 'pending')
+                                    ->orWhere('status_2', 'pending');
+                            })->where(function ($qq) {
+                                $qq->where('status_1', '!=', 'rejected')
+                                    ->where('status_2', '!=', 'rejected');
+                            });
+                        });
+                        break;
+                }
+            }
+
+            // Terapkan filter tanggal berdasarkan created_at
+            if ($request->filled('from_date')) {
+                $fromDate = Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta');
+                $query->where('created_at', '>=', $fromDate);
+            }
+            if ($request->filled('to_date')) {
+                $toDate = Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta');
+                $query->where('created_at', '<=', $toDate);
+            }
+
+            // Ambil data
+            $travels = $query->get();
+
+            if ($travels->isEmpty()) {
+                return response()->json(['message' => 'No data found for the selected filters.'], 404);
+            }
+
+            // Buat direktori sementara untuk menyimpan PDF
+            $tempDir = storage_path('app/temp_travel_pdf_exports_' . uniqid());
+            File::makeDirectory($tempDir, 0755, true);
+
+            // Buat PDF untuk setiap travel
+            foreach ($travels as $travel) {
+                $pdf = Pdf::loadView('admin.official-travel.pdf', compact('travel'));
+
+                // Nama file PDF unik dan deskriptif
+                $safeEmployeeName = preg_replace('/[^a-zA-Z0-9-_\.]/', '_', $travel->employee->name ?? 'Unknown');
+                $fileName = "OfficialTravel_{$safeEmployeeName}_TY{$travel->id}.pdf";
+                $filePath = $tempDir . DIRECTORY_SEPARATOR . $fileName;
+
+                // Simpan PDF ke direktori sementara
+                $pdf->save($filePath);
+            }
+
+            // Buat file ZIP
+            $zipFileName = 'official-travel-requests-all-' . now()->format('Y-m-d-H-i-s') . '.zip';
+            $zipFilePath = storage_path('app/' . $zipFileName);
+            $zip = new ZipArchive();
+
+            if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+                // Tambahkan semua file PDF ke ZIP
+                $files = File::files($tempDir);
+                foreach ($files as $file) {
+                    $zip->addFile($file->getPathname(), $file->getFilename());
+                }
+                $zip->close();
+            } else {
+                // Hapus direktori sementara jika ada error
+                File::deleteDirectory($tempDir);
+                throw new \Exception('Could not create ZIP file.');
+            }
+
+            // Hapus direktori sementara setelah ZIP dibuat
+            File::deleteDirectory($tempDir);
+
+            // Return ZIP file sebagai download
+            return response()->download($zipFilePath)->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            // Log error
+            Log::error('Export Official Travel PDF All Data error: ' . $e->getMessage(), ['exception' => $e]);
+
+            // Hapus file/direktori sementara jika ada error di tengah jalan
+            if (isset($tempDir) && File::exists($tempDir)) {
+                File::deleteDirectory($tempDir);
+            }
+            if (isset($zipFilePath) && File::exists($zipFilePath)) {
+                File::delete($zipFilePath);
+            }
+
+            // Return JSON error response
+            return response()->json([
+                'error' => 'Export PDF (All) failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

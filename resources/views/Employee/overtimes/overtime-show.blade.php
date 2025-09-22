@@ -224,7 +224,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-neutral-900">{{ $overtime->customer ?? 'N/A' }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap text-md font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('employee.overtimes.show', $overtime->id) }}" class="text-primary-600 hover:text-primary-900">
                                             <i class="fas fa-eye text-lg"></i>

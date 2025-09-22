@@ -4,302 +4,419 @@
 @section('subtitle', 'Welcome Back!')
 
 @section('content')
-    <!-- Stats Cards - Light Neutral Background (15%) -->
-    <div class="mb-6">
-        <p class="text-gray-600">Showing data for {{ now()->format('F Y') }}</p>
-    </div>
+<!-- Stats Cards - Light Neutral Background (15%) -->
+<div class="mb-6">
+    <p class="text-gray-600">Showing data for {{ now()->format('F Y') }}</p>
+</div>
 
-    <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-3">
-        <!-- Pending Approvals - Warning Amber (5%) -->
-        <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Pending Approvals</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ $total_pending }}</p>
-                </div>
-                <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-amber-100">
-                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
+<div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
+    <!-- Total Employees in Division -->
+    <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Employees in Division</p>
+                <p class="text-3xl font-bold text-gray-900">{{ $total_employees }}</p>
             </div>
-        </div>
-
-        <!-- Approved Requests - Accent Green (10%) -->
-        <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Approved This Month</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ $total_approved }}</p>
-                </div>
-                <div class="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rejected Requests - Error Red (5%) -->
-        <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Rejected Requests</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ $total_rejected }}</p>
-                </div>
-                <div class="flex items-center justify-center w-12 h-12 bg-red-100 rounded-lg">
-                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </div>
+            <div class="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                </svg>
             </div>
         </div>
     </div>
 
-    <div class="mb-6">
-        <p class="text-gray-600">Showing data for {{ now()->format('Y') }}</p>
-    </div>
-
-    <div class="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-1">
-        <!-- Monthly Requests Comparison Chart -->
-        <div class="bg-white border border-gray-100 shadow-sm rounded-xl">
-            <div class="p-6 border-b border-gray-100">
-                <h3 class="text-lg font-semibold text-gray-900">Monthly Requests Comparison</h3>
-                <p class="text-sm text-gray-600">Comparison of different request types</p>
+    <!-- Pending Approvals - Warning Amber (5%) -->
+    <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Pending Approvals</p>
+                <p class="text-3xl font-bold text-gray-900">{{ $total_pending }}</p>
             </div>
-            <div class="p-6">
-                <canvas id="monthlyRequestsChart" width="400" height="300"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Section -->
-    <div class="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-2">
-        <!-- Reimbursement Trend -->
-        <div class="bg-white border border-gray-100 shadow-sm rounded-xl">
-            <div class="p-6 border-b border-gray-100">
-                <h3 class="text-lg font-semibold text-gray-900">Reimbursement Trend</h3>
-                <p class="text-sm text-gray-600">Monthly reimbursement amounts</p>
-            </div>
-            <div class="p-6">
-                <canvas id="reimbursementTrendChart" width="400" height="300"></canvas>
-            </div>
-        </div>
-
-        <!-- Request Status Distribution -->
-        <div class="bg-white border border-gray-100 shadow-sm rounded-xl">
-            <div class="p-6 border-b border-gray-100">
-                <h3 class="text-lg font-semibold text-gray-900">Request Status Distribution</h3>
-                <p class="text-sm text-gray-600">Overall status breakdown</p>
-            </div>
-            <div class="p-6">
-                <canvas id="statusDistributionChart" width="400" height="300"></canvas>
+            <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-amber-100">
+                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
             </div>
         </div>
     </div>
 
-    {{-- <!-- More Charts -->
-<div class="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-2">
-    <!-- Leave Types Breakdown -->
-    <div class="bg-white border border-gray-100 shadow-sm rounded-xl">
-        <div class="p-6 border-b border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-900">Leave Types Breakdown</h3>
-            <p class="text-sm text-gray-600">Distribution of leave types</p>
+    <!-- Approved Requests - Accent Green (10%) -->
+    <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Approved This Month</p>
+                <p class="text-3xl font-bold text-gray-900">{{ $total_approved }}</p>
+            </div>
+            <div class="flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejected Requests - Error Red (5%) -->
+    <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Rejected Requests</p>
+                <p class="text-3xl font-bold text-gray-900">{{ $total_rejected }}</p>
+            </div>
+            <div class="flex items-center justify-center w-12 h-12 bg-red-100 rounded-lg">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4">
+    <button onclick="window.location.href='{{ route('approver.leaves.create') }}'" @if($sisaCuti <=0) disabled @endif
+        class="bg-primary-600 hover:bg-primary-700 text-white rounded-lg p-4 hover:shadow-md transition-all @if($sisaCuti <= 0) cursor-not-allowed @else cursor-pointer @endif">
+        <div class="flex flex-col items-center text-center">
+            <div class="flex items-center justify-center w-12 h-12 mb-3 bg-white rounded-full bg-opacity-20">
+                <i class="text-xl fas fa-calendar-plus text-primary-600"></i>
+            </div>
+            <h3 class="mb-1 font-semibold">Request Leave</h3>
+            <p class="text-sm text-primary-100">Submit new leave request</p>
+        </div>
+    </button>
+
+    <a href="{{ route('approver.reimbursements.create') }}"
+        class="p-4 text-white transition-all rounded-lg bg-secondary-600 hover:bg-secondary-700 hover:shadow-md">
+        <div class="flex flex-col items-center text-center">
+            <div class="flex items-center justify-center w-12 h-12 mb-3 bg-white rounded-full bg-opacity-20">
+                <i class="text-xl fas fa-receipt text-secondary-600"></i>
+            </div>
+            <h3 class="mb-1 font-semibold">Submit Reimbursement</h3>
+            <p class="text-sm text-secondary-100">Upload expense receipts</p>
+        </div>
+    </a>
+
+    <a href="{{ route('approver.overtimes.create') }}"
+        class="p-4 text-white transition-all rounded-lg bg-success-600 hover:bg-success-700 hover:shadow-md">
+        <div class="flex flex-col items-center text-center">
+            <div class="flex items-center justify-center w-12 h-12 mb-3 bg-white rounded-full bg-opacity-20">
+                <i class="text-xl fas fa-clock text-success-600"></i>
+            </div>
+            <h3 class="mb-1 font-semibold">Request Overtime</h3>
+            <p class="text-sm text-success-100">Log overtime hours</p>
+        </div>
+    </a>
+
+    <a href="{{ route('approver.official-travels.create') }}"
+        class="p-4 text-white transition-all rounded-lg bg-warning-600 hover:bg-warning-700 hover:shadow-md">
+        <div class="flex flex-col items-center text-center">
+            <div class="flex items-center justify-center w-12 h-12 mb-3 bg-white rounded-full bg-opacity-20">
+                <i class="text-xl fas fa-plane text-warning-600"></i>
+            </div>
+            <h3 class="mb-1 font-semibold">Request Travel</h3>
+            <p class="text-sm text-warning-100">Plan business trip</p>
+        </div>
+    </a>
+</div>
+
+<!-- Divider -->
+<div class="mt-6 mb-10 transform scale-y-50 border-t border-gray-300/80"></div>
+
+<div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+    <!-- Calendar Section -->
+    <div class="mb-8 bg-white border border-gray-200 rounded-xl shadow-soft">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-center text-gray-800">Division Leave Calendar</h3>
+        </div>
+        <div class="p-4 sm:p-6">
+            <div class="calendar-wrapper">
+                <div id="calendar" class="overflow-hidden bg-white rounded-xl">
+                    <div class="flex items-center justify-between mb-4 calendar-header">
+                        <button id="prev" class="p-2 transition rounded-full hover:bg-gray-100">
+                            <i class="text-gray-600 fas fa-chevron-left"></i>
+                        </button>
+                        <h2 id="monthYear" class="text-lg font-bold text-gray-800"></h2>
+                        <button id="next" class="p-2 transition rounded-full hover:bg-gray-100">
+                            <i class="text-gray-600 fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+
+                    <div
+                        class="grid grid-cols-7 pb-2 text-xs font-medium text-center text-gray-500 border-b border-gray-100 sm:text-sm">
+                        <div>Min</div>
+                        <div>Sen</div>
+                        <div>Sel</div>
+                        <div>Rab</div>
+                        <div>Kam</div>
+                        <div>Jum</div>
+                        <div>Sab</div>
+                    </div>
+
+                    <div id="dates" class="grid grid-cols-7 gap-1 mt-2 text-center sm:gap-2"></div>
+                </div>
+            </div>
+            <p class="mt-3 text-xs text-center text-red-500 sm:text-sm">
+                *Click on red marked dates to see employees on leave
+            </p>
+        </div>
+    </div>
+
+    <!-- Recent Requests Section -->
+    <div class="mb-8 bg-white border border-gray-200 rounded-lg">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Recent Division Requests</h3>
+            <p class="text-sm text-gray-500">Latest submissions from your division</p>
         </div>
         <div class="p-6">
-            <canvas id="leaveTypesChart" width="400" height="300"></canvas>
+            @forelse($recentRequests as $request)
+            <div class="flex items-center justify-between py-4 border-b border-gray-100 cursor-pointer last:border-0"
+                onclick="window.location.href='{{ $request['url'] }}'">
+                <!-- Left: icon + title -->
+                <div class="flex items-center min-w-0">
+                    @if($request['type'] === App\Enums\TypeRequest::Leaves->value)
+                    <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-4 bg-blue-100 rounded-lg">
+                        <i class="text-blue-600 fas fa-calendar-alt"></i>
+                    </div>
+                    @elseif($request['type'] === App\Enums\TypeRequest::Reimbursements->value)
+                    <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-4 bg-purple-100 rounded-lg">
+                        <i class="text-purple-600 fas fa-receipt"></i>
+                    </div>
+                    @elseif($request['type'] === App\Enums\TypeRequest::Overtimes->value)
+                    <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-4 bg-green-100 rounded-lg">
+                        <i class="text-green-600 fas fa-clock"></i>
+                    </div>
+                    @elseif($request['type'] === App\Enums\TypeRequest::Travels->value)
+                    <div class="flex items-center justify-center flex-shrink-0 w-10 h-10 mr-4 bg-yellow-100 rounded-lg">
+                        <i class="text-yellow-600 fas fa-plane"></i>
+                    </div>
+                    @endif
+                    <div class="min-w-0">
+                        <h4 class="font-medium text-gray-800 truncate">
+                            {{ $request['title'] }}
+                        </h4>
+
+                        <!-- Profile Picture, Name, and Division -->
+                        @if(isset($request['employee_name']))
+                        <div class="flex items-center gap-2 mt-1">
+                            @if(isset($request['url_profile']) && $request['url_profile'])
+                            <img src="{{ $request['url_profile'] }}" alt="{{ $request['employee_name'] }}"
+                                class="object-cover w-6 h-6 border border-gray-200 rounded-full">
+                            @else
+                            <div
+                                class="flex items-center justify-center w-6 h-6 text-xs text-blue-600 border border-blue-100 rounded-full bg-blue-50">
+                                {{ substr($request['employee_name'], 0, 1) }}
+                            </div>
+                            @endif
+
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-gray-800">
+                                    {{ $request['employee_name'] }}
+                                </span>
+                                @if(isset($request['division_name']))
+                                <span class="text-xs text-gray-500">
+                                    {{ $request['division_name'] }}
+                                </span>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Date -->
+                        <p class="mt-1 text-xs text-gray-500">
+                            {{ $request['date'] }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right: status + arrow -->
+                <div class="flex items-center flex-shrink-0 ml-3">
+                    @if(isset($request['status_2']) && $request['status_2'] !== null)
+                    {{-- If there's status_2, check both --}}
+                    @if($request['status_1'] === 'approved' && $request['status_2'] === 'approved')
+                    <span
+                        class="px-3 py-1 mr-3 text-xs font-medium text-green-800 bg-green-100 rounded-full">Approved</span>
+                    @elseif($request['status_1'] === 'rejected' || $request['status_2'] === 'rejected')
+                    <span
+                        class="px-3 py-1 mr-3 text-xs font-medium text-red-800 bg-red-100 rounded-full">Rejected</span>
+                    @else
+                    <span
+                        class="px-3 py-1 mr-3 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">Pending</span>
+                    @endif
+                    @else
+                    {{-- If no status_2, check only status_1 --}}
+                    @if($request['status_1'] === 'approved')
+                    <span
+                        class="px-3 py-1 mr-3 text-xs font-medium text-green-800 bg-green-100 rounded-full">Approved</span>
+                    @elseif($request['status_1'] === 'rejected')
+                    <span
+                        class="px-3 py-1 mr-3 text-xs font-medium text-red-800 bg-red-100 rounded-full">Rejected</span>
+                    @else
+                    <span
+                        class="px-3 py-1 mr-3 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">Pending</span>
+                    @endif
+                    @endif
+                </div>
+            </div>
+            @empty
+            <div class="py-8 text-center">
+                <i class="mb-3 text-4xl text-gray-300 fas fa-inbox"></i>
+                <p class="text-gray-500">No recent requests found in your division.</p>
+            </div>
+            @endforelse
         </div>
     </div>
+</div>
 
-    <!-- Overtime Hours by Department -->
-    <div class="bg-white border border-gray-100 shadow-sm rounded-xl">
-        <div class="p-6 border-b border-gray-100">
-            <h3 class="text-lg font-semibold text-gray-900">Overtime Hours by Department</h3>
-            <p class="text-sm text-gray-600">Total overtime hours per department</p>
+<!-- Modal -->
+<div id="cutiModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/50 backdrop-blur-sm">
+    <div class="bg-white p-6 sm:p-8 rounded-2xl w-[90%] max-w-md shadow-lg transform transition-all scale-95 opacity-0"
+        id="cutiModalContent">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-bold text-gray-800">Employees on Leave</h2>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
-        <div class="p-6">
-            <canvas id="overtimeChart" width="400" height="300"></canvas>
-        </div>
+        <ul id="cutiList" class="space-y-3 text-sm text-left sm:text-base"></ul>
     </div>
-</div> --}}
+</div>
 
-    <script>
-        const chartData = {
-            months: @json($months),
-            reimbursements: @json($reimbursementsChartData),
-            overtimes: @json($overtimesChartData),
-            leaves: @json($leavesChartData),
-            officialTravels: @json($officialTravelsChartData),
-            reimbursementsTotal: @json($reimbursementsRupiahChartData),
-            pendings: @json($total_pending),
-            approveds: @json($total_approved),
-            rejecteds: @json($total_rejected)
-        };
-    </script>
-    
-    @push('scripts')
-        <script>
-            // Chart.js Configuration
-            Chart.defaults.font.family = "Inter, system-ui, sans-serif";
-            Chart.defaults.color = "#6B7280";
+<script>
+    const chartData = {
+        months: @json($months),
+        reimbursements: @json($reimbursementsChartData),
+        overtimes: @json($overtimesChartData),
+        leaves: @json($leavesChartData),
+        officialTravels: @json($officialTravelsChartData),
+        reimbursementsTotal: @json($reimbursementsRupiahChartData),
+        pendings: @json($total_pending),
+        approveds: @json($total_approved),
+        rejecteds: @json($total_rejected)
+    };
+</script>
 
-            // Color scheme based on the design system
-            const colors = {
-                primary: "#2563EB", // Blue
-                secondary: "#0EA5E9", // Sky Blue
-                accent: "#10B981", // Green
-                warning: "#F59E0B", // Amber
-                error: "#EF4444", // Red
-                neutral: "#6B7280", // Gray
-                light: "#F3F4F6", // Light Gray
-            };
+@push('scripts')
+<script>
+    // Calendar functionality (same as admin)
+    const monthYear = document.getElementById("monthYear");
+    const datesContainer = document.getElementById("dates");
+    const prevBtn = document.getElementById("prev");
+    const nextBtn = document.getElementById("next");
 
-            // 1. Monthly Requests Comparison Chart (Bar Chart)
-            const monthlyRequestsCtx = document
-                .getElementById("monthlyRequestsChart")
-                .getContext("2d");
-            new Chart(monthlyRequestsCtx, {
-                type: "bar",
-                data: {
-                    labels: chartData.months,
-                    datasets: [{
-                            label: "Leave Requests",
-                            data: chartData.leaves,
-                            backgroundColor: colors.primary,
-                            borderRadius: 6,
-                        },
-                        {
-                            label: "Reimbursement",
-                            data: chartData.reimbursements,
-                            backgroundColor: colors.secondary,
-                            borderRadius: 6,
-                        },
-                        {
-                            label: "Overtime",
-                            data: chartData.overtimes,
-                            backgroundColor: colors.accent,
-                            borderRadius: 6,
-                        },
-                        {
-                            label: "Official Travel",
-                            data: chartData.officialTravels,
-                            backgroundColor: colors.warning,
-                            borderRadius: 6,
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: "bottom",
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20,
-                            },
-                        },
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: "#F3F4F6",
-                            },
-                        },
-                        x: {
-                            grid: {
-                                display: false,
-                            },
-                        },
-                    },
-                },
+    let today = new Date();
+    let currentMonth = today.getMonth();
+    let currentYear = today.getFullYear();
+
+    const monthNames = [
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+    ];
+
+    const cutiPerTanggal = @json($cutiPerTanggal);
+
+    function renderCalendar(month, year) {
+        datesContainer.innerHTML = "";
+        monthYear.textContent = monthNames[month] + " " + year;
+
+        let firstDay = new Date(year, month, 1).getDay();
+        let daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        // Empty slots for week start
+        for (let i = 0; i < firstDay; i++) {
+            datesContainer.innerHTML += `<div></div>`;
+        }
+
+        // Fill dates
+        for (let day = 1; day <= daysInMonth; day++) {
+            let dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+            let isToday = (day === today.getDate() && month === today.getMonth() && year === today.getFullYear());
+
+            let classes = `
+                relative aspect-square flex items-center justify-center
+                rounded-lg cursor-pointer text-sm sm:text-base
+                hover:bg-blue-100 transition
+                ${isToday ? 'bg-gray-200 font-bold' : ''}
+            `;
+
+            let content = `<span>${day}</span>`;
+
+            if (cutiPerTanggal[dateStr]) {
+                content += `
+                    <span class="absolute top-1 right-1 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-red-500 rounded-full"></span>
+                `;
+            }
+
+            datesContainer.innerHTML += `
+                <div class="${classes}" onclick="showEvent('${dateStr}')">
+                    ${content}
+                </div>
+            `;
+        }
+    }
+
+    function showEvent(dateStr) {
+        const modal = document.getElementById('cutiModal');
+        const modalContent = document.getElementById('cutiModalContent');
+        const list = document.getElementById('cutiList');
+        list.innerHTML = "";
+
+        if (cutiPerTanggal[dateStr]) {
+            cutiPerTanggal[dateStr].forEach(cuti => {
+                let firstLetter = cuti.employee ? cuti.employee.substring(0, 1).toUpperCase() : "?";
+                list.innerHTML += `
+                    <li class="flex items-start gap-2">
+                        ${cuti.url_profile ? `
+                            <img class="flex items-center justify-center object-cover w-10 h-10 rounded-full me-1"
+                                src="${cuti.url_profile}" alt="${cuti.employee}">
+                        ` : `
+                            <span class="flex items-center justify-center w-10 h-10 text-xs text-blue-600 bg-blue-100 rounded-full me-1">
+                                ${firstLetter}
+                            </span>
+                        `}
+                        <div>
+                            <p class="font-medium text-gray-800">${cuti.employee ?? '-'}</p>
+                            <p class="text-xs text-gray-500">${cuti.email ?? '-'}</p>
+                        </div>
+                    </li>
+                `;
             });
+        } else {
+            list.innerHTML = "<li class='text-gray-600'>No employees on leave</li>";
+        }
 
-            // 2. Request Status Distribution (Doughnut Chart)
-            const statusDistributionCtx = document
-                .getElementById("statusDistributionChart")
-                .getContext("2d");
-            new Chart(statusDistributionCtx, {
-                type: "doughnut",
-                data: {
-                    labels: ["Approved", "Pending", "Rejected"],
-                    datasets: [{
-                        data: [chartData.approveds, chartData.pendings, chartData.rejecteds],
-                        backgroundColor: [colors.accent, colors.warning, colors.error],
-                        borderWidth: 0,
-                        cutout: "60%",
-                    }, ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: "bottom",
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20,
-                            },
-                        },
-                    },
-                },
-            });
+        modal.classList.remove("hidden");
 
-            // 3. Reimbursement Trend (Line Chart)
-            const reimbursementTrendCtx = document
-                .getElementById("reimbursementTrendChart")
-                .getContext("2d");
-            new Chart(reimbursementTrendCtx, {
-                type: "line",
-                data: {
-                    labels: chartData.months,
-                    datasets: [{
-                        label: "Amount (IDR)",
-                        data: chartData.reimbursementsTotal,
-                        borderColor: colors.secondary,
-                        backgroundColor: colors.secondary + "20",
-                        fill: true,
-                        tension: 0.4,
-                        pointBackgroundColor: colors.secondary,
-                        pointBorderColor: "#fff",
-                        pointBorderWidth: 2,
-                        pointRadius: 6,
-                    }, ],
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false,
-                        },
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: "#F3F4F6",
-                            },
-                        },
-                        x: {
-                            grid: {
-                                display: false,
-                            },
-                        },
-                    },
-                },
-            });
+        // Animation
+        setTimeout(() => {
+            modalContent.classList.remove("scale-95", "opacity-0");
+            modalContent.classList.add("scale-100", "opacity-100");
+        }, 10);
+    }
 
-            // Handle window resize
-            window.addEventListener("resize", function() {
-                if (window.innerWidth >= 1024) {
-                    sidebarOverlay.classList.add("hidden");
-                    document.body.classList.remove("overflow-hidden");
-                }
-            });
-        </script>
-    @endpush
+    function closeModal() {
+        const modal = document.getElementById('cutiModal');
+        const modalContent = document.getElementById('cutiModalContent');
+
+        modalContent.classList.add("scale-95", "opacity-0");
+        modalContent.classList.remove("scale-100", "opacity-100");
+
+        setTimeout(() => modal.classList.add("hidden"), 150);
+    }
+
+    prevBtn.onclick = () => {
+        currentMonth--;
+        if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+        renderCalendar(currentMonth, currentYear);
+    };
+
+    nextBtn.onclick = () => {
+        currentMonth++;
+        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+        renderCalendar(currentMonth, currentYear);
+    };
+
+    renderCalendar(currentMonth, currentYear);
+</script>
+@endpush
 @endsection
