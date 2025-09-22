@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\ApprovalLink;
 use App\Enums\Roles;
 use App\Events\OvertimeLevelAdvanced;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -25,6 +26,7 @@ class OvertimeApprovalService
                 $overtime->update([
                     'status_1' => 'rejected',
                     'note_1' => $note,
+                    'rejected_date' => Carbon::now(),
                     'status_2' => 'rejected', // cascade reject
                 ]);
                 return;
@@ -79,6 +81,16 @@ class OvertimeApprovalService
                 'status_2' => $status,
                 'note_2' => $note,
             ]);
+
+            if ($status == 'approved') {
+                $overtime->update([
+                    'approved_date' => Carbon::now()
+                ]);
+            } else {
+                $overtime->update([
+                    'rejected_date' => Carbon::now()
+                ]);
+            }
         }
     }
 }

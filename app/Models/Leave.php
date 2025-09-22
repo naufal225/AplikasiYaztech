@@ -15,6 +15,8 @@ class Leave extends Model
         'reason',
         'status_1',
         'note_1',
+        'approved_date',
+        'rejected_date'
     ];
 
     protected function finalStatusColumns(): array
@@ -31,6 +33,8 @@ class Leave extends Model
     protected $casts = [
         'date_start' => 'date',
         'date_end' => 'date',
+        'approved_date' => 'datetime',
+        'rejected_date' => 'datetime',
     ];
 
     public function approver()
