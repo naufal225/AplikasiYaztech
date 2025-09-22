@@ -138,8 +138,7 @@
                                 @foreach($roles as $role)
                                 <option value="{{ $role->value }}" {{ old('role')==$role->value ? 'selected' :
                                     '' }}>
-                                    {{ $role->value == App\Roles::Approver->value ? "team leader" : ($role->value ==
-                                    App\Roles::Employee->value ? "regular employee" : $role->value) }}
+                                    {{ $roleLabels[$role->value] ?? $role->value }}
                                 </option>
                                 @endforeach
                                 @endif
@@ -164,8 +163,7 @@
                         </label>
                         <div class="relative">
                             <select id="division_id" name="division_id"
-                                class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('division_id') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror"
-                                >
+                                class="w-full px-4 py-3 pl-11 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('division_id') border-red-300 focus:ring-red-500 focus:border-red-500 @enderror">
                                 <option value="">Select a division...</option>
                                 @if(isset($divisions))
                                 @foreach($divisions as $division)

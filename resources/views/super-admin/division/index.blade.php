@@ -121,7 +121,7 @@
                                     {{ $division->leader->name ?? "N/A" }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                            <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('super-admin.divisions.edit', $division->id) }}"
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">

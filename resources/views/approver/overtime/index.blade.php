@@ -259,7 +259,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-900">{{ $overtime->customer ?? 'N/A' }}</div>
                             </td>
-                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                            <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('approver.overtimes.show', $overtime->id) }}"
                                         class="text-primary-600 hover:text-primary-900" title="View Details">
@@ -468,7 +468,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-900">{{ $overtime->customer ?? 'N/A' }}</div>
                             </td>
-                            <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                            <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('approver.overtimes.show', $overtime->id) }}"
                                         class="text-primary-600 hover:text-primary-900" title="View Details">

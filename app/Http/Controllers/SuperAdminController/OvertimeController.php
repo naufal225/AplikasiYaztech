@@ -12,14 +12,17 @@ use App\Enums\Roles;
 use App\Http\Requests\StoreOvertimeRequest;
 use App\Services\OvertimeApprovalService;
 use App\Services\OvertimeService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
+use ZipArchive;
 
 class OvertimeController extends Controller
 {
@@ -219,5 +222,158 @@ class OvertimeController extends Controller
 
         return redirect()->route('super-admin.overtimes.index')
             ->with('success', 'Overtime request deleted successfully.');
+    }
+
+
+    public function exportPdf(Overtime $overtime)
+    {
+        $pdf = Pdf::loadView('Employee.overtimes.pdf', compact('overtime'));
+        return $pdf->download('overtime-details.pdf');
+    }
+
+    public function exportPdfAllData(Request $request)
+    {
+        try {
+            // Authorization: Only Admin
+            if (Auth::user()->role !== Roles::SuperAdmin->value) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            // (opsional) disable debugbar
+            if (app()->bound('debugbar')) {
+                app('debugbar')->disable();
+            }
+
+            // Bersihkan buffer
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+
+            // Bangun query dasar untuk semua overtime
+            // Pastikan eager loading semua relasi yang dibutuhkan oleh view PDF
+            $query = Overtime::with(['employee', 'approver', 'employee.division']);
+
+            // Terapkan filter status
+            if ($request->filled('status')) {
+                $statusFilter = $request->status;
+                switch ($statusFilter) {
+                    case 'approved':
+                        $query->where('status_1', 'approved')
+                            ->where('status_2', 'approved');
+                        break;
+                    case 'rejected':
+                        $query->where(function ($q) {
+                            $q->where('status_1', 'rejected')
+                                ->orWhere('status_2', 'rejected');
+                        });
+                        break;
+                    case 'pending':
+                        // Logika "pending" yang kompleks
+                        $query->where(function ($q) {
+                            // Kondisi 1: Minimal satu status adalah 'pending'
+                            $q->where(function ($qq) {
+                                $qq->where('status_1', 'pending')
+                                    ->orWhere('status_2', 'pending');
+                            });
+                            // Kondisi 2: Tidak ada status yang 'rejected'
+                            $q->where(function ($qq) {
+                                $qq->where('status_1', '!=', 'rejected')
+                                    ->where('status_2', '!=', 'rejected');
+                            });
+                        });
+                        break;
+                    // Tidak ada case default, jadi jika status tidak valid, tidak ada filter
+                }
+            }
+
+            // Terapkan filter tanggal
+            if ($request->filled('from_date')) {
+                $fromDate = Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta');
+                $query->where('created_at', '>=', $fromDate);
+            }
+            if ($request->filled('to_date')) {
+                $toDate = Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta');
+                $query->where('created_at', '<=', $toDate);
+            }
+
+            // Ambil data
+            $overtimes = $query->get();
+
+            if ($overtimes->isEmpty()) {
+                return response()->json(['message' => 'No data found for the selected filters.'], 404);
+            }
+
+            // Buat direktori sementara untuk menyimpan PDF
+            // uniqid() memastikan nama direktori unik untuk menghindari konflik
+            $tempDir = storage_path('app/temp_pdf_exports_' . uniqid());
+            File::makeDirectory($tempDir, 0755, true); // Buat direktori
+
+            // Buat PDF untuk setiap reimbursement
+            foreach ($overtimes as $overtime) {
+                // Load view PDF dengan data overtime
+                // View harus menggunakan $overtime->employee, bukan Auth::user()
+                $pdf = Pdf::loadView('admin.overtime.pdf', compact('overtime'));
+
+                // Buat nama file yang unik dan deskriptif
+                // Sanitasi nama file untuk menghindari karakter ilegal
+                $safeEmployeeName = preg_replace('/[^a-zA-Z0-9-_\.]/', '_', $overtime->employee->name ?? 'Unknown');
+                $fileName = "overtime_{$safeEmployeeName}_RY{$overtime->id}.pdf";
+                $filePath = $tempDir . DIRECTORY_SEPARATOR . $fileName;
+
+                // Simpan PDF ke direktori sementara
+                $pdf->save($filePath);
+            }
+
+            // Buat file ZIP
+            $zipFileName = 'overtime-requests-all-' . now()->format('Y-m-d-H-i-s') . '.zip';
+            $zipFilePath = storage_path('app/' . $zipFileName);
+            $zip = new ZipArchive();
+
+            if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
+                // Tambahkan semua file PDF yang telah dibuat ke dalam ZIP
+                $files = File::files($tempDir);
+                foreach ($files as $file) {
+                    // Tambahkan file ke ZIP dengan nama file asli
+                    $zip->addFile($file->getPathname(), $file->getFilename());
+                }
+                $zip->close();
+            } else {
+                // Jika gagal membuat ZIP, hapus direktori sementara dan lempar exception
+                if (File::exists($tempDir)) {
+                    File::deleteDirectory($tempDir);
+                }
+                throw new \Exception('Could not create ZIP file.');
+            }
+
+            // Hapus direktori sementara setelah ZIP berhasil dibuat
+            if (File::exists($tempDir)) {
+                File::deleteDirectory($tempDir);
+            }
+
+            // Return file ZIP sebagai download
+            // deleteFileAfterSend(true) akan menghapus file ZIP setelah dikirim ke browser
+            return response()->download($zipFilePath)->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            // Log error untuk debugging
+            Log::error('Export PDF All Data error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'user_id' => Auth::id(),
+                'filters' => $request->only(['status', 'from_date', 'to_date'])
+            ]);
+
+            // Hapus file/direktori sementara jika ada error di tengah jalan
+            if (isset($tempDir) && File::exists($tempDir)) {
+                File::deleteDirectory($tempDir);
+            }
+            if (isset($zipFilePath) && File::exists($zipFilePath)) {
+                File::delete($zipFilePath);
+            }
+
+            // Return JSON error response untuk AJAX
+            return response()->json([
+                'error' => 'Export PDF (All) failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

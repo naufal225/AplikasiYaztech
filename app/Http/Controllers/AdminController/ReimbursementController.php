@@ -181,12 +181,6 @@ class ReimbursementController extends Controller
         }
     }
 
-    public function exportPdf(Reimbursement $reimbursement)
-    {
-        $pdf = Pdf::loadView('admin.reimbursement.pdf', compact('reimbursement'));
-        return $pdf->download('reimbursement-details.pdf');
-    }
-
     /**
      * Show the form for editing the specified resource.
      */
@@ -248,6 +242,13 @@ class ReimbursementController extends Controller
 
         return redirect()->route('admin.reimbursements.index')
             ->with('success', 'Reimbursement request deleted successfully.');
+    }
+
+
+    public function exportPdf(Reimbursement $reimbursement)
+    {
+        $pdf = Pdf::loadView('admin.reimbursement.pdf', compact('reimbursement'));
+        return $pdf->download('reimbursement-details.pdf');
     }
 
     public function exportPdfAllData(Request $request)

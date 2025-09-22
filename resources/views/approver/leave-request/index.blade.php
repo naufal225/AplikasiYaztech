@@ -184,9 +184,24 @@
                                 \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
                             </div>
                             <div class="text-sm text-neutral-500">
-                                {{
-                                \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
-                                + 1 }} days
+                                @php
+                                $tahunSekarang = now()->year;
+                                $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                ->pluck('holiday_date')
+                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                ->toArray();
+
+                                $start = \Carbon\Carbon::parse($leave->date_start);
+                                $end = \Carbon\Carbon::parse($leave->date_end);
+
+                                $durasi = app()->call(\App\Services\LeaveService::class.'@hitungHariCuti', [
+                                'dateStart' => $start,
+                                'dateEnd' => $end,
+                                'tahun' => $tahunSekarang,
+                                'hariLibur' => $hariLibur,
+                                ]);
+                                @endphp
+                                {{ $durasi }} {{ $durasi > 1 ? 'days' : 'day' }}
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -210,7 +225,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-neutral-900">{{ $manager->name ?? "N/A" }}</div>
                         </td>
-                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                        <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
                             <div class="flex items-center space-x-2">
                                 {{-- Added full CRUD actions for own requests --}}
                                 <a href="{{ route('approver.leaves.show', $leave->id) }}"
@@ -319,9 +334,24 @@
                                 \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
                             </div>
                             <div class="text-sm text-neutral-500">
-                                {{
-                                \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
-                                + 1 }} days
+                                @php
+                                $tahunSekarang = now()->year;
+                                $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                ->pluck('holiday_date')
+                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                ->toArray();
+
+                                $start = \Carbon\Carbon::parse($leave->date_start);
+                                $end = \Carbon\Carbon::parse($leave->date_end);
+
+                                $durasi = app()->call(\App\Services\LeaveService::class.'@hitungHariCuti', [
+                                'dateStart' => $start,
+                                'dateEnd' => $end,
+                                'tahun' => $tahunSekarang,
+                                'hariLibur' => $hariLibur,
+                                ]);
+                                @endphp
+                                {{ $durasi }} {{ $durasi > 1 ? 'days' : 'day' }}
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -345,7 +375,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-neutral-900">{{ $manager->name ?? "N/A" }}</div>
                         </td>
-                        <td class="px-6 py-4 text-sm font-medium whitespace-nowrap">
+                        <td class="px-6 py-4 font-medium text-md whitespace-nowrap">
                             <div class="flex items-center space-x-2">
                                 {{-- Fixed permissions - own requests get full CRUD, others get view only --}}
                                 <a href="{{ route('approver.leaves.show', $leave->id) }}"

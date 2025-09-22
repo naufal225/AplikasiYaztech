@@ -5,7 +5,7 @@ namespace App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\Controller;
 use App\Models\Division;
 use App\Models\User;
-use App\Roles;
+use App\Enums\Roles;
 use Illuminate\Http\Request;
 use PhpParser\Node\Scalar\MagicConst\Dir;
 
