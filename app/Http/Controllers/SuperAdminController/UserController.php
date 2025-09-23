@@ -52,7 +52,7 @@ class UserController extends Controller
             Roles::Manager->value => 'Approver 2',
             Roles::Admin->value => 'Admin',
             Roles::SuperAdmin->value => 'Super Admin',
-            Roles::Finance->value => 'Finance',
+            Roles::Finance->value => 'Approver 3',
         ];
 
         return view('super-admin.user.create', compact('divisions', 'roles', 'roleLabels'));
@@ -153,7 +153,7 @@ class UserController extends Controller
             Roles::Manager->value => 'Approver 2',
             Roles::Admin->value => 'Admin',
             Roles::SuperAdmin->value => 'Super Admin',
-            Roles::Finance->value => 'Finance',
+            Roles::Finance->value => 'Approver 3',
         ];
 
         return view('super-admin.user.update', compact('user', 'divisions', 'roles', 'roleLabels'));
