@@ -155,9 +155,9 @@
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                             Date</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Status 1 - Team Lead</th>
+                            Status 1 - Approver 1</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Status 2 - Manager</th>
+                            Status 2 - Approver 2</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                             Customer</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
@@ -236,6 +236,7 @@
                                     class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endif
                                 <button type="button"
                                     class="delete-reimbursement-btn text-error-600 hover:text-error-900"
                                     data-reimbursement-id="{{ $reimbursement->id }}"
@@ -243,19 +244,16 @@
                                     data-table="own" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                @endif
                             </div>
                         </td>
                     </tr>
                     <!-- Added hidden delete form for own requests -->
-                    @if($reimbursement->status_1 === 'pending')
                     <form id="own-delete-form-{{ $reimbursement->id }}"
                           action="{{ route('super-admin.reimbursements.destroy', $reimbursement->id) }}"
                           method="POST" style="display: none;">
                         @csrf
                         @method('DELETE')
                     </form>
-                    @endif
 
                     @empty
                     <tr>
@@ -300,9 +298,9 @@
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                             Date</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Status 1 - Team Lead</th>
+                            Status 1 - Approver 1</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Status 2 - Manager</th>
+                            Status 2 - Approver 2</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                             Customer</th> {{-- Added Customer --}}
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
@@ -396,12 +394,12 @@
                                     class="text-primary-600 hover:text-primary-900" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <!-- Fixed permission logic - only show edit/delete for own requests -->
                                 @if($reimbursement->status_1 === 'pending' && Auth::id() === $reimbursement->employee_id)
                                 <a href="{{ route('super-admin.reimbursements.edit', $reimbursement->id) }}"
                                     class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endif
                                 <button type="button"
                                     class="delete-reimbursement-btn text-error-600 hover:text-error-900"
                                     data-reimbursement-id="{{ $reimbursement->id }}"
@@ -409,19 +407,16 @@
                                     data-table="all" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                @endif
                             </div>
                         </td>
                     </tr>
                     <!-- Added hidden delete form for all requests table -->
-                    @if($reimbursement->status_1 === 'pending' && Auth::id() === $reimbursement->employee_id)
                     <form id="all-delete-form-{{ $reimbursement->id }}"
                           action="{{ route('super-admin.reimbursements.destroy', $reimbursement->id) }}"
                           method="POST" style="display: none;">
                         @csrf
                         @method('DELETE')
                     </form>
-                    @endif
 
                     @empty
                     <tr>
@@ -678,3 +673,4 @@ document.addEventListener('keydown', function(event) {
 });
 </script>
 @endpush
+

@@ -110,7 +110,9 @@ class ReimbursementController extends Controller
         $rejectedRequests = Reimbursement::where('status_1', 'rejected')
             ->orWhere('status_2', 'rejected')->count();
 
-        return view('super-admin.reimbursement.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests'));
+        $manager = User::where('role', Roles::Manager->value)->first();
+
+        return view('super-admin.reimbursement.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 
     public function show($id)
@@ -123,7 +125,8 @@ class ReimbursementController extends Controller
 
     public function create()
     {
-        return view('super-admin.reimbursement.create');
+        $types = \App\Models\ReimbursementType::all();
+        return view('super-admin.reimbursement.create', compact('types'));
     }
 
     /**
@@ -190,7 +193,8 @@ class ReimbursementController extends Controller
                 ->with('error', 'You cannot edit a reimbursement request that has already been processed.');
         }
 
-        return view('super-admin.reimbursement.update', compact('reimbursement'));
+        $types = \App\Models\ReimbursementType::all();
+        return view('super-admin.reimbursement.update', compact('reimbursement', 'types'));
     }
 
     /**
@@ -213,21 +217,11 @@ class ReimbursementController extends Controller
      */
     public function destroy(Reimbursement $reimbursement)
     {
-        // Check if the user has permission to delete this reimbursement
-        $user = Auth::user();
-        if ($user->id !== $reimbursement->employee_id) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        // Only allow deleting if the reimbursement is still pending
-        if ($reimbursement->status_1 !== 'pending' || $reimbursement->status_2 !== 'pending') {
-            return redirect()->route('super-admin.reimbursements.show', $reimbursement->id)
-                ->with('error', 'You cannot delete a reimbursement request that has already been processed.');
-        }
-
+        // Super Admin can delete any reimbursement, regardless of owner or status
         if ($reimbursement->invoice_path) {
             Storage::disk('public')->delete($reimbursement->invoice_path);
         }
+
         $reimbursement->delete();
 
         return redirect()->route('super-admin.reimbursements.index')

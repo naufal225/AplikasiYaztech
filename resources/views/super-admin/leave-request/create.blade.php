@@ -31,21 +31,16 @@
         </ol>
     </nav>
 
+    @include('components.alert-errors')
+
+
     <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
         <div class="px-6 py-4 border-b border-neutral-200">
             <h2 class="text-lg font-bold text-neutral-900">Submit Leave Request</h2>
             <p class="text-sm text-neutral-600">Fill in the details for your leave request</p>
         </div>
 
-        @if ($errors->any())
-        <div class="px-4 py-3 mx-6 mt-6 border rounded-lg bg-error-50 border-error-200 text-error-700">
-            <ul class="pl-5 space-y-1 list-disc">
-                @foreach ($errors->all() as $error)
-                <li class="text-sm">{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
+
 
         <form action="{{ route('super-admin.leaves.store') }}" method="POST" class="p-6 space-y-6">
             @csrf
@@ -112,7 +107,7 @@
             </div>
 
             <div class="flex justify-end pt-6 space-x-4 border-t border-neutral-200">
-                <a href="{{ route('super-admin.leaves.index') }}"
+                <a href="{{ url()->previous() }}"
                     class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
                     <i class="mr-2 fas fa-times"></i>
                     Cancel
@@ -128,6 +123,8 @@
 
 @push('scripts')
 <script>
+    const holidays = @json($holidays);
+
     function calculateDuration() {
             const startDate = document.getElementById('date_start').value;
             const endDate = document.getElementById('date_end').value;
@@ -144,11 +141,15 @@
                     let workingDays = 0;
                     let currentDate = new Date(start);
 
-                    while (currentDate <= end) {
+                   while (currentDate <= end) {
                         const dayOfWeek = currentDate.getDay();
-                        if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Sunday (0) | Saturday (6)
+                        const formattedDate = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD
+
+                        // Hanya hitung jika bukan Sabtu, Minggu, dan bukan hari libur
+                        if (dayOfWeek !== 0 && dayOfWeek !== 6 && !holidays.includes(formattedDate)) {
                             workingDays++;
                         }
+
                         currentDate.setDate(currentDate.getDate() + 1);
                     }
 

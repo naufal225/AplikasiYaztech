@@ -39,15 +39,7 @@
         </ol>
     </nav>
 
-    @if ($errors->any())
-    <div class="px-4 py-3 mx-6 mt-6 border rounded-lg bg-error-50 border-error-200 text-error-700">
-        <ul class="pl-5 space-y-1 list-disc">
-            @foreach ($errors->all() as $error)
-            <li class="text-sm">{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
+    @include('components.alert-errors')
 
 
     <div class="bg-white border rounded-xl shadow-soft border-neutral-200">

@@ -49,6 +49,17 @@
         </div>
     </div>
 
+    @if ($errors->any())
+    <div class="px-4 py-3 mx-6 my-6 border rounded-lg bg-error-50 border-error-200 text-error-700">
+        <ul class="pl-5 space-y-1 list-disc">
+            @foreach ($errors->all() as $error)
+            <li class="text-sm">{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
+
     <div class="">
         <!-- Success Message -->
         @if(session('success'))
@@ -113,7 +124,7 @@
         </div>
     </div>
 
-     <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
+    <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
         <form id="filterForm" method="GET" action="{{ route('admin.official-travels.index') }}" class="space-y-4">
             <div class="grid grid-cols-1 gap-4 md:grid-cols-4">
                 <div>
@@ -264,7 +275,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-neutral-900">{{ $officialTravel->customer ?? 'N/A' }}</div>
                         </td>
-                        <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
+                        <td class="px-6 py-4 font-medium text-md whitespace-nowrap">
                             <div class="flex items-center space-x-2">
                                 <a href="{{ route('admin.official-travels.show', $officialTravel->id) }}"
                                     class="text-primary-600 hover:text-primary-900" title="View Details">
@@ -447,7 +458,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-neutral-900">{{ $officialTravel->customer ?? 'N/A' }}</div>
                         </td>
-                        <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
+                        <td class="px-6 py-4 font-medium text-md whitespace-nowrap">
                             <div class="flex items-center space-x-2">
                                 <a href="{{ route('admin.official-travels.show', $officialTravel->id) }}"
                                     class="text-primary-600 hover:text-primary-900" title="View Details">

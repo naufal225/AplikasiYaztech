@@ -3,7 +3,7 @@
 use App\Events\SendMessage;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ResetPasswordController;
-use App\Roles;
+use App\Enums\Roles;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 

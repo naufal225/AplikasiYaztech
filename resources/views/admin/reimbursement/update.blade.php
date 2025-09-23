@@ -39,21 +39,15 @@
         </ol>
     </nav>
 
+
+    @include('components.alert-errors')
+
     <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
         <div class="px-6 py-4 border-b border-neutral-200">
             <h2 class="text-lg font-bold text-neutral-900">Edit Reimbursement Claim #RY{{ $reimbursement->id }}</h2>
             <p class="text-sm text-neutral-600">Update your reimbursement claim information</p>
         </div>
 
-        @if ($errors->any())
-        <div class="px-4 py-3 mx-6 mt-6 border rounded-lg bg-error-50 border-error-200 text-error-700">
-            <ul class="pl-5 space-y-1 list-disc">
-                @foreach ($errors->all() as $error)
-                <li class="text-sm">{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
 
         <form action="{{ route('admin.reimbursements.update', $reimbursement->id) }}" method="POST"
             enctype="multipart/form-data" class="p-6 space-y-6">

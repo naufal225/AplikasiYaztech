@@ -18,7 +18,7 @@
             <li>
                 <div class="flex items-center">
                     <i class="mx-2 fas fa-chevron-right text-neutral-400"></i>
-                    <a href="{{ route(name: 'super-admin.leaves.index') }}"
+                    <a href="{{ route('super-admin.leaves.index') }}"
                         class="text-sm font-medium text-neutral-700 hover:text-primary-600">Leave Requests</a>
                 </div>
             </li>
@@ -39,21 +39,14 @@
         </ol>
     </nav>
 
+    @include('components.alert-errors')
+
+
     <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
         <div class="px-6 py-4 border-b border-neutral-200">
             <h2 class="text-lg font-bold text-neutral-900">Edit Leave Request #{{ $leave->id }}</h2>
             <p class="text-sm text-neutral-600">Update your leave request information</p>
         </div>
-
-        @if ($errors->any())
-        <div class="px-4 py-3 mx-6 mt-6 border rounded-lg bg-error-50 border-error-200 text-error-700">
-            <ul class="pl-5 space-y-1 list-disc">
-                @foreach ($errors->all() as $error)
-                <li class="text-sm">{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
 
         <form action="{{ route('super-admin.leaves.update', $leave->id) }}" method="POST" class="p-6 space-y-6">
             @csrf
@@ -66,7 +59,8 @@
                         Start Date
                     </label>
                     <input type="date" id="date_start" name="date_start" class="form-input"
-                        value="{{ \Carbon\Carbon::parse($leave->date_start)->format('Y-m-d') }}" required>
+                        value="{{ \Carbon\Carbon::parse($leave->date_start)->format('Y-m-d') }}" required
+                        min="{{ date('Y-m-d') }}">
                 </div>
 
                 <div>
@@ -75,7 +69,8 @@
                         End Date
                     </label>
                     <input type="date" id="date_end" name="date_end" class="form-input"
-                        value="{{ \Carbon\Carbon::parse($leave->date_end)->format('Y-m-d') }}" required>
+                        value="{{ \Carbon\Carbon::parse($leave->date_end)->format('Y-m-d') }}" required
+                        min="{{ date('Y-m-d') }}">
                 </div>
             </div>
 
@@ -142,33 +137,56 @@
 
 @push('scripts')
 <script>
+    const holidays = @json($holidays ?? []);
+
     function calculateDuration() {
-    const startDate = document.getElementById('date_start').value;
-    const endDate = document.getElementById('date_end').value;
+        const startDate = document.getElementById('date_start').value;
+        const endDate = document.getElementById('date_end').value;
 
-    if (startDate && endDate) {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
 
-    if (end >= start) {
-    const timeDiff = end.getTime() - start.getTime();
-    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+            if (end >= start) {
+                let workingDays = 0;
+                let currentDate = new Date(start);
 
-    let workingDays = 0;
-    let currentDate = new Date(start);
+                while (currentDate <= end) {
+                    const dayOfWeek = currentDate.getDay();
+                    const formattedDate = currentDate.toISOString().split('T')[0]; // YYYY-MM-DD
 
-    while (currentDate <= end) { const dayOfWeek=currentDate.getDay(); if (dayOfWeek !==0 && dayOfWeek !==6) { // Sunday (0)
-        | Saturday (6) workingDays++; } currentDate.setDate(currentDate.getDate() + 1); }
-        document.getElementById('duration-display').textContent=daysDiff + ' days' ;
-        document.getElementById('working-days-display').textContent=workingDays + ' working days' ; } else {
-        document.getElementById('duration-display').textContent='0 days' ;
-        document.getElementById('working-days-display').textContent='0 working days' ; } } }
-        document.getElementById('date_start').addEventListener('change', calculateDuration);
-        document.getElementById('date_end').addEventListener('change', calculateDuration);
-        document.getElementById('date_start').addEventListener('change', function() {
-        document.getElementById('date_end').min=this.value;
+                    // Hanya hitung jika bukan Sabtu, Minggu, dan bukan hari libur
+                    if (dayOfWeek !== 0 && dayOfWeek !== 6 && !holidays.includes(formattedDate)) {
+                        workingDays++;
+                    }
+
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+
+                const timeDiff = end.getTime() - start.getTime();
+                const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+
+                document.getElementById('duration-display').textContent = daysDiff + ' days';
+                document.getElementById('working-days-display').textContent = workingDays + ' working days';
+            } else {
+                document.getElementById('duration-display').textContent = '0 days';
+                document.getElementById('working-days-display').textContent = '0 working days';
+            }
+        }
+    }
+
+    document.getElementById('date_start').addEventListener('change', calculateDuration);
+    document.getElementById('date_end').addEventListener('change', calculateDuration);
+
+    document.getElementById('date_start').addEventListener('change', function() {
+        document.getElementById('date_end').min = this.value;
+        calculateDuration();
     });
 
+    // Hitung durasi saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function() {
+        calculateDuration();
+    });
 </script>
 @endpush
 @endsection
