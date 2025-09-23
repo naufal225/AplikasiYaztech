@@ -4,8 +4,8 @@ namespace App\Http\Controllers\FinanceController;
 
 use App\Http\Controllers\Controller;
 use App\Models\Leave;
-use App\Roles;
-use App\TypeRequest;
+use App\Enums\Roles;
+use App\Enums\TypeRequest;
 use App\Models\Reimbursement;
 use App\Models\Overtime;
 use App\Models\OfficialTravel;
