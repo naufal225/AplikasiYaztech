@@ -177,10 +177,11 @@
                         <i class="mr-2 fas fa-edit"></i>
                         Edit Request
                     </a>
+                    @endif
                     <button
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg delete-officialTravel-btn bg-error-600 hover:bg-error-700"
                         data-officialTravel-id="{{ $officialTravel->id }}"
-                        data-officialTravel-name="officialTravel Request #{{ $officialTravel->id }}" title="Delete">
+                        data-officialTravel-name="Official Travel Request #{{ $officialTravel->id }}" title="Delete">
                         <i class="mr-2 fas fa-trash"></i>
                         Delete Request
                     </button>
@@ -190,7 +191,6 @@
                         @csrf
                         @method('DELETE')
                     </form>
-                    @endif
                     <a href="{{ route('super-admin.official-travels.index') }}"
                         class="flex items-center justify-center w-full px-4 py-2 font-semibold text-white transition-colors duration-200 rounded-lg bg-neutral-600 hover:bg-neutral-700">
                         <i class="mr-2 fas fa-arrow-left"></i>

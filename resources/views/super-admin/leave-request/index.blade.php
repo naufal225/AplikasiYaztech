@@ -187,9 +187,24 @@
                                 \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
                             </div>
                             <div class="text-sm text-neutral-500">
-                                {{
-                                \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
-                                + 1 }} days
+                                @php
+                                $tahunSekarang = now()->year;
+                                $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                ->pluck('holiday_date')
+                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                ->toArray();
+
+                                $start = \Carbon\Carbon::parse($leave->date_start);
+                                $end = \Carbon\Carbon::parse($leave->date_end);
+
+                                $durasi = app()->call(\App\Services\LeaveService::class.'@hitungHariCuti', [
+                                'dateStart' => $start,
+                                'dateEnd' => $end,
+                                'tahun' => $tahunSekarang,
+                                'hariLibur' => $hariLibur,
+                                ]);
+                                @endphp
+                                {{ $durasi }} {{ $durasi > 1 ? 'days' : 'day' }}
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -213,7 +228,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-neutral-900">{{ $manager->name ?? "N/A" }}</div>
                         </td>
-                        <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
+                        <td class="px-6 py-4 font-medium text-md whitespace-nowrap">
                             <div class="flex items-center space-x-2">
                                 {{-- Added full CRUD actions for own requests --}}
                                 <a href="{{ route('super-admin.leaves.show', $leave->id) }}"
@@ -315,9 +330,24 @@
                                 \Carbon\Carbon::parse($leave->date_end)->format('M d, Y') }}
                             </div>
                             <div class="text-sm text-neutral-500">
-                                {{
-                                \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end))
-                                + 1 }} days
+                                @php
+                                $tahunSekarang = now()->year;
+                                $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                ->pluck('holiday_date')
+                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                ->toArray();
+
+                                $start = \Carbon\Carbon::parse($leave->date_start);
+                                $end = \Carbon\Carbon::parse($leave->date_end);
+
+                                $durasi = app()->call(\App\Services\LeaveService::class.'@hitungHariCuti', [
+                                'dateStart' => $start,
+                                'dateEnd' => $end,
+                                'tahun' => $tahunSekarang,
+                                'hariLibur' => $hariLibur,
+                                ]);
+                                @endphp
+                                {{ $durasi }} {{ $durasi > 1 ? 'days' : 'day' }}
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -338,7 +368,7 @@
                             </span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
+                        <td class="px-6 py-4 font-medium text-md whitespace-nowrap">
                             <div class="flex items-center space-x-2">
                                 {{-- Fixed permissions - own requests get full CRUD, others get view only --}}
                                 <a href="{{ route('super-admin.leaves.show', $leave->id) }}"
@@ -350,12 +380,12 @@
                                     class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endif
                                 <button type="button" class="delete-leave-btn text-error-600 hover:text-error-900"
                                     data-leave-id="{{ $leave->id }}" data-leave-name="Leave Request #{{ $leave->id }}"
                                     data-table="all" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                @endif
                             </div>
                         </td>
                     </tr>
@@ -381,21 +411,19 @@
 
     {{-- Fixed duplicate form IDs by adding unique prefixes for each table --}}
     @foreach($ownRequests as $leave)
-    <form id="own-delete-form-{{ $leave->id }}" action="{{ route('super-admin.leaves.destroy', $leave->id) }}" method="POST"
-        style="display: none;">
+    <form id="own-delete-form-{{ $leave->id }}" action="{{ route('super-admin.leaves.destroy', $leave->id) }}"
+        method="POST" style="display: none;">
         @csrf
         @method('DELETE')
     </form>
     @endforeach
 
     @foreach($allUsersRequests as $leave)
-    @if(Auth::id() === $leave->employee_id)
-    <form id="all-delete-form-{{ $leave->id }}" action="{{ route('super-admin.leaves.destroy', $leave->id) }}" method="POST"
-        style="display: none;">
+    <form id="all-delete-form-{{ $leave->id }}" action="{{ route('super-admin.leaves.destroy', $leave->id) }}"
+        method="POST" style="display: none;">
         @csrf
         @method('DELETE')
     </form>
-    @endif
     @endforeach
 
     <div id="toast" class="fixed z-50 hidden top-4 right-4">

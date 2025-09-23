@@ -29,21 +29,15 @@
             </ol>
         </nav>
 
+        @include('components.alert-errors')
+
         <div class="bg-white rounded-xl shadow-soft border border-neutral-200">
             <div class="px-6 py-4 border-b border-neutral-200">
                 <h2 class="text-lg font-bold text-neutral-900">Submit Official Travel Request</h2>
                 <p class="text-neutral-600 text-sm">Fill in the details for your official travel request</p>
             </div>
 
-            @if ($errors->any())
-                <div class="mx-6 mt-6 bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg">
-                    <ul class="list-disc pl-5 space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <li class="text-sm">{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+            
 
             <form action="{{ route('finance.official-travels.store') }}" method="POST" class="p-6 space-y-6">
                 @csrf

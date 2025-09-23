@@ -30,21 +30,15 @@
         </ol>
     </nav>
 
+    @include('components.alert-errors')
+
     <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
         <div class="px-6 py-4 border-b border-neutral-200">
             <h2 class="text-lg font-bold text-neutral-900">Submit Official Travel Request</h2>
             <p class="text-sm text-neutral-600">Fill in the details for your official travel request</p>
         </div>
 
-        @if ($errors->any())
-        <div class="px-4 py-3 mx-6 mt-6 border rounded-lg bg-error-50 border-error-200 text-error-700">
-            <ul class="pl-5 space-y-1 list-disc">
-                @foreach ($errors->all() as $error)
-                <li class="text-sm">{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
+        
 
         <form action="{{ route('approver.official-travels.store') }}" method="POST" class="p-6 space-y-6">
             @csrf

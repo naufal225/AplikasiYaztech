@@ -16,7 +16,7 @@ class LeaveLevelAdvanced implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
     public $leave, $divisionId, $newLevel; // 'manager' jika naik ke manager
 
-    public function __construct(Leave $leave, int $divisionId, string $newLevel)
+    public function __construct(Leave $leave, int|null $divisionId , string $newLevel)
     {
         $this->leave = $leave->load('employee');
         $this->divisionId = $divisionId;
