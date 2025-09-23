@@ -155,7 +155,7 @@ class OvertimeController extends Controller
             return redirect()->route('approver.overtimes.index', $overtime->id)
                 ->with('success', 'Overtime updated successfully.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -174,7 +174,7 @@ class OvertimeController extends Controller
             return redirect()->route('approver.overtimes.index')
                 ->with('success', "Overtime submitted. Total: {$overtime->total}");
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -196,7 +196,7 @@ class OvertimeController extends Controller
                 ->with('success', "Overtime request {$request->status_1} successfully.");
 
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 

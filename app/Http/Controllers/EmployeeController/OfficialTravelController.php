@@ -166,7 +166,7 @@ class OfficialTravelController extends Controller
             return redirect()->route('employee.official-travels.index')
                 ->with('success', 'Official travel request submitted successfully');
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
 
     }
@@ -226,7 +226,7 @@ class OfficialTravelController extends Controller
                 ->route('employee.official-travels.show', $travel->id)
                 ->with('success', 'Official travel updated successfully.');
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
 
     }

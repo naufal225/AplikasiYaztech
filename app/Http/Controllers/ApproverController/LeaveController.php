@@ -141,7 +141,7 @@ class LeaveController extends Controller
             return redirect()->route('approver.leaves.index')
                 ->with('success', 'Leave request submitted successfully.');
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -176,7 +176,7 @@ class LeaveController extends Controller
             return redirect()->route('approver.leaves.index')
                 ->with('success', 'Leave request updated successfully.');
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
 
     }

@@ -85,7 +85,7 @@ class LeaveController extends Controller
 
 
         $sisaCuti = $this->leaveService->sisaCuti(Auth::user());
-        
+
         $totalRequests = Leave::count();
         $pendingRequests = Leave::where('status_1', 'pending')->count();
         $approvedRequests = Leave::where('status_1', 'approved')->count();
@@ -133,7 +133,7 @@ class LeaveController extends Controller
             return redirect()->route('super-admin.leaves.index')
                 ->with('success', 'Leave request submitted successfully.');
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -167,7 +167,7 @@ class LeaveController extends Controller
             return redirect()->route('super-admin.leaves.index')
                 ->with('success', 'Leave request updated successfully.');
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
 
     }

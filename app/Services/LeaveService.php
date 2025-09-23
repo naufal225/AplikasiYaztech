@@ -81,6 +81,8 @@ class LeaveService
             $this->hitungHariCuti($cuti->date_start, $cuti->date_end, $tahunSekarang, $hariLibur)
         );
 
+        // dd($total);
+
         return max(0, (int) env('CUTI_TAHUNAN', 20) - $total);
     }
 
@@ -143,11 +145,8 @@ class LeaveService
         $sisaCuti = $this->sisaCuti($user, $leave->id);
 
         // Jika cuti baru lebih panjang, cek tambahan
-        if ($hariBaru > $hariLama) {
-            $butuhTambahan = $hariBaru - $hariLama;
-            if ($sisaCuti < $butuhTambahan) {
-                throw new Exception("Sisa cuti tidak cukup untuk memperpanjang cuti. Tersisa {$sisaCuti} hari.");
-            }
+        if ($hariBaru > $sisaCuti) {
+            throw new Exception("Sisa cuti tidak cukup untuk memperpanjang cuti. Tersisa {$sisaCuti} hari.");
         }
 
         $leave->update([

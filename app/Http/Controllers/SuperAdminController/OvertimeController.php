@@ -149,7 +149,7 @@ class OvertimeController extends Controller
             return redirect()->route('super-admin.overtimes.index', $overtime->id)
                 ->with('success', 'Overtime request updated successfully');
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
 
     }

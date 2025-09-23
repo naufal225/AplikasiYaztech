@@ -148,7 +148,7 @@ class LeaveController extends Controller
         ));
     }
 
-   // public function create()
+    // public function create()
     // {
     //     $tahunSekarang = now()->year;
 
@@ -194,22 +194,22 @@ class LeaveController extends Controller
      */
 
 
-//    public function create()
+    //    public function create()
 //     {
 //         $tahunSekarang = now()->year;
 
-//         // Ambil daftar hari libur dalam tahun ini
+    //         // Ambil daftar hari libur dalam tahun ini
 //         $hariLibur = Holiday::whereYear('holiday_date', $tahunSekarang)
 //             ->pluck('holiday_date')
 //             ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
 //             ->toArray();
 
-//         $holidays = Holiday::pluck('holiday_date')
+    //         $holidays = Holiday::pluck('holiday_date')
 //             ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
 //             ->toArray();
 
 
-//         // Hitung total cuti yang sudah diambil
+    //         // Hitung total cuti yang sudah diambil
 //         $totalHariCuti = (int) Leave::where('employee_id', Auth::id())
 //             ->with(['employee', 'approver'])
 //             ->orderBy('created_at', 'desc')
@@ -223,7 +223,7 @@ class LeaveController extends Controller
 //                 $start = Carbon::parse($cuti->date_start);
 //                 $end   = Carbon::parse($cuti->date_end);
 
-//                 // Batasi tanggal ke dalam tahun berjalan
+    //                 // Batasi tanggal ke dalam tahun berjalan
 //                 if ($start->year < $tahunSekarang) {
 //                     $start = Carbon::create($tahunSekarang, 1, 1);
 //                 }
@@ -231,29 +231,29 @@ class LeaveController extends Controller
 //                     $end = Carbon::create($tahunSekarang, 12, 31);
 //                 }
 
-//                 $hariCuti = 0;
+    //                 $hariCuti = 0;
 
-//                 while ($start->lte($end)) {
+    //                 while ($start->lte($end)) {
 //                     // Skip kalau Sabtu/Minggu
 //                     if ($start->isWeekend()) {
 //                         $start->addDay();
 //                         continue;
 //                     }
 
-//                     // Skip kalau hari libur
+    //                     // Skip kalau hari libur
 //                     if (in_array($start->format('Y-m-d'), $hariLibur)) {
 //                         $start->addDay();
 //                         continue;
 //                     }
 
-//                     $hariCuti++;
+    //                     $hariCuti++;
 //                     $start->addDay();
 //                 }
 
-//                 return $hariCuti;
+    //                 return $hariCuti;
 //             });
 
-//         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
+    //         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
 
     public function create(LeaveService $leaveService)
     {
@@ -280,7 +280,7 @@ class LeaveController extends Controller
             return redirect()->route('employee.leaves.index')
                 ->with('success', 'Leave request submitted successfully.');
         } catch (Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -291,7 +291,7 @@ class LeaveController extends Controller
     {
         // clone supaya tidak merusak object asli
         $start = $start->copy();
-        $end   = $end->copy();
+        $end = $end->copy();
 
         if ($start->year < $tahunSekarang) {
             $start = Carbon::create($tahunSekarang, 1, 1);
@@ -382,7 +382,7 @@ class LeaveController extends Controller
             return redirect()->route('employee.leaves.index')
                 ->with('success', 'Leave request updated successfully.');
         } catch (Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
 
     }

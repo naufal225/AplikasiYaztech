@@ -131,8 +131,8 @@ class LeaveController extends Controller
 
             return redirect()->route('admin.leaves.index')
                 ->with('success', 'Leave request submitted successfully.');
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+        } catch (Exception $e) {
+            return back()->withErrors($e->getMessage());
         }
     }
 
@@ -152,7 +152,7 @@ class LeaveController extends Controller
         // Only allow editing if the leave is still pending
         if ($leave->status_1 !== 'pending') {
             return redirect()->back()
-                ->with('error', 'You cannot edit a leave request that has already been processed.');
+                ->withErrors("You cannot edit a leave request that has already been processed");
         }
 
         return view('admin.leave-request.update', compact('leave', 'sisaCuti', 'holidays'));
@@ -166,7 +166,7 @@ class LeaveController extends Controller
             return redirect()->route('admin.leaves.index')
                 ->with('success', 'Leave request updated successfully.');
         } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return back()->withErrors($e->getMessage());
         }
 
     }

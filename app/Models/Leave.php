@@ -35,6 +35,7 @@ class Leave extends Model
         'date_end' => 'date',
         'approved_date' => 'datetime',
         'rejected_date' => 'datetime',
+        'employee_id' => 'integer'
     ];
 
     public function approver()

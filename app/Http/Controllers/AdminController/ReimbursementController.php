@@ -144,7 +144,7 @@ class ReimbursementController extends Controller
             return redirect()->route('admin.reimbursements.index')
                 ->with('success', 'Reimbursement request submitted successfully.');
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
 
     }
@@ -214,7 +214,7 @@ class ReimbursementController extends Controller
             return redirect()->route('admin.reimbursements.index', $reimbursement->id)
                 ->with('success', 'Reimbursement request updated successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
