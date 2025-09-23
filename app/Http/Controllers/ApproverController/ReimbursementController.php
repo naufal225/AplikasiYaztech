@@ -154,7 +154,7 @@ class ReimbursementController extends Controller
             return redirect()->route('approver.reimbursements.index')
                 ->with('success', 'Reimbursement request submitted successfully.');
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -176,7 +176,7 @@ class ReimbursementController extends Controller
                 ->route('approver.reimbursements.index')
                 ->with('success', "Reimbursement request {$request->status} successfully.");
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 

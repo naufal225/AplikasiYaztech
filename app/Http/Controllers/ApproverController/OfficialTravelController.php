@@ -148,7 +148,7 @@ class OfficialTravelController extends Controller
             return redirect()->route('approver.official-travels.index')
                 ->with('success', 'Official travel request submitted successfully');
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -178,7 +178,7 @@ class OfficialTravelController extends Controller
                 ->route('approver.official-travels.index', $travel->id)
                 ->with('success', 'Official travel updated successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -199,7 +199,7 @@ class OfficialTravelController extends Controller
                 ->with('success', "official travel request {$request->status_1} successfully.");
 
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 

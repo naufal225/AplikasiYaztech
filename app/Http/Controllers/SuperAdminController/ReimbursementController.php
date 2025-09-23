@@ -13,6 +13,7 @@ use App\Enums\Roles;
 use App\Services\ReimbursementService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -130,10 +131,15 @@ class ReimbursementController extends Controller
      */
     public function store(StoreReimbursementRequest $request, ReimbursementService $service)
     {
-        $service->store($request->validated());
+        try {
+            $service->store($request->validated());
 
-        return redirect()->route('super-admin.reimbursements.index')
-            ->with('success', 'Reimbursement request submitted successfully.');
+            return redirect()->route('super-admin.reimbursements.index')
+                ->with('success', 'Reimbursement request submitted successfully.');
+        } catch (Exception $e) {
+            return redirect()->back()->withErrors($e->getMessage());
+        }
+
     }
 
     public function export(Request $request)
@@ -198,7 +204,7 @@ class ReimbursementController extends Controller
             return redirect()->route('super-admin.reimbursements.index', $reimbursement->id)
                 ->with('success', 'Reimbursement request updated successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 

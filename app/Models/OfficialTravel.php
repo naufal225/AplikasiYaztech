@@ -27,7 +27,8 @@ class OfficialTravel extends Model
         'rejected_date'
     ];
 
-    public function employee() {
+    public function employee()
+    {
         return $this->belongsTo(User::class, 'employee_id');
     }
 

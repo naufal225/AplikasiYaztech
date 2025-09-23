@@ -24,7 +24,9 @@ use ZipArchive;
 
 class OvertimeController extends Controller
 {
-    public function __construct(private OvertimeService $overtimeService) {}
+    public function __construct(private OvertimeService $overtimeService)
+    {
+    }
 
     public function index(Request $request)
     {
@@ -145,7 +147,7 @@ class OvertimeController extends Controller
             return redirect()->route('admin.overtimes.index', $overtime->id)
                 ->with('success', 'Overtime updated successfully.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -164,7 +166,7 @@ class OvertimeController extends Controller
             return redirect()->route('admin.overtimes.index')
                 ->with('success', "Overtime submitted. Total: {$overtime->total}");
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 

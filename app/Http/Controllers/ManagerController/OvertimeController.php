@@ -134,7 +134,7 @@ class OvertimeController extends Controller
             $this->overtimeApprovalService->handleApproval($overtime, $request->status_2, level: $level, note: $request->note_2 ?? null);
             return redirect()->route('manager.overtimes.index')->with('success', 'Overtime request ' . $request->status . ' successfully.');
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -166,7 +166,7 @@ class OvertimeController extends Controller
             return redirect()->route('employee.overtimes.show', $overtime->id)
                 ->with('success', 'Overtime updated successfully.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => $e->getMessage()]);
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 

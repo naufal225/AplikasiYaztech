@@ -26,7 +26,9 @@ use ZipArchive;
 
 class OfficialTravelController extends Controller
 {
-    public function __construct(private OfficialTravelService $officialTravelService) {}
+    public function __construct(private OfficialTravelService $officialTravelService)
+    {
+    }
 
     public function index(Request $request)
     {
@@ -140,7 +142,7 @@ class OfficialTravelController extends Controller
             return redirect()->route('admin.official-travels.index')
                 ->with('success', 'Official travel request submitted successfully');
         } catch (Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
@@ -170,7 +172,7 @@ class OfficialTravelController extends Controller
                 ->route('admin.official-travels.index', $travel->id)
                 ->with('success', 'Official travel updated successfully.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', $e->getMessage());
+            return redirect()->back()->withErrors($e->getMessage());
         }
     }
 
