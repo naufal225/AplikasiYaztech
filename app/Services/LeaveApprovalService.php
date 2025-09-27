@@ -57,7 +57,7 @@ class LeaveApprovalService
 
     private function authorizeManager(): void
     {
-        if (Auth::user()->role !== Roles::Manager->value) {
+        if (Auth::user()->hasActiveRole(Roles::Manager->value)) {
             abort(403, 'Unauthorized – hanya Manager yang bisa approve/reject leave.');
         }
     }

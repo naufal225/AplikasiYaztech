@@ -12,10 +12,11 @@ class ApproveOfficialTravelRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return auth()->check() && in_array(auth()->user()->role, [
-            Roles::Approver->value,
-            Roles::Manager->value
-        ]);
+        return auth()->check() &&
+            auth()->user()->roles->pluck('name')->intersect([
+                Roles::Approver->value,
+                Roles::Manager->value
+            ])->isNotEmpty();
     }
 
 

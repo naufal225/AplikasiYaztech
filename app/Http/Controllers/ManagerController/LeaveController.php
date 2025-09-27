@@ -10,6 +10,7 @@ use App\Models\ApprovalLink;
 use App\Models\Leave;
 use App\Models\User;
 use App\Enums\Roles;
+use App\Models\Role;
 use App\Services\LeaveApprovalService;
 use App\Services\LeaveService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -89,7 +90,11 @@ class LeaveController extends Controller
         $approvedRequests = Leave::where('status_1', 'approved')->count();
         $rejectedRequests = Leave::where('status_1', 'rejected')->count();
 
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('id', $managerRole->id);
+        })->first();
 
         Leave::whereNull('seen_by_manager_at')
             // ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))

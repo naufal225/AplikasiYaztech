@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\Roles;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 
 class ApproveReimbursementRequest extends FormRequest
 {
@@ -13,8 +14,11 @@ class ApproveReimbursementRequest extends FormRequest
     public function authorize(): bool
     {
         // hanya manager atau approver yang boleh approve
-        return auth()->check()
-            && in_array(auth()->user()->role, [Roles::Manager->value, Roles::Approver->value]);
+        return Auth::check()
+            && Auth::user()->roles->pluck('name')->intersect([
+                Roles::Approver->value,
+                Roles::Manager->value
+            ])->isNotEmpty();
     }
 
 

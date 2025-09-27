@@ -10,6 +10,7 @@ use App\Models\ApprovalLink;
 use App\Models\Leave;
 use App\Models\User;
 use App\Enums\Roles;
+use App\Models\Role;
 use App\Services\LeaveService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -89,7 +90,11 @@ class LeaveController extends Controller
         $approvedRequests = Leave::where('status_1', 'approved')->count();
         $rejectedRequests = Leave::where('status_1', 'rejected')->count();
 
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('id', $managerRole->id);
+        })->first();
 
         return view('admin.leave-request.index', compact(
             'ownRequests',
@@ -178,12 +183,12 @@ class LeaveController extends Controller
     {
         // Check if the user has permission to delete this leave
         $user = Auth::user();
-        if ($user->id !== $leave->employee_id && $user->role !== Roles::Admin->value) {
+        if ($user->id !== $leave->employee_id && $user->hasActiveRole(Roles::Admin->value)) {
             abort(403, 'Unauthorized action.');
         }
 
         // Only allow deleting if the leave is still pending
-        if (($leave->status_1 !== 'pending') && $user->role !== Roles::Admin->value) {
+        if (($leave->status_1 !== 'pending') && $user->hasActiveRole(Roles::Admin->value)) {
             return redirect()->route('admin.leaves.show', $leave->id)
                 ->with('error', 'You cannot delete a leave request that has already been processed.');
         }

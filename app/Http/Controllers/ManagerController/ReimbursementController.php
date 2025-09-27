@@ -153,7 +153,7 @@ class ReimbursementController extends Controller
     {
         try {
             // bedakan level status berdasarkan role
-            $level = auth()->user()->role === Roles::Manager->value ? 'status_2' : 'status_1';
+            $level = auth()->user()->hasActiveRole(Roles::Manager->value) ? 'status_2' : 'status_1';
 
             $this->reimbursementApprovalService->handleApproval(
                 reimbursement: $reimbursement,

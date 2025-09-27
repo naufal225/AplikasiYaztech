@@ -210,11 +210,11 @@ class OfficialTravelController extends Controller
     public function destroy(OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id && $user->role !== Roles::SuperAdmin->value) {
+        if ($user->id !== $officialTravel->employee_id && $user->hasActiveRole(Roles::SuperAdmin->value)) {
             abort(403, 'Unauthorized action.');
         }
 
-        if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') && $user->role !== Roles::SuperAdmin->value) {
+        if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') && $user->hasActiveRole(Roles::SuperAdmin->value)) {
             return redirect()->route('super-admin.official-travels.show', $officialTravel->id)
                 ->with('error', 'You cannot delete a travel request that has already been processed.');
         }
@@ -236,7 +236,7 @@ class OfficialTravelController extends Controller
     {
         try {
             // Authorization: Only Admin
-            if (Auth::user()->role !== Roles::SuperAdmin->value) {
+            if (Auth::user()->hasActiveRole(Roles::SuperAdmin->value)) {
                 abort(403, 'Unauthorized action.');
             }
 
