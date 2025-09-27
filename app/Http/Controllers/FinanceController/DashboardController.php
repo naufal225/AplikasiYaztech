@@ -19,7 +19,7 @@ class DashboardController extends Controller
     public function index()
     {
         // Hanya role finance yang bisa masuk
-        if (Auth::user()->role !== Roles::Finance->value) {
+        if (Auth::user()->hasActiveRole(Roles::Finance->value)) {
             abort(403, 'Unauthorized');
         }
 

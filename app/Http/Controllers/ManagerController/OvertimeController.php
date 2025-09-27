@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Enums\Roles;
 use App\Http\Requests\StoreOvertimeRequest;
 use App\Http\Requests\UpdateOvertimeRequest;
+use App\Models\Role;
 use App\Services\OvertimeApprovalService;
 use App\Services\OvertimeService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -113,8 +114,11 @@ class OvertimeController extends Controller
             ->update(['seen_by_manager_at' => now()]);
 
 
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
 
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('id', $managerRole->id);
+        })->first();
 
         return view('manager.overtime.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
@@ -129,7 +133,7 @@ class OvertimeController extends Controller
     public function update(ApproveOvertimeRequest $request, Overtime $overtime)
     {
         try {
-            $level = Auth::user()->role == Roles::Manager->value ? 'status_2' : 'status_1';
+            $level = Auth::user()->hasActiveRole(Roles::Manager->value) ? 'status_2' : 'status_1';
 
             $this->overtimeApprovalService->handleApproval($overtime, $request->status_2, level: $level, note: $request->note_2 ?? null);
             return redirect()->route('manager.overtimes.index')->with('success', 'Overtime request ' . $request->status . ' successfully.');
@@ -192,11 +196,11 @@ class OvertimeController extends Controller
     public function destroy(Overtime $overtime)
     {
         $user = Auth::user();
-        if ($user->id !== $overtime->employee_id && $user->role !== Roles::Admin->value) {
+        if ($user->id !== $overtime->employee_id && $user->hasActiveRole(Roles::Admin->value)) {
             abort(403, 'Unauthorized action.');
         }
 
-        if (($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') && $user->role !== Roles::Admin->value) {
+        if (($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') && $user->hasActiveRole(Roles::Admin->value)) {
             return redirect()->route('manager.overtimes.show', $overtime->id)
                 ->with('error', 'You cannot delete an overtime request that has already been processed.');
         }

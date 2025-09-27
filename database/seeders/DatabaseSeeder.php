@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
      * Seed the application's database.
      */
     public function run() {
+        $this->call(CostSettingsSeeder::class);
         $this->call(RoleSeeder::class);
     }
 }

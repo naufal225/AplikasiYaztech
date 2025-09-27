@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use Spatie\Permission\Contracts\Role;
-
-enum Roles : String
+enum Roles: string
 {
     case SuperAdmin = "superAdmin";
     case Admin = "admin";
@@ -13,7 +11,20 @@ enum Roles : String
     case Manager = "manager";
     case Finance = "finance";
 
-    public static function values() {
+    public static function values()
+    {
         return array_map(fn($role) => $role->value, self::cases());
+    }
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::SuperAdmin => 'Super Admin',
+            self::Admin => 'Admin',
+            self::Finance => 'Approver 3',
+            self::Manager => 'Approver 2',
+            self::Approver => 'Approver 1',
+            self::Employee => 'Employee',
+        };
     }
 }

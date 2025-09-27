@@ -12,6 +12,7 @@ use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Enums\Roles;
 use App\Http\Requests\ApproveOfficialTravelRequest;
+use App\Models\Role;
 use App\Services\OfficialTravelApprovalService;
 use App\Services\OfficialTravelService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -117,7 +118,11 @@ class OfficialTravelController extends Controller
             ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_approver_at' => now()]);
 
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('id', $managerRole->id);
+        })->first();
 
         return view('approver.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
@@ -185,7 +190,7 @@ class OfficialTravelController extends Controller
     public function update(ApproveOfficialTravelRequest $request, OfficialTravel $officialTravel)
     {
         try {
-            $level = auth()->user()->role === Roles::Manager->value ? 'status_2' : 'status_1';
+            $level = auth()->user()->hasActiveRole(Roles::Manager->value) ? 'status_2' : 'status_1';
 
             $this->officialTravelApprovalService->handleApproval(
                 travel: $officialTravel,
@@ -239,11 +244,11 @@ class OfficialTravelController extends Controller
     public function destroy(OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id && $user->role !== Roles::Admin->value) {
+        if ($user->id !== $officialTravel->employee_id && $user->hasActiveRole(Roles::Admin->value)) {
             abort(403, 'Unauthorized action.');
         }
 
-        if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') && $user->role !== Roles::Admin->value) {
+        if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') && $user->hasActiveRole(Roles::Admin->value)) {
             return redirect()->route('approver.official-travels.show', $officialTravel->id)
                 ->with('error', 'You cannot delete a travel request that has already been processed.');
         }

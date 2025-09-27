@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateOfficialTravelRequest;
 use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Enums\Roles;
+use App\Models\Role;
 use App\Services\OfficialTravelApprovalService;
 use App\Services\OfficialTravelService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -110,7 +111,12 @@ class OfficialTravelController extends Controller
             // ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_manager_at' => now()]);
 
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('id', $managerRole->id);
+        })->first();
+
 
         return view('manager.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
@@ -175,7 +181,7 @@ class OfficialTravelController extends Controller
     public function update(ApproveOfficialTravelRequest $request, OfficialTravel $travel)
     {
         try {
-            $level = Auth::user()->role == Roles::Manager->value ? 'status_2' : 'status_1';
+            $level = Auth::user()->hasActiveRole(Roles::Manager->value) ? 'status_2' : 'status_1';
 
             $this->officialTravelApprovalService->handleApproval($travel, status: $request->status_2, note: $request->note_2, level: $level);
             return redirect()->route('manager.official-travels.index')
@@ -189,7 +195,7 @@ class OfficialTravelController extends Controller
     public function destroy(OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id && $user->role !== Roles::Admin->value) {
+        if ($user->id !== $officialTravel->employee_id && $user->hasActiveRole(Roles::Admin->value)) {
             abort(403, 'Unauthorized action.');
         }
 

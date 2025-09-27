@@ -10,6 +10,7 @@ use App\Models\ApprovalLink;
 use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Enums\Roles;
+use App\Models\Role;
 use App\Services\OfficialTravelService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -113,8 +114,11 @@ class OfficialTravelController extends Controller
         $rejectedRequests = OfficialTravel::where('status_1', 'rejected')
             ->orWhere('status_2', 'rejected')->count();
 
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
 
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('id', $managerRole->id);
+        })->first();
 
         return view('admin.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
@@ -211,11 +215,11 @@ class OfficialTravelController extends Controller
     public function destroy(OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id && $user->role !== Roles::Admin->value) {
+        if ($user->id !== $officialTravel->employee_id && $user->hasActiveRole(Roles::Admin->value)) {
             abort(403, 'Unauthorized action.');
         }
 
-        if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') && $user->role !== Roles::Admin->value) {
+        if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') && $user->hasActiveRole(Roles::Admin->value)) {
             return redirect()->route('admin.official-travels.show', $officialTravel->id)
                 ->with('error', 'You cannot delete a travel request that has already been processed.');
         }
@@ -236,7 +240,7 @@ class OfficialTravelController extends Controller
     {
         try {
             // Authorization: Only Admin
-            if (Auth::user()->role !== Roles::Admin->value) {
+            if (Auth::user()->hasActiveRole(Roles::Admin->value)) {
                 abort(403, 'Unauthorized action.');
             }
 
