@@ -2,36 +2,33 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
-use App\Enums\Roles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Session;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<string>
      */
     protected $fillable = [
         'name',
         'email',
         'password',
-        'role',
         'division_id',
         'url_profile'
+        // ❌ 'role' dihapus — tidak digunakan di sistem multi-role
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<string>
      */
     protected $hidden = [
         'password',
@@ -47,68 +44,109 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
-            'id' => 'integer'
         ];
     }
 
-    //Leaves
-    public function leaves() {
-        return $this->hasManyThrough(
-            Leave::class,
-            User::class,
-            'id',
-            'id'
-        )->where('users.role', Roles::Employee->value);
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONS
+    |--------------------------------------------------------------------------
+    */
+
+    // 🔗 Relasi ke Division
+    public function division()
+    {
+        return $this->belongsTo(Division::class);
     }
 
-    public function leavesPending() {
-        $this->leaves()->where('status', 'pending');
+    // 🔗 Relasi many-to-many ke Role
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class);
     }
 
-    //Reimbursements
-    public function reimbursements() {
-        return $this->hasManyThrough(
-            Reimbursement::class,
-            User::class,
-            'id',
-            'id'
-        )->where('users.role', Roles::Employee->value);
+    // 🔗 Relasi ke Leave (user sebagai employee)
+    public function leaves()
+    {
+        return $this->hasMany(Leave::class);
     }
 
-    public function reimbursementsPending() {
-        $this->reimbursements()->where('status', 'pending');
+    // 🔗 Relasi ke Reimbursement
+    public function reimbursements()
+    {
+        return $this->hasMany(Reimbursement::class);
     }
 
-    //OfficialTravels
-     public function officialTravels() {
-        return $this->hasManyThrough(
-            OfficialTravel::class,
-            User::class,
-            'id',
-            'id'
-        )->where('users.role', Roles::Employee->value);
+    // 🔗 Relasi ke OfficialTravel
+    public function officialTravels()
+    {
+        return $this->hasMany(OfficialTravel::class);
     }
 
-    public function officialTravelsPending() {
-        $this->officialTravels()->where('status', 'pending');
+    // 🔗 Relasi ke Overtime
+    public function overtimes()
+    {
+        return $this->hasMany(Overtime::class);
     }
 
-    //Overtimes
-     public function overtimes() {
-        return $this->hasManyThrough(
-            Overtime::class,
-            User::class,
-            'id',
-            'id'
-        )->where('users.role', Roles::Employee->value);
+    /*
+    |--------------------------------------------------------------------------
+    | QUERY SCOPES (Opsional tapi direkomendasikan)
+    |--------------------------------------------------------------------------
+    */
+
+    public function leavesPending()
+    {
+        return $this->leaves()->where('status', 'pending');
     }
 
-    public function overtimesPending() {
-        $this->overtimes()->where('status', 'pending');
+    public function reimbursementsPending()
+    {
+        return $this->reimbursements()->where('status', 'pending');
     }
 
-    //Division
-    public function division() {
-        return $this->belongsTo(Division::class, 'division_id');
+    public function officialTravelsPending()
+    {
+        return $this->officialTravels()->where('status', 'pending');
+    }
+
+    public function overtimesPending()
+    {
+        return $this->overtimes()->where('status', 'pending');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HELPER METHODS
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Cek apakah user memiliki role tertentu.
+     */
+    public function hasRole(string $roleName): bool
+    {
+        // Pastikan relasi roles sudah di-load, atau gunakan query
+        return $this->roles->contains('name', $roleName);
+    }
+
+    /**
+     * Cek apakah user memiliki role aktif di session.
+     */
+    public function hasActiveRole(string $roleName): bool
+    {
+        return Session::get('active_role') === $roleName;
+    }
+
+    /**
+     * Ambil role aktif dari session.
+     */
+    public function getActiveRole(): ?string
+    {
+        return Session::get('active_role');
+    }
+
+    public function getRoleArray() {
+        return implode(', ', $this->roles()->toArray());
     }
 }

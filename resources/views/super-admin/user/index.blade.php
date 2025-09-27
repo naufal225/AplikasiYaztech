@@ -49,7 +49,8 @@
     <div class="mb-6">
         <div class="p-6 bg-white border border-gray-100 shadow-sm rounded-xl">
             <div class="">
-                <form class="flex flex-col gap-4 sm:flex-row" action="{{ route("super-admin.users.index") }}" method="GET">
+                <form class="flex flex-col gap-4 sm:flex-row" action="{{ route("super-admin.users.index") }}"
+                    method="GET">
                     <div class="flex-1">
                         <div class="relative">
                             <input type="text" placeholder="Search users..." name="search"
@@ -129,18 +130,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-500">
-                                    {{ $user->role == App\Enums\Roles::Approver->value ? "Approver 1" : (
-                                    $user->role == App\Enums\Roles::Employee->value ? "Employee" : (
-                                    $user->role == App\Enums\Roles::Manager->value ? "Approver 2" : (
-                                    $user->role == App\Enums\Roles::Admin->value ? "Admin" : (
-                                    $user->role == App\Enums\Roles::SuperAdmin->value ? "Super Admin" : (
-                                    $user->role == App\Enums\Roles::Finance->value ? "Finance" : (
-                                    $user->role
-                                    )
-                                    )
-                                    )
-                                    )
-                                    )) }}
+                                    {{ $user->role_display }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 font-medium text-md whitespace-nowrap">
@@ -166,7 +156,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
+                            <td colspan="6" class="px-6 py-12 text-center">
                                 <div class="text-neutral-400">
                                     <i class="mb-4 text-4xl fas fa-inbox"></i>
                                     <p class="text-lg font-medium">No users found</p>

@@ -4,6 +4,7 @@ use App\Events\SendMessage;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Enums\Roles;
+use App\Http\Controllers\RoleSelectionController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -67,6 +68,11 @@ Route::get('/', function () {
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [AuthController::class, 'index'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/choose-role', [RoleSelectionController::class, 'show'])->name('choose-role');
+    Route::post('/choose-role', [RoleSelectionController::class, 'store'])->name('choose-role.store');
 });
 
 Route::middleware('auth')->post('/logout', [AuthController::class, 'logout'])->name('logout');
