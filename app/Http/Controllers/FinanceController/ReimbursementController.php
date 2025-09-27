@@ -30,18 +30,22 @@ class ReimbursementController extends Controller
         $userId = Auth::id();
 
         // --- Query untuk "Your Reimbursements"
-        $yourReimbursementsQuery = Reimbursement::with(['employee', 'approver' , 'type'])
+        $yourReimbursementsQuery = Reimbursement::with(['employee', 'approver', 'type'])
             ->where('employee_id', $userId)
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
-            $yourReimbursementsQuery->where('date', '>=',
+            $yourReimbursementsQuery->where(
+                'date',
+                '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $yourReimbursementsQuery->where('date', '<=',
+            $yourReimbursementsQuery->where(
+                'date',
+                '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -51,26 +55,28 @@ class ReimbursementController extends Controller
             $yourReimbursementsQuery->where(function ($q) use ($status) {
                 if ($status === 'rejected') {
                     $q->where('status_1', 'rejected')
-                    ->orWhere('status_2', 'rejected');
+                        ->orWhere('status_2', 'rejected');
                 } elseif ($status === 'approved') {
                     $q->where('status_1', 'approved')
-                    ->where('status_2', 'approved');
+                        ->where('status_2', 'approved');
                 } elseif ($status === 'pending') {
                     $q->where(function ($sub) {
                         $sub->where('status_1', 'pending')
                             ->orWhere('status_2', 'pending');
                     })
-                    ->where('status_1', '!=', 'rejected')
-                    ->where('status_2', '!=', 'rejected')
-                    ->where(function ($sub) {
-                        $sub->where('status_1', '!=', 'approved')
-                            ->orWhere('status_2', '!=', 'approved');
-                    });
+                        ->where('status_1', '!=', 'rejected')
+                        ->where('status_2', '!=', 'rejected')
+                        ->where(function ($sub) {
+                            $sub->where('status_1', '!=', 'approved')
+                                ->orWhere('status_2', '!=', 'approved');
+                        });
                 }
             });
         }
 
-        $yourReimbursements = $yourReimbursementsQuery->paginate(5, ['*'], 'your_page')->withQueryString();
+        $yourReimbursements = $yourReimbursementsQuery
+            ->paginate(5, ['*'], 'your_page')
+            ->withQueryString();
 
         // --- Query untuk "All Reimbursements Done (Marked Down)"
         $allReimbursementsDoneQuery = Reimbursement::with(['employee', 'approver', 'type'])
@@ -80,18 +86,24 @@ class ReimbursementController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
-            $allReimbursementsDoneQuery->where('date', '>=',
+            $allReimbursementsDoneQuery->where(
+                'date',
+                '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $allReimbursementsDoneQuery->where('date', '<=',
+            $allReimbursementsDoneQuery->where(
+                'date',
+                '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
 
-        $allReimbursementsDone = $allReimbursementsDoneQuery->paginate(5, ['*'], 'all_page_done')->withQueryString();
+        $allReimbursementsDone = $allReimbursementsDoneQuery
+            ->paginate(5, ['*'], 'all_page_done')
+            ->withQueryString();
 
         // --- Query untuk "All Reimbursements Not Marked (lockable)"
         $allReimbursements = collect();
@@ -102,24 +114,28 @@ class ReimbursementController extends Controller
                 ->where('marked_down', false)
                 ->where(function ($q) use ($userId) {
                     $q->whereNull('locked_by')
-                    ->orWhere(function ($q2) {
-                        $q2->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) < ?', [now()]);
-                    })
-                    ->orWhere(function ($q3) use ($userId) {
-                        $q3->where('locked_by', $userId)
-                            ->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) >= ?', [now()]);
-                    });
+                        ->orWhere(function ($q2) {
+                            $q2->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) < ?', [now()]);
+                        })
+                        ->orWhere(function ($q3) use ($userId) {
+                            $q3->where('locked_by', $userId)
+                                ->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) >= ?', [now()]);
+                        });
                 })
                 ->orderBy('created_at', 'asc');
 
             if (request()->filled('from_date')) {
-                $query->where('date', '>=',
+                $query->where(
+                    'date',
+                    '>=',
                     Carbon::parse(request()->from_date)->startOfDay()->timezone('Asia/Jakarta')
                 );
             }
 
             if (request()->filled('to_date')) {
-                $query->where('date', '<=',
+                $query->where(
+                    'date',
+                    '<=',
                     Carbon::parse(request()->to_date)->endOfDay()->timezone('Asia/Jakarta')
                 );
             }
@@ -135,20 +151,29 @@ class ReimbursementController extends Controller
             }
         });
 
-        // --- Statistik
+        // --- Statistik (dipisah supaya tidak bentrok dengan GROUP BY)
         $dataAll = Reimbursement::where('status_1', 'approved')
             ->where('status_2', 'approved');
 
         $totalRequests = $dataAll->count();
-        $approvedRequests = optional($dataAll->withFinalStatusCount()->first())->approved ?? 0;
+        $approvedRequests = (clone $dataAll)->count(); // karena semua sudah approved
         $markedRequests = (clone $dataAll)->where('marked_down', true)->count();
         $totalAllNoMark = (clone $dataAll)->where('marked_down', false)->count();
 
-        $countsYours = optional((clone $yourReimbursementsQuery)->withFinalStatusCount()->first());
-        $totalYoursRequests = $yourReimbursementsQuery->count();
-        $pendingYoursRequests = $countsYours->pending ?? 0;
-        $approvedYoursRequests = $countsYours->approved ?? 0;
-        $rejectedYoursRequests = $countsYours->rejected ?? 0;
+        // Statistik untuk reimbursement milik user
+        $totalYoursRequests = (clone $yourReimbursementsQuery)->count();
+        $pendingYoursRequests = (clone $yourReimbursementsQuery)->where(function ($q) {
+            $q->where('status_1', 'pending')
+                ->orWhere('status_2', 'pending');
+        })->count();
+        $approvedYoursRequests = (clone $yourReimbursementsQuery)
+            ->where('status_1', 'approved')
+            ->where('status_2', 'approved')
+            ->count();
+        $rejectedYoursRequests = (clone $yourReimbursementsQuery)->where(function ($q) {
+            $q->where('status_1', 'rejected')
+                ->orWhere('status_2', 'rejected');
+        })->count();
 
         // --- Manager
         $manager = User::where('role', Roles::Manager->value)->first();
@@ -168,6 +193,7 @@ class ReimbursementController extends Controller
             'rejectedYoursRequests'
         ));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -520,8 +546,8 @@ class ReimbursementController extends Controller
                 foreach ($records as $rec) {
                     $rec->update([
                         'marked_down' => true,
-                        'locked_by'   => null,
-                        'locked_at'   => null,
+                        'locked_by' => null,
+                        'locked_at' => null,
                     ]);
                 }
             });
@@ -565,9 +591,9 @@ class ReimbursementController extends Controller
         $query = Reimbursement::with('employee')->where('status_1', 'approved')->where('status_2', 'approved')->where('marked_down', true);
 
         if ($dateFrom && $dateTo) {
-            $query->where(function($q) use ($dateFrom, $dateTo) {
+            $query->where(function ($q) use ($dateFrom, $dateTo) {
                 $q->whereDate('date', '<=', $dateTo)
-                ->whereDate('date', '>=', $dateFrom);
+                    ->whereDate('date', '>=', $dateFrom);
             });
         }
 

@@ -43,7 +43,7 @@ class DashboardController extends Controller
         $total_pending = array_sum($pendings);
         $total_rejected = array_sum($rejecteds);
         $total_approved = array_sum($approveds);
-        $total_employees = User::where('role', Roles::Employee->value)->count();
+        $total_employees = User::count();
 
         // Generate chart data per bulan
         $reimbursementsChartData = $overtimesChartData = $leavesChartData = $officialTravelsChartData = $reimbursementsRupiahChartData = [];

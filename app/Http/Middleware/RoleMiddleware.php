@@ -13,13 +13,27 @@ class RoleMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, ...$roles)
     {
-        if (!auth()->check() || auth()->user()->role !== $role) {
-            abort(403, 'Unauthorized');
+        // 1. Pastikan user sudah login
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        // 2. Ambil role aktif dari session
+        $activeRole = session('active_role');
+
+        // 3. Jika belum memilih role (misal: akses langsung ke dashboard)
+        if (!$activeRole) {
+            // Redirect ke halaman pilih role
+            return redirect()->route('choose-role');
+        }
+
+        // 4. Cek apakah role aktif termasuk dalam daftar yang diizinkan
+        if (!in_array($activeRole, $roles)) {
+            abort(403, 'Akses ditolak. Role tidak memiliki izin.');
         }
 
         return $next($request);
     }
-
 }

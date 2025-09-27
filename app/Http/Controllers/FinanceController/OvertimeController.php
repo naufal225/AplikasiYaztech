@@ -75,7 +75,9 @@ class OvertimeController extends Controller
             });
         }
 
-        $yourOvertimes = $yourOvertimesQuery->paginate(5, ['*'], 'your_page')->withQueryString();
+        $yourOvertimes = $yourOvertimesQuery
+            ->paginate(5, ['*'], 'your_page')
+            ->withQueryString();
 
         // --- Query untuk "All Overtimes Done (Marked Down)"
         $allOvertimesDoneQuery = Overtime::with(['employee', 'approver'])
@@ -100,7 +102,9 @@ class OvertimeController extends Controller
             );
         }
 
-        $allOvertimesDone = $allOvertimesDoneQuery->paginate(5, ['*'], 'all_page_done')->withQueryString();
+        $allOvertimesDone = $allOvertimesDoneQuery
+            ->paginate(5, ['*'], 'all_page_done')
+            ->withQueryString();
 
         // --- Query untuk "All Overtimes Not Marked (lockable)"
         $allOvertimes = collect();
@@ -153,15 +157,21 @@ class OvertimeController extends Controller
             ->where('status_2', 'approved');
 
         $totalRequests = $dataAll->count();
-        $approvedRequests = optional($dataAll->withFinalStatusCount()->first())->approved ?? 0;
+        $approvedRequests = (clone $dataAll)->count(); // semua yg masuk sini pasti approved
         $markedRequests = (clone $dataAll)->where('marked_down', true)->count();
         $totalAllNoMark = (clone $dataAll)->where('marked_down', false)->count();
 
-        $countsYours = optional((clone $yourOvertimesQuery)->withFinalStatusCount()->first());
-        $totalYoursRequests = $yourOvertimesQuery->count();
-        $pendingYoursRequests = $countsYours->pending ?? 0;
-        $approvedYoursRequests = $countsYours->approved ?? 0;
-        $rejectedYoursRequests = $countsYours->rejected ?? 0;
+        // Statistik untuk overtimes milik user
+        $totalYoursRequests = (clone $yourOvertimesQuery)->count();
+        $approvedYoursRequests = (clone $yourOvertimesQuery)
+            ->where('status_1', 'approved')
+            ->where('status_2', 'approved')
+            ->count();
+        $rejectedYoursRequests = (clone $yourOvertimesQuery)->where(function ($q) {
+            $q->where('status_1', 'rejected')
+                ->orWhere('status_2', 'rejected');
+        })->count();
+        $pendingYoursRequests = $totalYoursRequests - $approvedYoursRequests - $rejectedYoursRequests;
 
         // --- Manager
         $manager = User::where('role', Roles::Manager->value)->first();
@@ -181,6 +191,7 @@ class OvertimeController extends Controller
             'manager'
         ));
     }
+
 
     /**
      * Show the form for creating a new resource.

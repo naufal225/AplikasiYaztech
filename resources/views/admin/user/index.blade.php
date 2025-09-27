@@ -129,21 +129,10 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-500">
-                                    {{ $user->role == App\Enums\Roles::Approver->value ? "Approver 1" : (
-                                    $user->role == App\Enums\Roles::Employee->value ? "Employee" : (
-                                    $user->role == App\Enums\Roles::Manager->value ? "Approver 2" : (
-                                    $user->role == App\Enums\Roles::Admin->value ? "Admin" : (
-                                    $user->role == App\Enums\Roles::SuperAdmin->value ? "Super Admin" : (
-                                    $user->role == App\Enums\Roles::Finance->value ? "Finance" : (
-                                    $user->role
-                                    )
-                                    )
-                                    )
-                                    )
-                                    )) }}
+                                    {{ $user->role_display }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
+                            <td class="px-6 py-4 font-medium text-md whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('admin.users.edit', $user->id) }}"
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">
@@ -166,7 +155,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
+                            <td colspan="6" class="px-6 py-12 text-center">
                                 <div class="text-neutral-400">
                                     <i class="mb-4 text-4xl fas fa-inbox"></i>
                                     <p class="text-lg font-medium">No users found</p>
