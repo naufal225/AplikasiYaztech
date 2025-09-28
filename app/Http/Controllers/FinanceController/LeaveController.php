@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Leave;
 use App\Models\User;
 use App\Models\Division;
+use App\Models\Role;
 use App\Services\LeaveService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
@@ -24,7 +25,9 @@ use Illuminate\Support\Str;
 
 class LeaveController extends Controller
 {
-    public function __construct(private LeaveService $leaveService) {}
+    public function __construct(private LeaveService $leaveService)
+    {
+    }
     public function index(Request $request)
     {
         $userId = Auth::id();
@@ -36,13 +39,17 @@ class LeaveController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
-            $yourLeavesQuery->where('date_start', '>=',
+            $yourLeavesQuery->where(
+                'date_start',
+                '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $yourLeavesQuery->where('date_end', '<=',
+            $yourLeavesQuery->where(
+                'date_end',
+                '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -64,13 +71,17 @@ class LeaveController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
-            $allLeavesQuery->where('date_start', '>=',
+            $allLeavesQuery->where(
+                'date_start',
+                '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $allLeavesQuery->where('date_start', '<=',
+            $allLeavesQuery->where(
+                'date_start',
+                '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -101,19 +112,23 @@ class LeaveController extends Controller
             ->where('status_1', 'approved')
             ->where(function ($q) use ($tahunSekarang) {
                 $q->whereYear('date_start', $tahunSekarang)
-                ->orWhereYear('date_end', $tahunSekarang);
+                    ->orWhereYear('date_end', $tahunSekarang);
             })
             ->get()
             ->sum(function ($cuti) use ($tahunSekarang, $hariLibur) {
                 $start = Carbon::parse($cuti->date_start);
-                $end   = Carbon::parse($cuti->date_end);
+                $end = Carbon::parse($cuti->date_end);
 
                 return $this->hitungHariCuti($start, $end, $tahunSekarang, $hariLibur);
             });
 
         $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
 
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('roles.id', $managerRole->id);
+        })->first();
 
         return view('Finance.leaves.leave-show', compact(
             'yourLeaves',
@@ -154,12 +169,12 @@ class LeaveController extends Controller
             ->where('status_1', 'approved')
             ->where(function ($q) use ($tahunSekarang) {
                 $q->whereYear('date_start', $tahunSekarang)
-                ->orWhereYear('date_end', $tahunSekarang);
+                    ->orWhereYear('date_end', $tahunSekarang);
             })
             ->get()
             ->sum(function ($cuti) use ($tahunSekarang, $hariLibur) {
                 $start = \Carbon\Carbon::parse($cuti->date_start);
-                $end   = \Carbon\Carbon::parse($cuti->date_end);
+                $end = \Carbon\Carbon::parse($cuti->date_end);
 
                 // Batasi tanggal ke dalam tahun berjalan
                 if ($start->year < $tahunSekarang) {
@@ -233,18 +248,18 @@ class LeaveController extends Controller
             ->where('status_1', 'approved')
             ->where(function ($q) use ($tahunSekarang) {
                 $q->whereYear('date_start', $tahunSekarang)
-                ->orWhereYear('date_end', $tahunSekarang);
+                    ->orWhereYear('date_end', $tahunSekarang);
             })
             ->get()
             ->sum(function ($cuti) use ($tahunSekarang, $hariLibur) {
                 $start = \Carbon\Carbon::parse($cuti->date_start);
-                $end   = \Carbon\Carbon::parse($cuti->date_end);
+                $end = \Carbon\Carbon::parse($cuti->date_end);
                 return $this->hitungHariCuti($start, $end, $tahunSekarang, $hariLibur);
             });
 
         // Hitung cuti yang sedang diajukan
         $startBaru = \Carbon\Carbon::parse($request->date_start);
-        $endBaru   = \Carbon\Carbon::parse($request->date_end);
+        $endBaru = \Carbon\Carbon::parse($request->date_end);
         $hariCutiBaru = $this->hitungHariCuti($startBaru, $endBaru, $tahunSekarang, $hariLibur);
 
         $jatahTahunan = (int) env('CUTI_TAHUNAN', 20);
@@ -313,7 +328,7 @@ class LeaveController extends Controller
     {
         // clone supaya tidak merusak object asli
         $start = $start->copy();
-        $end   = $end->copy();
+        $end = $end->copy();
 
         if ($start->year < $tahunSekarang) {
             $start = \Carbon\Carbon::create($tahunSekarang, 1, 1);
@@ -370,9 +385,9 @@ class LeaveController extends Controller
         $query = Leave::with('employee')->where('status_1', 'approved');
 
         if ($dateFrom && $dateTo) {
-            $query->where(function($q) use ($dateFrom, $dateTo) {
+            $query->where(function ($q) use ($dateFrom, $dateTo) {
                 $q->whereDate('date_start', '<=', $dateTo)
-                ->whereDate('date_end', '>=', $dateFrom);
+                    ->whereDate('date_end', '>=', $dateFrom);
             });
         }
 

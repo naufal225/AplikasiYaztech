@@ -62,8 +62,8 @@
                     <div class="mt-2">
                         <span
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {{ auth()->user()->role == 'employee' ? 'Employee' : (auth()->user()->role == 'manager' ? 'Approver 2' : (auth()->user()->role == 'approver' ? 'Approver 1' : (auth()->user()->role == 'admin' ? 'Admin' : (auth()->user()->role == 'finance' ? 'Approver 3' : 'Unknown')))) }}
-                        </span>
+                            {{ auth()->user()->roles->map(fn($role) =>
+                            \App\Enums\Roles::from($role->name)->label())->join(', ') }}</span>
                     </div>
                 </div>
 
@@ -96,7 +96,8 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Role</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->role == 'employee' ? 'Employee' : (auth()->user()->role == 'manager' ? 'Approver 2' : (auth()->user()->role == 'approver' ? 'Approver 1' : (auth()->user()->role == 'admin' ? 'Admin' : (auth()->user()->role == 'finance' ? 'Approver 3' : 'Unknown')))) }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->roles->map(fn($role) =>
+                        \App\Enums\Roles::from($role->name)->label())->join(', ') }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Member Since</label>
@@ -134,7 +135,8 @@
 <div id="editProfileModal" class="fixed inset-0 z-50 hidden bg-black/20">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="w-full max-w-md bg-white rounded-lg shadow-xl">
-            <form action="{{ route('manager.profile.update', Auth::id()) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('manager.profile.update', Auth::id()) }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 

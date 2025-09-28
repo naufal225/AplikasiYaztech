@@ -62,7 +62,8 @@
                     <div class="mt-2">
                         <span
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {{ ucfirst(auth()->user()->role) }}
+                            {{ auth()->user()->roles->map(fn($role) =>
+                            \App\Enums\Roles::from($role->name)->label())->join(', ') }}
                         </span>
                     </div>
                 </div>
@@ -96,11 +97,12 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Role</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ ucfirst(auth()->user()->role) }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->roles->map(fn($role) =>
+                        \App\Enums\Roles::from($role->name)->label())->join(', ') }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Member Since</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->created_at->format('F j, Y') }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->created_at ? auth()->user()->created_at->format('F j, Y') : '-' }}</p>
                 </div>
             </div>
         </div>
@@ -123,7 +125,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Last Updated</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->updated_at->format('F j, Y g:i A') }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->updated_at ? auth()->user()->updated_at->format('F j, Y g:i A') : '-'}}</p>
                 </div>
             </div>
         </div>
@@ -134,7 +136,8 @@
 <div id="editProfileModal" class="fixed inset-0 z-50 hidden bg-black/20">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="w-full max-w-md bg-white rounded-lg shadow-xl">
-            <form action="{{ route('super-admin.profile.update', Auth::id()) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('super-admin.profile.update', Auth::id()) }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 

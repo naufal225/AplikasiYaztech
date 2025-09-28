@@ -111,12 +111,11 @@ class OfficialTravelController extends Controller
             // ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_manager_at' => now()]);
 
-        $managerRole = Role::where('name', 'manager')->first();
+         $managerRole = Role::where('name', 'manager')->first();
 
         $manager = User::whereHas('roles', function ($query) use ($managerRole) {
-            $query->where('id', $managerRole->id);
+            $query->where('roles.id', $managerRole->id);
         })->first();
-
 
         return view('manager.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }

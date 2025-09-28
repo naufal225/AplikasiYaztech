@@ -7,6 +7,7 @@ use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Enums\Roles;
 use App\Events\OfficialTravelLevelAdvanced;
+use App\Models\Role;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -41,7 +42,12 @@ class OfficialTravelApprovalService
                 event(new OfficialTravelLevelAdvanced($travel->fresh(), Auth::user()->division_id ?? 0, 'manager'));
 
                 // Buat approval link untuk Manager
-                $manager = User::where('role', Roles::Manager->value)->first();
+                $managerRole = Role::where('name', 'manager')->first();
+
+                $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+                    $query->where('roles.id', $managerRole->id);
+                })->first();
+                
                 if ($manager) {
                     $token = Str::random(48);
                     ApprovalLink::create([

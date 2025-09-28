@@ -4,11 +4,16 @@ namespace Database\Seeders;
 
 use App\Models\CostSetting;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CostSettingsSeeder extends Seeder
 {
     public function run()
     {
+        if (DB::table('cost_settings')->exists()) {
+            DB::table('cost_settings')->truncate();
+        }
+
         $settings = [
             [
                 'key' => 'OVERTIME_COSTS',

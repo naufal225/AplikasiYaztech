@@ -9,6 +9,7 @@ use App\Enums\TypeRequest;
 use App\Models\Reimbursement;
 use App\Models\Overtime;
 use App\Models\OfficialTravel;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -21,7 +22,11 @@ class DashboardController extends Controller
         $user = Auth::user();
         $userId = $user->id;
 
-        $employeeCount = User::where('role', Roles::Employee->value)->count();
+        $employeeRole = Role::where('name', Roles::Employee->value)->first();
+
+        $total_employees = User::whereHas('roles', function ($query) use ($employeeRole) {
+            $query->where('roles.id', $employeeRole->id);
+        })->count();
 
         // Query untuk list data (pakai orderBy)
         $queryLeave = Leave::where('employee_id', $userId)
@@ -95,7 +100,7 @@ class DashboardController extends Controller
                     $end = \Carbon\Carbon::create($tahunSekarang, 12, 31);
                 }
 
-                return $start->lte($end) 
+                return $start->lte($end)
                     ? collect(\Carbon\CarbonPeriod::create($start, $end))->filter(function ($date) use ($holidays) {
                         return !$date->isWeekend() && !in_array($date->toDateString(), $holidays);
                     })->count()

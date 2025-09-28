@@ -2,16 +2,17 @@
 
 use Illuminate\Support\Facades\Broadcast;
 use App\Enums\Roles;
+use App\Models\User;
 
-Broadcast::channel('approver.division.{divisionId}', function ($user, $divisionId) {
+Broadcast::channel('approver.division.{divisionId}', function (User $user, $divisionId) {
     return $user
-        && $user->role === Roles::Approver->value
+        && $user->hasActiveRole(Roles::Approver->value)
         && (int)$user->division_id === (int)$divisionId;
 });
 
-Broadcast::channel('manager.approval', function ($user) {
+Broadcast::channel('manager.approval', function (User $user) {
     return $user
-        && $user->role === Roles::Manager->value;
+        && $user->hasActiveRole(Roles::Manager->value);
 });
 
 Broadcast::channel('send-message', function ($user) {

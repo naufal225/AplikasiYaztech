@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\ApprovalLink;
+use App\Models\Role;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\DB;
 use ZipArchive;
@@ -37,13 +38,17 @@ class OfficialTravelController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
-            $yourTravelsQuery->where('date_start', '>=',
+            $yourTravelsQuery->where(
+                'date_start',
+                '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $yourTravelsQuery->where('date_end', '<=',
+            $yourTravelsQuery->where(
+                'date_end',
+                '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -53,21 +58,21 @@ class OfficialTravelController extends Controller
             $yourTravelsQuery->where(function ($q) use ($status) {
                 if ($status === 'rejected') {
                     $q->where('status_1', 'rejected')
-                    ->orWhere('status_2', 'rejected');
+                        ->orWhere('status_2', 'rejected');
                 } elseif ($status === 'approved') {
                     $q->where('status_1', 'approved')
-                    ->where('status_2', 'approved');
+                        ->where('status_2', 'approved');
                 } elseif ($status === 'pending') {
                     $q->where(function ($sub) {
                         $sub->where('status_1', 'pending')
                             ->orWhere('status_2', 'pending');
                     })
-                    ->where('status_1', '!=', 'rejected')
-                    ->where('status_2', '!=', 'rejected')
-                    ->where(function ($sub) {
-                        $sub->where('status_1', '!=', 'approved')
-                            ->orWhere('status_2', '!=', 'approved');
-                    });
+                        ->where('status_1', '!=', 'rejected')
+                        ->where('status_2', '!=', 'rejected')
+                        ->where(function ($sub) {
+                            $sub->where('status_1', '!=', 'approved')
+                                ->orWhere('status_2', '!=', 'approved');
+                        });
                 }
             });
         }
@@ -82,13 +87,17 @@ class OfficialTravelController extends Controller
             ->orderBy('created_at', 'desc');
 
         if ($request->filled('from_date')) {
-            $allTravelsDoneQuery->where('date_start', '>=',
+            $allTravelsDoneQuery->where(
+                'date_start',
+                '>=',
                 Carbon::parse($request->from_date)->startOfDay()->timezone('Asia/Jakarta')
             );
         }
 
         if ($request->filled('to_date')) {
-            $allTravelsDoneQuery->where('date_end', '<=',
+            $allTravelsDoneQuery->where(
+                'date_end',
+                '<=',
                 Carbon::parse($request->to_date)->endOfDay()->timezone('Asia/Jakarta')
             );
         }
@@ -104,24 +113,28 @@ class OfficialTravelController extends Controller
                 ->where('marked_down', false)
                 ->where(function ($q) use ($userId) {
                     $q->whereNull('locked_by')
-                    ->orWhere(function ($q2) use ($userId) {
-                        $q2->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) < ?', [now()]);
-                    })
-                    ->orWhere(function ($q3) use ($userId) {
-                        $q3->where('locked_by', $userId)
-                            ->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) >= ?', [now()]);
-                    });
+                        ->orWhere(function ($q2) use ($userId) {
+                            $q2->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) < ?', [now()]);
+                        })
+                        ->orWhere(function ($q3) use ($userId) {
+                            $q3->where('locked_by', $userId)
+                                ->whereRaw('DATE_ADD(locked_at, INTERVAL 60 MINUTE) >= ?', [now()]);
+                        });
                 })
                 ->orderBy('created_at', 'asc');
 
             if (request()->filled('from_date')) {
-                $query->where('date_start', '>=',
+                $query->where(
+                    'date_start',
+                    '>=',
                     Carbon::parse(request()->from_date)->startOfDay()->timezone('Asia/Jakarta')
                 );
             }
 
             if (request()->filled('to_date')) {
-                $query->where('date_end', '<=',
+                $query->where(
+                    'date_end',
+                    '<=',
                     Carbon::parse(request()->to_date)->endOfDay()->timezone('Asia/Jakarta')
                 );
             }
@@ -153,7 +166,11 @@ class OfficialTravelController extends Controller
         $rejectedYoursRequests = optional($countsYours)->rejected ?? 0;
 
         // --- Manager
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('roles.id', $managerRole->id);
+        })->first();
 
         return view('Finance.travels.travel-show', compact(
             'yourTravels',
@@ -375,8 +392,8 @@ class OfficialTravelController extends Controller
                 foreach ($records as $rec) {
                     $rec->update([
                         'marked_down' => true,
-                        'locked_by'   => null,
-                        'locked_at'   => null,
+                        'locked_by' => null,
+                        'locked_at' => null,
                     ]);
                 }
             });
@@ -491,86 +508,86 @@ class OfficialTravelController extends Controller
 
         $token = null;
 
-            if ($isLeader) {
-                // --- Jika leader, langsung kirim ke Manager (level 2)
-                $manager = User::where('role', Roles::Manager->value)->first();
+        if ($isLeader) {
+            // --- Jika leader, langsung kirim ke Manager (level 2)
+            $manager = User::where('role', Roles::Manager->value)->first();
 
-                if ($manager) {
-                    $token = Str::random(48);
-                    ApprovalLink::create([
-                        'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
-                        'model_id' => $officialTravel->id,
-                        'approver_user_id' => $manager->id,
-                        'level' => 2, // level 2 berarti arahnya ke manager
-                        'scope' => 'both',             // boleh approve & reject
-                        'token' => hash('sha256', $token), // simpan hash, kirim raw
-                        'expires_at' => now()->addDays(3),  // masa berlaku
-                    ]);
-                }
-
-                DB::afterCommit(function () use ($officialTravel, $token) {
-                    $fresh = $officialTravel->fresh();
-                    event(new \App\Events\OfficialTravelLevelAdvanced(
-                        $fresh,
-                        Auth::user()->division_id,
-                        'manager'
-                    ));
-
-                    if (!$fresh || !$token) {
-                        return;
-                    }
-
-                    $linkTanggapan = route('public.approval.show', $token);
-
-                    $manager = User::where('role', Roles::Manager->value)->first();
-                    Mail::to($manager->email)->queue(
-                        new \App\Mail\SendMessage(
-                            namaPengaju: Auth::user()->name,
-                            namaApprover: $manager->name,
-                            linkTanggapan: $linkTanggapan,
-                            emailPengaju: Auth::user()->email,
-                        )
-                    );
-                });
-
-            } else {
-                // --- Kalau bukan leader, jalur normal ke approver (team lead)
-                if ($officialTravel->approver) {
-                    $token = Str::random(48);
-                    ApprovalLink::create([
-                        'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
-                        'model_id' => $officialTravel->id,
-                        'approver_user_id' => $officialTravel->approver->id,
-                        'level' => 1, // level 1 berarti arahnya ke team lead
-                        'scope' => 'both',             // boleh approve & reject
-                        'token' => hash('sha256', $token), // simpan hash, kirim raw
-                        'expires_at' => now()->addDays(3),  // masa berlaku
-                    ]);
-
-                }
-
-                DB::afterCommit(function () use ($officialTravel, $request, $token) {
-                    $fresh = $officialTravel->fresh(); // ambil ulang (punya created_at dll)
-                    // dd("jalan");
-                    event(new \App\Events\OfficialTravelSubmitted($fresh, Auth::user()->division_id));
-
-                    // Kalau tidak ada approver atau token, jangan kirim email
-                    if (!$fresh || !$fresh->approver || !$token) {
-                        return;
-                    }
-
-                    $linkTanggapan = route('public.approval.show', $token);
-
-                    Mail::to($officialTravel->approver->email)->queue(
-                        new \App\Mail\SendMessage(
-                            namaPengaju: Auth::user()->name,
-                            namaApprover: $officialTravel->approver->name,
-                            linkTanggapan: $linkTanggapan,
-                            emailPengaju: Auth::user()->email,
-                        )
-                    );
-                });
+            if ($manager) {
+                $token = Str::random(48);
+                ApprovalLink::create([
+                    'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
+                    'model_id' => $officialTravel->id,
+                    'approver_user_id' => $manager->id,
+                    'level' => 2, // level 2 berarti arahnya ke manager
+                    'scope' => 'both',             // boleh approve & reject
+                    'token' => hash('sha256', $token), // simpan hash, kirim raw
+                    'expires_at' => now()->addDays(3),  // masa berlaku
+                ]);
             }
+
+            DB::afterCommit(function () use ($officialTravel, $token) {
+                $fresh = $officialTravel->fresh();
+                event(new \App\Events\OfficialTravelLevelAdvanced(
+                    $fresh,
+                    Auth::user()->division_id,
+                    'manager'
+                ));
+
+                if (!$fresh || !$token) {
+                    return;
+                }
+
+                $linkTanggapan = route('public.approval.show', $token);
+
+                $manager = User::where('role', Roles::Manager->value)->first();
+                Mail::to($manager->email)->queue(
+                    new \App\Mail\SendMessage(
+                        namaPengaju: Auth::user()->name,
+                        namaApprover: $manager->name,
+                        linkTanggapan: $linkTanggapan,
+                        emailPengaju: Auth::user()->email,
+                    )
+                );
+            });
+
+        } else {
+            // --- Kalau bukan leader, jalur normal ke approver (team lead)
+            if ($officialTravel->approver) {
+                $token = Str::random(48);
+                ApprovalLink::create([
+                    'model_type' => get_class($officialTravel),   // App\Models\OfficialTravel
+                    'model_id' => $officialTravel->id,
+                    'approver_user_id' => $officialTravel->approver->id,
+                    'level' => 1, // level 1 berarti arahnya ke team lead
+                    'scope' => 'both',             // boleh approve & reject
+                    'token' => hash('sha256', $token), // simpan hash, kirim raw
+                    'expires_at' => now()->addDays(3),  // masa berlaku
+                ]);
+
+            }
+
+            DB::afterCommit(function () use ($officialTravel, $request, $token) {
+                $fresh = $officialTravel->fresh(); // ambil ulang (punya created_at dll)
+                // dd("jalan");
+                event(new \App\Events\OfficialTravelSubmitted($fresh, Auth::user()->division_id));
+
+                // Kalau tidak ada approver atau token, jangan kirim email
+                if (!$fresh || !$fresh->approver || !$token) {
+                    return;
+                }
+
+                $linkTanggapan = route('public.approval.show', $token);
+
+                Mail::to($officialTravel->approver->email)->queue(
+                    new \App\Mail\SendMessage(
+                        namaPengaju: Auth::user()->name,
+                        namaApprover: $officialTravel->approver->name,
+                        linkTanggapan: $linkTanggapan,
+                        emailPengaju: Auth::user()->email,
+                    )
+                );
+            });
+        }
 
         return redirect()->route('finance.official-travels.show', $officialTravel->id)
             ->with('success', 'Official travel request updated successfully. Total days: ' . $totalDays);
@@ -614,9 +631,9 @@ class OfficialTravelController extends Controller
         $query = OfficialTravel::with('employee')->where('status_1', 'approved')->where('status_2', 'approved')->where('marked_down', true);
 
         if ($dateFrom && $dateTo) {
-            $query->where(function($q) use ($dateFrom, $dateTo) {
+            $query->where(function ($q) use ($dateFrom, $dateTo) {
                 $q->whereDate('date_start', '<=', $dateTo)
-                ->whereDate('date_end', '>=', $dateFrom);
+                    ->whereDate('date_end', '>=', $dateFrom);
             });
         }
 

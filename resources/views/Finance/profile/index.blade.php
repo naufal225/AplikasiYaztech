@@ -62,8 +62,8 @@
                     <div class="mt-2">
                         <span
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {{ auth()->user()->role == 'employee' ? 'Employee' : (auth()->user()->role == 'manager' ? 'Approver 2' : (auth()->user()->role == 'approver' ? 'Approver 1' : (auth()->user()->role == 'admin' ? 'Admin' : (auth()->user()->role == 'finance' ? 'Approver 3' : 'Unknown')))) }}
-                        </span>
+                            {{ auth()->user()->roles->map(fn($role) =>
+                            \App\Enums\Roles::from($role->name)->label())->join(', ') }} </span>
                     </div>
                 </div>
 
@@ -96,7 +96,8 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Role</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->role == 'employee' ? 'Employee' : (auth()->user()->role == 'manager' ? 'Approver 2' : (auth()->user()->role == 'approver' ? 'Approver 1' : (auth()->user()->role == 'admin' ? 'Admin' : (auth()->user()->role == 'finance' ? 'Approver 3' : 'Unknown')))) }}</p>
+                    <p class="mt-1 text-sm text-gray-900"> {{ auth()->user()->roles->map(fn($role) =>
+                        \App\Enums\Roles::from($role->name)->label())->join(', ') }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Member Since</label>
@@ -134,7 +135,8 @@
 <div id="editProfileModal" class="fixed inset-0 z-50 hidden bg-black/20">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="w-full max-w-md bg-white rounded-lg shadow-xl">
-            <form action="{{ route('finance.profile.update', Auth::id()) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('finance.profile.update', Auth::id()) }}" method="POST"
+                enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -251,53 +253,54 @@
 </div>
 
 @push('scripts')
-    // Modal functions
-    function openEditModal() {
-        document.getElementById('editProfileModal').classList.remove('hidden');
-    }
+// Modal functions
+function openEditModal() {
+document.getElementById('editProfileModal').classList.remove('hidden');
+}
 
-    function closeEditModal() {
-        document.getElementById('editProfileModal').classList.add('hidden');
-    }
+function closeEditModal() {
+document.getElementById('editProfileModal').classList.add('hidden');
+}
 
-    function openPasswordModal() {
-        document.getElementById('passwordModal').classList.remove('hidden');
-    }
+function openPasswordModal() {
+document.getElementById('passwordModal').classList.remove('hidden');
+}
 
-    function closePasswordModal() {
-        document.getElementById('passwordModal').classList.add('hidden');
-        // Clear password fields
-        document.getElementById('current_password').value = '';
-        document.getElementById('new_password').value = '';
-        document.getElementById('new_password_confirmation').value = '';
-    }
+function closePasswordModal() {
+document.getElementById('passwordModal').classList.add('hidden');
+// Clear password fields
+document.getElementById('current_password').value = '';
+document.getElementById('new_password').value = '';
+document.getElementById('new_password_confirmation').value = '';
+}
 
-    // Image preview
-    document.getElementById('profile_photo').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.getElementById('preview-image');
-                const placeholder = document.getElementById('preview-placeholder');
+// Image preview
+document.getElementById('profile_photo').addEventListener('change', function(e) {
+const file = e.target.files[0];
+if (file) {
+const reader = new FileReader();
+reader.onload = function(e) {
+const preview = document.getElementById('preview-image');
+const placeholder = document.getElementById('preview-placeholder');
 
-                if (preview) {
-                    preview.src = e.target.result;
-                } else if (placeholder) {
-                    placeholder.outerHTML = `<img id="preview-image" src="${e.target.result}" alt="Preview" class="object-cover w-16 h-16 rounded-full">`;
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-    });
+if (preview) {
+preview.src = e.target.result;
+} else if (placeholder) {
+placeholder.outerHTML = `<img id="preview-image" src="${e.target.result}" alt="Preview"
+    class="object-cover w-16 h-16 rounded-full">`;
+}
+};
+reader.readAsDataURL(file);
+}
+});
 
-    // Close modals when clicking outside
-    document.getElementById('editProfileModal').addEventListener('click', function(e) {
-        if (e.target === this) closeEditModal();
-    });
+// Close modals when clicking outside
+document.getElementById('editProfileModal').addEventListener('click', function(e) {
+if (e.target === this) closeEditModal();
+});
 
-    document.getElementById('passwordModal').addEventListener('click', function(e) {
-        if (e.target === this) closePasswordModal();
-    });
+document.getElementById('passwordModal').addEventListener('click', function(e) {
+if (e.target === this) closePasswordModal();
+});
 @endpush
 @endsection

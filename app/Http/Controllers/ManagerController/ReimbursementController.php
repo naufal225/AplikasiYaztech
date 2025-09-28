@@ -12,6 +12,7 @@ use App\Models\ApprovalLink;
 use App\Models\Reimbursement;
 use App\Models\User;
 use App\Enums\Roles;
+use App\Models\Role;
 use App\Services\ReimbursementApprovalService;
 use App\Services\ReimbursementService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -118,7 +119,11 @@ class ReimbursementController extends Controller
             // ->whereHas('employee', fn($q) => $q->where('division_id', auth()->user()->division_id))
             ->update(['seen_by_manager_at' => now()]);
 
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('roles.id', $managerRole->id);
+        })->first();
 
         return view('manager.reimbursement.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
 

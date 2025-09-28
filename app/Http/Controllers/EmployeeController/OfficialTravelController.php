@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\Roles;
 use App\Models\OfficialTravel;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\OfficialTravelService;
 use Carbon\Carbon;
@@ -133,7 +134,11 @@ class OfficialTravelController extends Controller
         $approvedRequests = (int) ($counts->approved ?? 0);
         $rejectedRequests = (int) ($counts->rejected ?? 0);
 
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('roles.id', $managerRole->id);
+        })->first();
 
         return view('Employee.travels.travel-show', compact(
             'officialTravels',

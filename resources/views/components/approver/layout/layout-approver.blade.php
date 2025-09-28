@@ -47,7 +47,7 @@
             const badgeReimbursement = document.getElementById('reimbursement-badge');
             if (!leaveNav || !badgeLeave || !officialTravelNav || !badgeTravel || !reimbursementlNav || !badgeReimbursement || !overtimeNav || !badgeOvertime || !window.Echo) return;
 
-            const role = leaveNav.dataset.role;
+            const roles = leaveNav.dataset.roles;
             const divisionId = leaveNav.dataset.divisionId;
 
             function incrementBadge(badgeElement) {
@@ -57,7 +57,8 @@
                 badgeElement.style.display = 'inline-flex';
             }
 
-            if (role === 'approver') {
+            if (roles.includes('approver') || roles.includes('manager')) {
+
                 window.Echo.private(`approver.division.${divisionId}`)
                     .listen('.leave.submitted', (e) => {
                         console.log('[Echo] leave.submitted received', e);

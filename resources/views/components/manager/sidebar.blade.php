@@ -41,8 +41,8 @@
 
         @endphp
 
-        <a href="{{ route('manager.leaves.index') }}" id="leave-nav" data-role="{{ Auth::user()->role }}"
-            data-division-id="{{ Auth::user()->division_id }}"
+        <a href="{{ route('manager.leaves.index') }}" id="leave-nav"
+            data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
@@ -56,7 +56,7 @@
         </a>
 
         <a href="{{ route('manager.reimbursements.index') }}" id="reimbursement-nav"
-            data-role="{{ Auth::user()->role }}" data-division-id="{{ Auth::user()->division_id }}"
+            data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
             <i class="w-5 mr-3 text-center fas fa-file-invoice-dollar"></i>
@@ -69,8 +69,8 @@
             </span>
         </a>
 
-        <a href="{{ route('manager.overtimes.index') }}" id="overtime-nav" data-role="{{ Auth::user()->role }}"
-            data-division-id="{{ Auth::user()->division_id }}"
+        <a href="{{ route('manager.overtimes.index') }}" id="overtime-nav"
+            data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
             <i class="w-5 mr-3 text-center fas fa-clock"></i>
@@ -84,7 +84,7 @@
         </a>
 
         <a href="{{ route('manager.official-travels.index') }}" id="official-travel-nav"
-            data-role="{{ Auth::user()->role }}" data-division-id="{{ Auth::user()->division_id }}"
+            data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
             <i class="w-5 mr-3 text-center fas fa-briefcase"></i>

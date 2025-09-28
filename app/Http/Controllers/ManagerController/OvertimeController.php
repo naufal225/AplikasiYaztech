@@ -117,6 +117,10 @@ class OvertimeController extends Controller
         $managerRole = Role::where('name', 'manager')->first();
 
         $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('roles.id', $managerRole->id);
+        })->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
             $query->where('id', $managerRole->id);
         })->first();
 

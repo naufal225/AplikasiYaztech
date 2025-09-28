@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\ApprovalLink;
+use App\Models\Role;
 use Illuminate\Support\Facades\DB;
 use ZipArchive;
 use Illuminate\Support\Str;
@@ -174,7 +175,11 @@ class OvertimeController extends Controller
         $pendingYoursRequests = $totalYoursRequests - $approvedYoursRequests - $rejectedYoursRequests;
 
         // --- Manager
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('roles.id', $managerRole->id);
+        })->first();
 
         return view('Finance.overtimes.overtime-show', compact(
             'yourOvertimes',

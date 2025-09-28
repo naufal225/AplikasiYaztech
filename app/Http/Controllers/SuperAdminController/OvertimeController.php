@@ -10,6 +10,7 @@ use App\Models\Overtime;
 use App\Models\User;
 use App\Enums\Roles;
 use App\Http\Requests\StoreOvertimeRequest;
+use App\Models\Role;
 use App\Services\OvertimeApprovalService;
 use App\Services\OvertimeService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -113,7 +114,11 @@ class OvertimeController extends Controller
         $rejectedRequests = Overtime::where('status_1', 'rejected')
             ->orWhere('status_2', 'rejected')->count();
 
-        $manager = \App\Models\User::where('role', \App\Enums\Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+       $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('roles.id', $managerRole->id);
+        })->first();
         return view('super-admin.overtime.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 

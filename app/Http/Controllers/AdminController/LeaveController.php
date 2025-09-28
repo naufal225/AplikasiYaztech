@@ -93,7 +93,7 @@ class LeaveController extends Controller
         $managerRole = Role::where('name', 'manager')->first();
 
         $manager = User::whereHas('roles', function ($query) use ($managerRole) {
-            $query->where('id', $managerRole->id);
+            $query->where('roles.id', $managerRole->id);
         })->first();
 
         return view('admin.leave-request.index', compact(

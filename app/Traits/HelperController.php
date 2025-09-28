@@ -16,7 +16,7 @@ trait HelperController
     private function getRecentRequests($userId)
     {
         $user = Auth::user();
-        $role = $user->role;
+        $role = session('active_role');
 
         // Tentukan prefix route sesuai role
         $routePrefix = match ($role) {

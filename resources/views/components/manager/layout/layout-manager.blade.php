@@ -51,7 +51,7 @@
 
             if (!leaveNav || !officialTravelNav || !reimbursementlNav || !overtimeNav || !window.Echo) return;
 
-            const role = leaveNav.dataset.role;
+            const roles = leaveNav.dataset.roles;
             const divisionId = leaveNav.dataset.divisionId;
 
             function incrementBadge(badgeElement) {
@@ -60,7 +60,7 @@
                 badgeElement.textContent = current + 1;
                 badgeElement.style.display = 'inline-flex';
             }
-            if (role === 'manager') {
+           if (roles.includes('approver') || roles.includes('manager')) {
                 window.Echo.private(`manager.approval`)
                     .listen('.leave.level-advanced', (e) => {
                         console.log('[Echo] leave.level-advanced received', e);

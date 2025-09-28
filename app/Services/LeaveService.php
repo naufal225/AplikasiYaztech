@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\ApprovalLink;
 use App\Models\Holiday;
 use App\Enums\Roles;
+use App\Models\Role;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -169,7 +170,12 @@ class LeaveService
 
     private function notify(Leave $leave): void
     {
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('roles.id', $managerRole->id);
+        })->first();
+        
         if (!$manager)
             return;
 

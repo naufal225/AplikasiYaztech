@@ -42,7 +42,9 @@
 
         @endphp
 
-        <a href="{{ route('approver.leaves.index') }}" id="leave-nav" data-role="{{ Auth::user()->role }}"
+        <a href="{{ route('approver.leaves.index') }}" id="leave-nav"
+            data-roles='@json(Auth::user()->roles->pluck("name"))'
+
             data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
@@ -57,7 +59,9 @@
         </a>
 
         <a href="{{ route('approver.reimbursements.index') }}" id="reimbursement-nav"
-            data-role="{{ Auth::user()->role }}" data-division-id="{{ Auth::user()->division_id }}"
+            data-roles='@json(Auth::user()->roles->pluck("name"))'
+
+            data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
             <i class="w-5 mr-3 text-center fas fa-file-invoice-dollar"></i>
@@ -70,7 +74,9 @@
             </span>
         </a>
 
-        <a href="{{ route('approver.overtimes.index') }}" id="overtime-nav" data-role="{{ Auth::user()->role }}"
+        <a href="{{ route('approver.overtimes.index') }}" id="overtime-nav"
+            data-roles='@json(Auth::user()->roles->pluck("name"))'
+
             data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
@@ -85,7 +91,9 @@
         </a>
 
         <a href="{{ route('approver.official-travels.index') }}" id="official-travel-nav"
-            data-role="{{ Auth::user()->role }}" data-division-id="{{ Auth::user()->division_id }}"
+            data-roles='@json(Auth::user()->roles->pluck("name"))'
+
+            data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
             <i class="w-5 mr-3 text-center fas fa-briefcase"></i>

@@ -7,6 +7,7 @@ use App\Models\Reimbursement;
 use App\Models\User;
 use App\Models\ApprovalLink;
 use App\Enums\Roles;
+use App\Models\Role;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -41,7 +42,12 @@ class ReimbursementApprovalService
                 event(new ReimbursementLevelAdvanced($reimbursement->fresh(), Auth::user()->division_id ?? 0, 'manager'));
 
                 // kirim approval link ke Manager
-                $manager = User::where('role', Roles::Manager->value)->first();
+                $managerRole = Role::where('name', 'manager')->first();
+
+                $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+                    $query->where('roles.id', $managerRole->id);
+                })->first();
+
                 if ($manager) {
                     $token = Str::random(48);
                     ApprovalLink::create([

@@ -10,6 +10,7 @@ use App\Models\ApprovalLink;
 use App\Models\OfficialTravel;
 use App\Models\User;
 use App\Enums\Roles;
+use App\Models\Role;
 use App\Services\OfficialTravelApprovalService;
 use App\Services\OfficialTravelService;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -114,7 +115,11 @@ class OfficialTravelController extends Controller
         $rejectedRequests = OfficialTravel::where('status_1', 'rejected')
             ->orWhere('status_2', 'rejected')->count();
 
-        $manager = \App\Models\User::where('role', \App\Enums\Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('roles.id', $managerRole->id);
+        })->first();
         return view('super-admin.official-travel.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 

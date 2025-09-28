@@ -14,6 +14,7 @@ use App\Models\Leave;
 use App\Models\User;
 use App\Models\Division;
 use App\Models\Holiday;
+use App\Models\Role;
 use App\Services\LeaveApprovalService;
 use App\Services\LeaveService;
 use Carbon\Carbon;
@@ -135,7 +136,11 @@ class LeaveController extends Controller
         $approvedRequests = (int) ($counts->approved ?? 0);
         $rejectedRequests = (int) ($counts->rejected ?? 0);
 
-        $manager = User::where('role', Roles::Manager->value)->first();
+        $managerRole = Role::where('name', 'manager')->first();
+
+        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
+            $query->where('roles.id', $managerRole->id);
+        })->first();
 
         return view('Employee.leaves.leave-show', compact(
             'leaves',

@@ -9,12 +9,12 @@ use App\Models\Overtime;
 use App\Models\Reimbursement;
 use App\Models\User;
 use App\Enums\Roles;
+use App\Models\Role;
 use App\Traits\HelperController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Spatie\Permission\Models\Role;
 
 class DashboardController extends Controller
 {
@@ -43,8 +43,13 @@ class DashboardController extends Controller
         $total_pending = array_sum($pendings);
         $total_rejected = array_sum($rejecteds);
         $total_approved = array_sum($approveds);
-        $total_employees = User::where('role', Roles::Employee->value)->count();
 
+        $employeeRole = Role::where('name', Roles::Employee->value);
+
+        $total_employees = User::whereHas('roles', function ($q) use ($employeeRole) {
+            $q->where('roles.id', $employeeRole->id);
+        })->count();
+        
         // Generate chart data per bulan
         $reimbursementsChartData = $overtimesChartData = $leavesChartData = $officialTravelsChartData = $reimbursementsRupiahChartData = [];
         $months = [];
