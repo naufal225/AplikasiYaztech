@@ -44,12 +44,12 @@ class DashboardController extends Controller
         $total_rejected = array_sum($rejecteds);
         $total_approved = array_sum($approveds);
 
-        $employeeRole = Role::where('name', Roles::Employee->value);
+        $employeeRole = Role::where('name', Roles::Employee->value)->firstOr();
 
         $total_employees = User::whereHas('roles', function ($q) use ($employeeRole) {
             $q->where('roles.id', $employeeRole->id);
         })->count();
-        
+
         // Generate chart data per bulan
         $reimbursementsChartData = $overtimesChartData = $leavesChartData = $officialTravelsChartData = $reimbursementsRupiahChartData = [];
         $months = [];

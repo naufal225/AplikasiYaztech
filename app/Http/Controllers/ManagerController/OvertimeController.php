@@ -120,10 +120,6 @@ class OvertimeController extends Controller
             $query->where('roles.id', $managerRole->id);
         })->first();
 
-        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
-            $query->where('id', $managerRole->id);
-        })->first();
-
         return view('manager.overtime.index', compact('allUsersRequests', 'ownRequests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'manager'));
     }
 

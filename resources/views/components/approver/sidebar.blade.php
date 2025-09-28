@@ -43,9 +43,7 @@
         @endphp
 
         <a href="{{ route('approver.leaves.index') }}" id="leave-nav"
-            data-roles='@json(Auth::user()->roles->pluck("name"))'
-
-            data-division-id="{{ Auth::user()->division_id }}"
+            data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
             <i class="w-5 mr-3 text-center fas fa-plane-departure"></i>
@@ -59,9 +57,7 @@
         </a>
 
         <a href="{{ route('approver.reimbursements.index') }}" id="reimbursement-nav"
-            data-roles='@json(Auth::user()->roles->pluck("name"))'
-
-            data-division-id="{{ Auth::user()->division_id }}"
+            data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
             <i class="w-5 mr-3 text-center fas fa-file-invoice-dollar"></i>
@@ -75,9 +71,7 @@
         </a>
 
         <a href="{{ route('approver.overtimes.index') }}" id="overtime-nav"
-            data-roles='@json(Auth::user()->roles->pluck("name"))'
-
-            data-division-id="{{ Auth::user()->division_id }}"
+            data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
             <i class="w-5 mr-3 text-center fas fa-clock"></i>
@@ -91,9 +85,7 @@
         </a>
 
         <a href="{{ route('approver.official-travels.index') }}" id="official-travel-nav"
-            data-roles='@json(Auth::user()->roles->pluck("name"))'
-
-            data-division-id="{{ Auth::user()->division_id }}"
+            data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('approver.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
 
             <i class="w-5 mr-3 text-center fas fa-briefcase"></i>
@@ -126,6 +118,11 @@
                 <p class="text-sm font-medium text-white truncate">{{ Auth::user()->name }}</p>
                 <p class="text-xs text-primary-200">{{ Auth::user()->email }}</p>
             </div>
+        </a>
+        <a href="/choose-role"
+            class="flex items-center w-full px-4 py-2 mb-2 transition-all duration-200 rounded-lg text-primary-100 hover:bg-primary-700 hover:text-white">
+            <i class="w-5 mr-3 text-center fas fa-sync-alt"></i>
+            <span class="font-medium">Change Role</span>
         </a>
         <form action="{{ route('logout') }}" method="POST">
             @csrf

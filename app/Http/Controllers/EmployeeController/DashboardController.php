@@ -24,7 +24,7 @@ class DashboardController extends Controller
 
         $employeeRole = Role::where('name', Roles::Employee->value)->first();
 
-        $total_employees = User::whereHas('roles', function ($query) use ($employeeRole) {
+        $employeeCount = User::whereHas('roles', function ($query) use ($employeeRole) {
             $query->where('roles.id', $employeeRole->id);
         })->count();
 
