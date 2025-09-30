@@ -10,12 +10,11 @@ class ApproveOvertimeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Hanya Approver atau Manager yang boleh memproses approval
-        return Auth::check()
-            && Auth::user()->roles->pluck('name')->intersect([
-                Roles::Approver->value,
-                Roles::Manager->value
-            ])->isNotEmpty();
+        // Hanya Approver atau Manager yang aktif yang boleh memproses approval
+        return Auth::check() && (
+            Auth::user()->hasActiveRole(Roles::Approver->value)
+            || Auth::user()->hasActiveRole(Roles::Manager->value)
+        );
     }
 
     public function rules(): array

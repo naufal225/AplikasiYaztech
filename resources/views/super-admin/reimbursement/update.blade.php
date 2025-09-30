@@ -54,28 +54,56 @@
             @csrf
             @method('PUT')
 
-            <div>
-                <label for="customer" class="block mb-2 text-sm font-semibold text-neutral-700">
-                    <i class="mr-2 fas fa-users text-primary-600"></i>
-                    Customer
-                </label>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div>
+                    <label for="customer" class="block mb-2 text-sm font-semibold text-neutral-700">
+                        <i class="mr-2 fas fa-users text-primary-600"></i>
+                        Customer
+                    </label>
+                    <input type="text" name="customer" id="customer" class="form-input"
+                           value="{{ old('customer', $reimbursement->customer) }}" placeholder="e.g., John Doe" required>
+                </div>
 
-                <!-- Input tampilan -->
-                <input type="text" name="customer" id="customer" class="form-input"
-                    value="{{ old('customer', $reimbursement->customer) }}" placeholder="e.g., John Doe" required>
+                <div>
+                    <label for="reimbursement_type_id" class="block mb-2 text-sm font-semibold text-neutral-700">
+                        <i class="mr-2 fas fa-list text-primary-600"></i>
+                        Type Reimbursement
+                    </label>
+                    <select name="reimbursement_type_id" id="reimbursement_type_id" class="form-select" required>
+                        <option value="">-- Select Type --</option>
+                        @foreach($types as $type)
+                            <option value="{{ $type->id }}" {{ old('reimbursement_type_id', $reimbursement->reimbursement_type_id) == $type->id ? 'selected' : '' }}>
+                                {{ $type->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
-                    <label for="total" class="block mb-2 text-sm font-semibold text-neutral-700"> {{-- Changed from
-                        amount --}}
+                    <label for="total_display" class="block mb-2 text-sm font-semibold text-neutral-700">
                         <i class="mr-2 fas fa-dollar-sign text-primary-600"></i>
-                        Total Amount (Rp) {{-- Changed from Amount --}}
+                        Total Amount (Rp)
                     </label>
-                    <input type="number" id="total" name="total" class="form-input" {{-- Changed from amount --}}
-                        value="{{ old('total', $reimbursement->total) }}" min="0" step="0.01"
-                        placeholder="e.g., 150000.00" required>
+                    <input type="text" id="total_display" class="form-input"
+                           value="{{ old('total', $reimbursement->total) }}" placeholder="e.g., 150000" required>
+                    <input type="hidden" id="total" name="total" value="{{ old('total', $reimbursement->total) }}">
                 </div>
+
+                <script>
+                    document.addEventListener("DOMContentLoaded", function () {
+                        const displayInput = document.getElementById("total_display");
+                        const hiddenInput = document.getElementById("total");
+                        function formatRupiah(angka) { return angka.replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+                        displayInput.addEventListener("input", function () {
+                            let raw = this.value.replace(/\D/g, "");
+                            hiddenInput.value = raw;
+                            this.value = formatRupiah(raw);
+                        });
+                        if (hiddenInput.value) { displayInput.value = formatRupiah(hiddenInput.value); }
+                    });
+                </script>
 
                 <div>
                     <label for="date" class="block mb-2 text-sm font-semibold text-neutral-700">
@@ -83,8 +111,8 @@
                         Date of Expense
                     </label>
                     <input type="date" id="date" name="date" class="form-input"
-                        value="{{ old('date', $reimbursement->date->format('Y-m-d')) }}" required
-                        max="{{ date('Y-m-d') }}">
+                           value="{{ old('date', $reimbursement->date->format('Y-m-d')) }}" required
+                           max="{{ date('Y-m-d') }}">
                 </div>
             </div>
 

@@ -240,12 +240,12 @@
                                     class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endif
                                 <button type="button" class="delete-leave-btn text-error-600 hover:text-error-900"
                                     data-leave-id="{{ $leave->id }}" data-leave-name="Leave Request #{{ $leave->id }}"
                                     data-table="own" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                @endif
                             </div>
                         </td>
                     </tr>

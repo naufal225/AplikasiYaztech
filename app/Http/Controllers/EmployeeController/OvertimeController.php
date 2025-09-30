@@ -155,7 +155,7 @@ class OvertimeController extends Controller
      */
     public function create()
     {
-        $approvers = User::where('role', Roles::Approver->value)
+        $approvers = User::whereHas('roles', fn($q) => $q->where('name', Roles::Approver->value))
             ->get();
         return view('Employee.overtimes.overtime-request', compact('approvers'));
     }
@@ -213,7 +213,7 @@ class OvertimeController extends Controller
                 ->with('error', 'You cannot edit an overtime request that has already been processed.');
         }
 
-        $approvers = User::where('role', Roles::Approver->value)
+        $approvers = User::whereHas('roles', fn($q) => $q->where('name', Roles::Approver->value))
             ->get();
         return view('Employee.overtimes.overtime-edit', compact('overtime', 'approvers'));
     }
@@ -243,11 +243,11 @@ class OvertimeController extends Controller
     public function destroy(Overtime $overtime)
     {
         $user = Auth::user();
-        if ($user->id !== $overtime->employee_id && $user->hasActiveRole(Roles::Admin->value)) {
+        if ($user->id !== $overtime->employee_id && !$user->hasActiveRole(Roles::Admin->value)) {
             abort(403, 'Unauthorized action.');
         }
 
-        if (($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') && $user->hasActiveRole(Roles::Admin->value)) {
+        if (($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') && !$user->hasActiveRole(Roles::Admin->value)) {
             return redirect()->route('employee.overtimes.show', $overtime->id)
                 ->with('error', 'You cannot delete an overtime request that has already been processed.');
         }

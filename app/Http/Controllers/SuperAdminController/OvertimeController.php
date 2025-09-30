@@ -215,11 +215,11 @@ class OvertimeController extends Controller
     public function destroy(Overtime $overtime)
     {
         $user = Auth::user();
-        if ($user->id !== $overtime->employee_id && $user->hasActiveRole(Roles::SuperAdmin->value)) {
+        if ($user->id !== $overtime->employee_id && !$user->hasActiveRole(Roles::SuperAdmin->value)) {
             abort(403, 'Unauthorized action.');
         }
 
-        if (($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') && $user->hasActiveRole(Roles::SuperAdmin->value)) {
+        if (($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') && !$user->hasActiveRole(Roles::SuperAdmin->value)) {
             return redirect()->route('super-admin.overtimes.show', $overtime->id)
                 ->with('error', 'You cannot delete an overtime request that has already been processed.');
         }
@@ -240,8 +240,8 @@ class OvertimeController extends Controller
     public function exportPdfAllData(Request $request)
     {
         try {
-            // Authorization: Only Admin
-            if (Auth::user()->hasActiveRole(Roles::SuperAdmin->value)) {
+            // Authorization: Only Super Admin
+            if (!Auth::user()->hasActiveRole(Roles::SuperAdmin->value)) {
                 abort(403, 'Unauthorized action.');
             }
 

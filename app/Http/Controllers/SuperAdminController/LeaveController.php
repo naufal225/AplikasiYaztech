@@ -184,12 +184,12 @@ class LeaveController extends Controller
     {
         // Check if the user has permission to delete this leave
         $user = Auth::user();
-        if ($user->id !== $leave->employee_id && $user->hasActiveRole(Roles::Manager->value)) {
+        if ($user->id !== $leave->employee_id && !$user->hasActiveRole(Roles::Manager->value)) {
             abort(403, 'Unauthorized action.');
         }
 
         // Only allow deleting if the leave is still pending
-        if (($leave->status_1 !== 'pending') && $user->hasActiveRole(Roles::Manager->value)) {
+        if (($leave->status_1 !== 'pending') && !$user->hasActiveRole(Roles::Manager->value)) {
             return redirect()->route('super-admin.leaves.show', $leave->id)
                 ->with('error', 'You cannot delete a leave request that has already been processed.');
         }

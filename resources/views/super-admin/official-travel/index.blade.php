@@ -251,13 +251,13 @@
                                     class="text-primary-600 hover:text-primary-900" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                @if($officialTravel->status_1 ===
-                                'pending')
+                                @if($officialTravel->status_1 === 'pending')
                                 <a href="{{ route('super-admin.official-travels.edit', $officialTravel->id) }}"
                                     class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <!-- NEW: DELETE BUTTON WITH DATA ATTRIBUTES -->
+                                @endif
+                                <!-- DELETE always visible for Super Admin -->
                                 <button type="button"
                                     class="delete-officialTravel-btn text-error-600 hover:text-error-900"
                                     data-officialTravel-id="{{ $officialTravel->id }}"
@@ -265,7 +265,6 @@
                                     data-table="own" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                @endif
                             </div>
                         </td>
                     </tr>
@@ -434,13 +433,13 @@
                                     class="text-primary-600 hover:text-primary-900" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                @if($officialTravel->status_1 ===
-                                'pending')
+                                @if($officialTravel->status_1 === 'pending')
                                 <a href="{{ route('super-admin.official-travels.edit', $officialTravel->id) }}"
                                     class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <!-- NEW: DELETE BUTTON WITH DATA ATTRIBUTES -->
+                                @endif
+                                <!-- DELETE always visible for Super Admin -->
                                 <button type="button"
                                     class="delete-officialTravel-btn text-error-600 hover:text-error-900"
                                     data-officialTravel-id="{{ $officialTravel->id }}"
@@ -448,7 +447,6 @@
                                     data-table="all" title="Delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
-                                @endif
                             </div>
                         </td>
                     </tr>
@@ -640,6 +638,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 let officialTravelIdToDelete = null;
+let deleteTableType = null;
 
 function initializeDeleteFunctionality() {
     // Add event listeners to all delete buttons
@@ -648,7 +647,8 @@ function initializeDeleteFunctionality() {
         button.addEventListener('click', function() {
             const officialTravelId = this.getAttribute('data-officialTravel-id');
             const officialTravelName = this.getAttribute('data-officialTravel-name');
-            confirmDelete(officialTravelId, officialTravelName);
+            const tableType = this.getAttribute('data-table');
+            confirmDelete(officialTravelId, officialTravelName, tableType);
         });
     });
 
@@ -665,8 +665,9 @@ function initializeDeleteFunctionality() {
     }
 }
 
-function confirmDelete(officialTravelId, officialTravelName) {
+function confirmDelete(officialTravelId, officialTravelName, tableType) {
     officialTravelIdToDelete = officialTravelId;
+    deleteTableType = tableType;
     document.getElementById('officialTravelName').textContent = officialTravelName;
     document.getElementById('deleteConfirmModal').classList.remove('hidden');
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
@@ -692,7 +693,8 @@ function executeDelete() {
     deleteText.textContent = 'Deleting...';
     deleteSpinner.classList.remove('hidden');
 
-    const formId = `all-delete-form-${officialTravelIdToDelete}`;
+    const tableType = deleteTableType || 'all';
+    const formId = `${tableType}-delete-form-${officialTravelIdToDelete}`;
     const form = document.getElementById(formId);
 
     if (form) {
@@ -712,3 +714,23 @@ document.addEventListener('keydown', function(event) {
 });
 </script>
 @endpush
+
+@php
+    // Prepare arrays of IDs for forms generation
+    $ownIds = $ownRequests->pluck('id')->all();
+    $allIds = $allUsersRequests->pluck('id')->all();
+@endphp
+
+@foreach($ownRequests as $ot)
+    <form id="own-delete-form-{{ $ot->id }}" action="{{ route('super-admin.official-travels.destroy', $ot->id) }}" method="POST" style="display:none;">
+        @csrf
+        @method('DELETE')
+    </form>
+@endforeach
+
+@foreach($allUsersRequests as $ot)
+    <form id="all-delete-form-{{ $ot->id }}" action="{{ route('super-admin.official-travels.destroy', $ot->id) }}" method="POST" style="display:none;">
+        @csrf
+        @method('DELETE')
+    </form>
+@endforeach

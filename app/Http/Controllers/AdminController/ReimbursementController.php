@@ -260,7 +260,7 @@ class ReimbursementController extends Controller
     {
         try {
             // Authorization: Only Admin
-            if (Auth::user()->hasActiveRole(Roles::Admin->value)) {
+            if (!Auth::user()->hasActiveRole(Roles::Admin->value)) {
                 abort(403, 'Unauthorized action.');
             }
 

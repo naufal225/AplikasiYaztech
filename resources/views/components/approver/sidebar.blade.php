@@ -119,11 +119,13 @@
                 <p class="text-xs text-primary-200">{{ Auth::user()->email }}</p>
             </div>
         </a>
+        @if(Auth::user()->roles->count() >= 2)
         <a href="/choose-role"
             class="flex items-center w-full px-4 py-2 mb-2 transition-all duration-200 rounded-lg text-primary-100 hover:bg-primary-700 hover:text-white">
             <i class="w-5 mr-3 text-center fas fa-sync-alt"></i>
             <span class="font-medium">Change Role</span>
         </a>
+        @endif
         <form action="{{ route('logout') }}" method="POST">
             @csrf
             <button type="submit"

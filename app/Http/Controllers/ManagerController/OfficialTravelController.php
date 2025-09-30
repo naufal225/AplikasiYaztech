@@ -194,7 +194,7 @@ class OfficialTravelController extends Controller
     public function destroy(OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id && $user->hasActiveRole(Roles::Admin->value)) {
+        if ($user->id !== $officialTravel->employee_id && !$user->hasActiveRole(Roles::Admin->value)) {
             abort(403, 'Unauthorized action.');
         }
 

@@ -267,7 +267,7 @@ class ReimbursementController extends Controller
 
             if ($isLeader) {
                 // --- Jika leader, langsung kirim ke Manager (level 2)
-                $manager = User::where('role', Roles::Manager->value)->first();
+                $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
 
                 if ($manager) {
                     $token = \Illuminate\Support\Str::random(48);
@@ -296,7 +296,7 @@ class ReimbursementController extends Controller
 
                     $linkTanggapan = route('public.approval.show', $token);
 
-                    $manager = User::where('role', Roles::Manager->value)->first();
+                    $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
                     Mail::to($manager->email)->queue(
                         new \App\Mail\SendMessage(
                             namaPengaju: Auth::user()->name,
@@ -452,7 +452,7 @@ class ReimbursementController extends Controller
 
         if ($isLeader) {
             // --- Jika leader, langsung kirim ke Manager (level 2)
-            $manager = User::where('role', Roles::Manager->value)->first();
+            $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
             if ($manager) {
                 $token = \Illuminate\Support\Str::random(48);
                 ApprovalLink::create([
@@ -477,7 +477,7 @@ class ReimbursementController extends Controller
                     return;
                 }
                 $linkTanggapan = route('public.approval.show', $token);
-                $manager = User::where('role', Roles::Manager->value)->first();
+                $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
                 Mail::to($manager->email)->queue(
                     new \App\Mail\SendMessage(
                         namaPengaju: Auth::user()->name,

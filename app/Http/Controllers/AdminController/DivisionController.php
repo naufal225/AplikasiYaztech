@@ -42,7 +42,9 @@ class DivisionController extends Controller
 
     public function edit(Division $division)
     {
-        $approvers = User::where('role', Roles::Approver->value)->where('division_id', $division->id)->get();
+        $approvers = User::whereHas('roles', fn($q) => $q->where('name', Roles::Approver->value))
+            ->where('division_id', $division->id)
+            ->get();
         return view('admin.division.update', compact(['division', 'approvers']));
     }
 

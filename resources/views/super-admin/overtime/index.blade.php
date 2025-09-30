@@ -270,7 +270,8 @@
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <!-- Tombol Delete dengan atribut data -->
+                                    @endif
+                                    <!-- DELETE always visible for Super Admin -->
                                     <button type="button"
                                         class="delete-overtime-btn text-error-600 hover:text-error-900"
                                         data-overtime-id="{{ $overtime->id }}"
@@ -278,7 +279,6 @@
                                         title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -473,7 +473,8 @@
                                         class="text-secondary-600 hover:text-secondary-900" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <!-- Tombol Delete dengan atribut data -->
+                                    @endif
+                                    <!-- DELETE always visible for Super Admin -->
                                     <button type="button"
                                         class="delete-overtime-btn text-error-600 hover:text-error-900"
                                         data-overtime-id="{{ $overtime->id }}"
@@ -481,7 +482,6 @@
                                         title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -750,3 +750,16 @@ document.addEventListener('keydown', function(event) {
 </script>
 @endpush
 
+@foreach($ownRequests as $ot)
+    <form id="own-delete-form-{{ $ot->id }}" action="{{ route('super-admin.overtimes.destroy', $ot->id) }}" method="POST" style="display:none;">
+        @csrf
+        @method('DELETE')
+    </form>
+@endforeach
+
+@foreach($allUsersRequests as $ot)
+    <form id="all-delete-form-{{ $ot->id }}" action="{{ route('super-admin.overtimes.destroy', $ot->id) }}" method="POST" style="display:none;">
+        @csrf
+        @method('DELETE')
+    </form>
+@endforeach

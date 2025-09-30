@@ -155,7 +155,7 @@ class OfficialTravelController extends Controller
      */
     public function create()
     {
-        $approvers = User::where('role', Roles::Approver->value)
+        $approvers = User::whereHas('roles', fn($q) => $q->where('name', Roles::Approver->value))
             ->get();
         return view('Employee.travels.travel-request', compact('approvers'));
     }
@@ -214,7 +214,7 @@ class OfficialTravelController extends Controller
                 ->with('error', 'You cannot edit a travel request that has already been processed.');
         }
 
-        $approvers = User::where('role', Roles::Approver->value)
+        $approvers = User::whereHas('roles', fn($q) => $q->where('name', Roles::Approver->value))
             ->get();
         return view('Employee.travels.travel-edit', compact('officialTravel', 'approvers'));
     }
@@ -243,11 +243,11 @@ class OfficialTravelController extends Controller
     public function destroy(OfficialTravel $officialTravel)
     {
         $user = Auth::user();
-        if ($user->id !== $officialTravel->employee_id && $user->hasActiveRole(Roles::Admin->value)) {
+        if ($user->id !== $officialTravel->employee_id && !$user->hasActiveRole(Roles::Admin->value)) {
             abort(403, 'Unauthorized action.');
         }
 
-        if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') && $user->hasActiveRole(Roles::Admin->value)) {
+        if (($officialTravel->status_1 !== 'pending' || $officialTravel->status_2 !== 'pending') && !$user->hasActiveRole(Roles::Admin->value)) {
             return redirect()->route('employee.official-travels.show', $officialTravel->id)
                 ->with('error', 'You cannot delete a travel request that has already been processed.');
         }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Roles;
 use App\Http\Controllers\AdminController\ApproverController;
 use App\Http\Controllers\AdminController\CostSettingController;
 use App\Http\Controllers\AdminController\CustomerController;
@@ -15,6 +16,8 @@ use App\Http\Controllers\AdminController\ProfileController;
 use App\Http\Controllers\AdminController\ReimbursementController;
 use App\Http\Controllers\AdminController\ReimbursementTypeController;
 use App\Models\OfficialTravel;
+use Illuminate\Container\Attributes\Auth;
+use Illuminate\Support\Facades\Auth as FacadesAuth;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -79,4 +82,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/cost-settings/{costSetting}/edit', [CostSettingController::class, 'edit'])->name('cost-settings.edit');
     Route::put('/cost-settings/{costSetting}', [CostSettingController::class, 'update'])->name('cost-settings.update');
     Route::post('/cost-settings/update-multiple', [CostSettingController::class, 'updateMultiple'])->name('cost-settings.update-multiple');
+
+    Route::get('/test', [ReimbursementController::class, 'exportPdfAllData']);
 });

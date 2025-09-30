@@ -77,7 +77,7 @@ class PublicApprovalController extends Controller
                     if ($notifyManager) {
                         DB::afterCommit(function () use ($subject) {
                             // 1) Tentukan manager penerima
-                            $manager = User::where('role', Roles::Manager->value)->first();
+                            $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
                             if (!$manager) {
                                 // Tidak ada manager, ya sudah: fail-silent atau log
                                 Log::warning('No manager found for subject id ' . $subject->id . ' type ' . get_class($subject));

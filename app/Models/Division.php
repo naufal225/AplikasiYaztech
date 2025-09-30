@@ -17,7 +17,7 @@ class Division extends Model
     public function members()
     {
         return $this->hasMany(User::class, 'division_id')
-            ->where('role', Roles::Employee->value);
+            ->whereHas('roles', fn($q) => $q->where('name', Roles::Employee->value));
     }
 
     public function leader()
@@ -32,7 +32,8 @@ class Division extends Model
             User::class,
             'id',
             'id'
-        )->where('users.role', Roles::Employee->value);
+        )
+        ->whereHas('employee.roles', fn($q) => $q->where('name', Roles::Employee->value));
     }
 
     public function leaves()
@@ -42,7 +43,8 @@ class Division extends Model
             User::class,
             'id',
             'id'
-        )->where('users.role', Roles::Employee->value);
+        )
+        ->whereHas('employee.roles', fn($q) => $q->where('name', Roles::Employee->value));
     }
 
     public function officialTravels()
@@ -52,7 +54,8 @@ class Division extends Model
             User::class,
             'id',
             'id'
-        )->where('users.role', Roles::Employee->value);
+        )
+        ->whereHas('employee.roles', fn($q) => $q->where('name', Roles::Employee->value));
     }
 
     public function overtimes()
@@ -62,7 +65,8 @@ class Division extends Model
             User::class,
             'id',
             'id'
-        )->where('users.role', Roles::Employee->value);
+        )
+        ->whereHas('employee.roles', fn($q) => $q->where('name', Roles::Employee->value));
     }
 
     protected $casts = [

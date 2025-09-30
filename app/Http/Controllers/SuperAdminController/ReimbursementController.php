@@ -242,8 +242,8 @@ class ReimbursementController extends Controller
     public function exportPdfAllData(Request $request)
     {
         try {
-            // Authorization: Only Admin
-            if (Auth::user()->hasActiveRole(Roles::SuperAdmin->value)) {
+            // Authorization: Only Super Admin
+            if (!Auth::user()->hasActiveRole(Roles::SuperAdmin->value)) {
                 abort(403, 'Unauthorized action.');
             }
 

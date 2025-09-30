@@ -126,7 +126,7 @@ class OvertimesExport implements FromCollection, WithHeadings, WithMapping, With
             ucfirst((string) $overtime->status_1),
             ucfirst((string) $overtime->status_2),
             $overtime->approver->name ?? 'N/A',
-            optional(User::where('role', Roles::Manager->value)->first())->name ?? 'N/A',
+            optional(User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first())->name ?? 'N/A',
             $overtime->updated_at?->timezone('Asia/Jakarta')->format('M d, Y H:i') ?? '-',
             $overtime->approved_date ? $overtime->approved_date->timezone('Asia/Jakarta')->format('M d, Y H:i') : '-', // Approved Date
             $overtime->rejected_date ? $overtime->rejected_date->timezone('Asia/Jakarta')->format('M d, Y H:i') : '-', // Rejected Date

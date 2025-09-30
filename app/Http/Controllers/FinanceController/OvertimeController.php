@@ -203,7 +203,7 @@ class OvertimeController extends Controller
      */
     public function create()
     {
-        $approvers = User::where('role', Roles::Approver->value)
+        $approvers = User::whereHas('roles', fn($q) => $q->where('name', Roles::Approver->value))
             ->get();
         return view('Finance.overtimes.overtime-request', compact('approvers'));
     }
@@ -284,7 +284,7 @@ class OvertimeController extends Controller
 
             if ($isLeader) {
                 // --- Jika leader, langsung kirim ke Manager (level 2)
-                $manager = User::where('role', Roles::Manager->value)->first();
+            $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
 
                 if ($manager) {
                     $token = \Illuminate\Support\Str::random(48);
@@ -313,7 +313,7 @@ class OvertimeController extends Controller
 
                     $linkTanggapan = route('public.approval.show', $token);
 
-                    $manager = User::where('role', Roles::Manager->value)->first();
+                $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
                     Mail::to($manager->email)->queue(
                         new \App\Mail\SendMessage(
                             namaPengaju: Auth::user()->name,
@@ -394,7 +394,7 @@ class OvertimeController extends Controller
                 ->with('error', 'You cannot edit an overtime request that has already been processed.');
         }
 
-        $approvers = User::where('role', Roles::Approver->value)
+        $approvers = User::whereHas('roles', fn($q) => $q->where('name', Roles::Approver->value))
             ->get();
 
         return view('Finance.overtimes.overtime-edit', compact('overtime', 'approvers'));
@@ -481,7 +481,7 @@ class OvertimeController extends Controller
 
         if ($isLeader) {
             // --- Jika leader, langsung kirim ke Manager (level 2)
-            $manager = User::where('role', Roles::Manager->value)->first();
+            $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
 
             if ($manager) {
                 $token = \Illuminate\Support\Str::random(48);
@@ -510,7 +510,7 @@ class OvertimeController extends Controller
 
                 $linkTanggapan = route('public.approval.show', $token);
 
-                $manager = User::where('role', Roles::Manager->value)->first();
+                $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
                 Mail::to($manager->email)->queue(
                     new \App\Mail\SendMessage(
                         namaPengaju: Auth::user()->name,

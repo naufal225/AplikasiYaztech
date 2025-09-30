@@ -42,15 +42,30 @@
             <form action="{{ route('super-admin.reimbursements.store') }}" method="POST" enctype="multipart/form-data" class="p-6 space-y-6">
                 @csrf
 
-                <div>
-                    <label for="customer" class="block mb-2 text-sm font-semibold text-neutral-700">
-                        <i class="mr-2 fas fa-users text-primary-600"></i>
-                        Customer
-                    </label>
+                <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                        <label for="customer" class="block mb-2 text-sm font-semibold text-neutral-700">
+                            <i class="mr-2 fas fa-users text-primary-600"></i>
+                            Customer
+                        </label>
+                        <input type="text" name="customer" id="customer" class="form-input"
+                               value="{{ old('customer') }}" placeholder="e.g., John Doe" required>
+                    </div>
 
-                    <!-- Input tampilan -->
-                    <input type="text" name="customer" id="customer" class="form-input"
-                        value="{{ old('customer') }}" placeholder="e.g., John Doe" required>
+                    <div>
+                        <label for="reimbursement_type_id" class="block mb-2 text-sm font-semibold text-neutral-700">
+                            <i class="mr-2 fas fa-list text-primary-600"></i>
+                            Type Reimbursement
+                        </label>
+                        <select name="reimbursement_type_id" id="reimbursement_type_id" class="form-select" required>
+                            <option value="">-- Select Type --</option>
+                            @foreach($types as $type)
+                                <option value="{{ $type->id }}" {{ old('reimbursement_type_id')==$type->id ? 'selected' : '' }}>
+                                    {{ $type->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -59,12 +74,8 @@
                             <i class="mr-2 fas fa-dollar-sign text-primary-600"></i>
                             Total Amount (Rp)
                         </label>
-
-                        <!-- Input tampilan -->
                         <input type="text" id="total_display" class="form-input"
-                            value="{{ old('total') }}" placeholder="e.g., 150000" required>
-
-                        <!-- Input hidden untuk nilai asli -->
+                               value="{{ old('total') }}" placeholder="e.g., 150000" required>
                         <input type="hidden" id="total" name="total" value="{{ old('total') }}">
                     </div>
 

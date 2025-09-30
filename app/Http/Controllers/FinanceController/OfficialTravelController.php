@@ -193,7 +193,7 @@ class OfficialTravelController extends Controller
      */
     public function create()
     {
-        $approvers = User::where('role', Roles::Approver->value)
+        $approvers = User::whereHas('roles', fn($q) => $q->where('name', Roles::Approver->value))
             ->get();
         return view('Finance.travels.travel-request', compact('approvers'));
     }
@@ -275,7 +275,7 @@ class OfficialTravelController extends Controller
 
             if ($isLeader) {
                 // --- Jika leader, langsung kirim ke Manager (level 2)
-                $manager = User::where('role', Roles::Manager->value)->first();
+                $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
 
                 if ($manager) {
                     $token = Str::random(48);
@@ -304,7 +304,7 @@ class OfficialTravelController extends Controller
 
                     $linkTanggapan = route('public.approval.show', $token);
 
-                    $manager = User::where('role', Roles::Manager->value)->first();
+                    $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
                     Mail::to($manager->email)->queue(
                         new \App\Mail\SendMessage(
                             namaPengaju: Auth::user()->name,
@@ -425,7 +425,7 @@ class OfficialTravelController extends Controller
                 ->with('error', 'You cannot edit a travel request that has already been processed.');
         }
 
-        $approvers = User::where('role', Roles::Approver->value)
+        $approvers = User::whereHas('roles', fn($q) => $q->where('name', Roles::Approver->value))
             ->get();
         return view('Finance.travels.travel-edit', compact('officialTravel', 'approvers'));
     }
@@ -510,7 +510,7 @@ class OfficialTravelController extends Controller
 
         if ($isLeader) {
             // --- Jika leader, langsung kirim ke Manager (level 2)
-            $manager = User::where('role', Roles::Manager->value)->first();
+            $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
 
             if ($manager) {
                 $token = Str::random(48);
@@ -539,7 +539,7 @@ class OfficialTravelController extends Controller
 
                 $linkTanggapan = route('public.approval.show', $token);
 
-                $manager = User::where('role', Roles::Manager->value)->first();
+                $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
                 Mail::to($manager->email)->queue(
                     new \App\Mail\SendMessage(
                         namaPengaju: Auth::user()->name,

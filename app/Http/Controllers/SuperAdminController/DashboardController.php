@@ -44,10 +44,11 @@ class DashboardController extends Controller
         $total_pending = array_sum($pendings);
         $total_rejected = array_sum($rejecteds);
         $total_approved = array_sum($approveds);
-        $employeeRole = Role::where('name', Roles::Employee->value);
+        // Ambil ID role Employee (hindari akses properti pada builder)
+        $employeeRoleId = Role::where('name', Roles::Employee->value)->value('id');
 
-        $total_employees = User::whereHas('roles', function ($q) use ($employeeRole) {
-            $q->where('roles.id', $employeeRole->id);
+        $total_employees = User::whereHas('roles', function ($q) use ($employeeRoleId) {
+            $q->where('roles.id', $employeeRoleId);
         })->count();
 
         // Generate chart data per bulan
