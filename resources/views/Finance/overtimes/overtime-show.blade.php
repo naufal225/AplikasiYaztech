@@ -354,17 +354,23 @@
 
     <!-- Overtime All Employee Table -->
     <form action="{{ route('finance.overtimes.marked') }}" method="POST"
-        onsubmit="return confirm('Are you sure you want to mark selected overtimes as done?')">
+        onsubmit="return confirm('Are you sure you want to mark selected overtimes as done?')" id="bulk-mark-form">
         @csrf
         @method('PATCH')
 
-        <div class="flex flex-row items-center justify-between p-4 mb-2 max-md:flex-col">
-            <p class="text-sm text-neutral-500 max-md:mb-6">All employee overtime requests are listed below.</p>
-            <button type="submit"
-                class="w-full px-4 py-2 text-white rounded-lg sm:w-auto bg-success-600 hover:bg-success-700 disabled:opacity-50"
-                id="bulk-mark-btn" disabled>
-                <i class="mr-1 fas fa-check"></i> Mark Selected Done
-            </button>
+        <div class="flex flex-row items-center justify-between p-4 mb-2 max-md:flex-col gap-2">
+            <p class="text-sm text-neutral-500 max-md:mb-2">All employee overtime requests are listed below.</p>
+            <div class="flex flex-row gap-2 w-full sm:w-auto">
+                <button type="button" id="mark-all-btn"
+                    class="w-full px-4 py-2 text-white rounded-lg sm:w-auto bg-primary-600 hover:bg-primary-700">
+                    <i class="mr-1 fas fa-list-check"></i> Mark All (Locked)
+                </button>
+                <button type="submit"
+                    class="w-full px-4 py-2 text-white rounded-lg sm:w-auto bg-success-600 hover:bg-success-700 disabled:opacity-50"
+                    id="bulk-mark-btn" disabled>
+                    <i class="mr-1 fas fa-check"></i> Mark Selected Done
+                </button>
+            </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -500,9 +506,20 @@
                         <td class="px-6 py-4 font-medium whitespace-nowrap text-md">
                             <div class="flex items-center space-x-2">
                                 <a href="{{ route('finance.overtimes.show', $overtime->id) }}"
-                                    class="text-primary-600 hover:text-primary-900">
+                                    class="text-primary-600 hover:text-primary-900" title="View">
                                     <i class="text-lg fas fa-eye"></i>
                                 </a>
+                                @if(!$overtime->marked_down && $overtime->locked_by === Auth::id())
+                                    <form action="{{ route('finance.overtimes.marked') }}" method="POST"
+                                        onsubmit="return confirm('Mark this overtime as done?')">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="ids[]" value="{{ $overtime->id }}">
+                                        <button type="submit" class="text-success-600 hover:text-success-800" title="Mark Done">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -668,7 +685,7 @@
 
         @if($allOvertimesDone->hasPages())
         <div class="px-6 py-4 border-t border-neutral-200">
-            {{ $allReimbursementsDone->links() }}
+            {{ $allOvertimesDone->links() }}
         </div>
         @endif
     </div>
@@ -678,6 +695,8 @@
 const selectAll = document.getElementById('select-all');
 const checkboxes = document.querySelectorAll('.row-checkbox');
 const bulkBtn = document.getElementById('bulk-mark-btn');
+const markAllBtn = document.getElementById('mark-all-btn');
+const bulkForm = document.getElementById('bulk-mark-form');
 
 function toggleButtons() {
 const anyChecked = document.querySelectorAll('.row-checkbox:checked').length > 0;
@@ -691,5 +710,15 @@ toggleButtons();
 
 checkboxes.forEach(cb => {
 cb.addEventListener('change', toggleButtons);
+});
+
+markAllBtn?.addEventListener('click', function () {
+    const rows = document.querySelectorAll('.row-checkbox');
+    let any = false;
+    rows.forEach(cb => { if (!cb.disabled) { cb.checked = true; any = true; } });
+    toggleButtons();
+    if (any) {
+        bulkForm.submit();
+    }
 });
 @endpush

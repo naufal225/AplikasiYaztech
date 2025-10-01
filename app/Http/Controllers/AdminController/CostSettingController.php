@@ -12,6 +12,7 @@ class CostSettingController extends Controller
     public function index()
     {
         $settings = CostSetting::all();
+        dd($settings);
         return view('admin.cost-settings.index', compact('settings'));
     }
 

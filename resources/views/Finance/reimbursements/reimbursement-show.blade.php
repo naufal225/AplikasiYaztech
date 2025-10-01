@@ -320,18 +320,24 @@
 
         <!-- Reimbursement All Employee Table -->
         <form action="{{ route('finance.reimbursements.marked') }}" method="POST"
-            onsubmit="return confirm('Are you sure you want to mark selected reimbursements as done?')">
+            onsubmit="return confirm('Are you sure you want to mark selected reimbursements as done?')" id="bulk-mark-form">
             @csrf
             @method('PATCH')
 
-            <div class="flex flex-row max-md:flex-col justify-between items-center p-4 mb-2">
-                <p class="text-sm text-neutral-500 max-md:mb-6">All employee reimbursement requests are listed below.</p>
-                <button type="submit"
-                        class="w-full sm:w-auto px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 disabled:opacity-50"
-                        id="bulk-mark-btn"
-                        disabled>
-                    <i class="fas fa-check mr-1"></i> Mark Selected Done
-                </button>
+            <div class="flex flex-row max-md:flex-col justify-between items-center p-4 mb-2 gap-2">
+                <p class="text-sm text-neutral-500 max-md:mb-2">All employee reimbursement requests are listed below.</p>
+                <div class="flex flex-row gap-2 w-full sm:w-auto">
+                    <button type="button" id="mark-all-btn"
+                            class="w-full sm:w-auto px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                        <i class="fas fa-list-check mr-1"></i> Mark All (Locked)
+                    </button>
+                    <button type="submit"
+                            class="w-full sm:w-auto px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 disabled:opacity-50"
+                            id="bulk-mark-btn"
+                            disabled>
+                        <i class="fas fa-check mr-1"></i> Mark Selected Done
+                    </button>
+                </div>
             </div>
 
             <div class="overflow-x-auto">
@@ -448,9 +454,20 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-md font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('finance.reimbursements.show', $reimbursement->id) }}"
-                                        class="text-primary-600 hover:text-primary-900" title="View Details">
+                                           class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye text-lg"></i>
                                         </a>
+                                        @if(!$reimbursement->marked_down && $reimbursement->locked_by === Auth::id())
+                                            <form action="{{ route('finance.reimbursements.marked') }}" method="POST" class="inline"
+                                                  onsubmit="return confirm('Mark this reimbursement as done?')">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="ids[]" value="{{ $reimbursement->id }}">
+                                                <button type="submit" class="text-success-600 hover:text-success-800" title="Mark Done">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -602,6 +619,8 @@
     const selectAll = document.getElementById('select-all');
     const checkboxes = document.querySelectorAll('.row-checkbox');
     const bulkBtn = document.getElementById('bulk-mark-btn');
+    const markAllBtn = document.getElementById('mark-all-btn');
+    const bulkForm = document.getElementById('bulk-mark-form');
 
     function toggleButtons() {
         const anyChecked = document.querySelectorAll('.row-checkbox:checked').length > 0;
@@ -615,5 +634,15 @@
 
     checkboxes.forEach(cb => {
         cb.addEventListener('change', toggleButtons);
+    });
+
+    markAllBtn?.addEventListener('click', function () {
+        const rows = document.querySelectorAll('.row-checkbox');
+        let any = false;
+        rows.forEach(cb => { if (!cb.disabled) { cb.checked = true; any = true; } });
+        toggleButtons();
+        if (any) {
+            bulkForm.submit();
+        }
     });
 @endpush
