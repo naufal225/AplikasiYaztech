@@ -32,7 +32,6 @@ class ReimbursementService
             $reimbursement->save();
 
             $fresh = $reimbursement->fresh(); // ambil ulang (punya created_at dll)
-            // dd("jalan");
             event(new \App\Events\ReimbursementSubmitted($fresh, Auth::user()->division_id));
 
             // jika ada approver

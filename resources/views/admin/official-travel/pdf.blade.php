@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -10,7 +10,7 @@
             font-size: 12px;
             color: #000;
             line-height: 1.6;
-            margin: 30px;
+            margin: 30px 30px 12px 30px;
         }
 
         .header,
@@ -147,12 +147,9 @@
 </head>
 
 <body>
+    @include('components.pdf.letterhead')
 
-    <div class="header">
-        <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
-    </div>
-
-    @if($travel->marked_down)
+@if($travel->marked_down)
         <div style="
             position: fixed;
             top: 0;
@@ -304,3 +301,4 @@
 </body>
 
 </html>
+

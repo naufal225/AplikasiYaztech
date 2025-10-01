@@ -106,7 +106,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Member Since</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->created_at->format('F j, Y') }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ optional(auth()->user()->created_at)->format('F j, Y') ?? '-' }}</p>
                 </div>
             </div>
         </div>
@@ -129,7 +129,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Last Updated</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->updated_at->format('F j, Y g:i A') }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ optional(auth()->user()->updated_at)->format('F j, Y g:i A') ?? '-' }}</p>
                 </div>
             </div>
         </div>

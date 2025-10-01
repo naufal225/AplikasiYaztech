@@ -256,7 +256,8 @@ class OfficialTravelController extends Controller
             }
 
             // Bangun query dasar untuk semua official travel
-            $query = OfficialTravel::with(['employee', 'approver', 'admin.division']);
+            // Eager load relasi yang digunakan di view PDF
+            $query = OfficialTravel::with(['employee', 'approver', 'employee.division']);
 
             // Terapkan filter status
             if ($request->filled('status')) {

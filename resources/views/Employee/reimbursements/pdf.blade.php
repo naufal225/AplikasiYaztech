@@ -9,7 +9,7 @@
             font-size: 12px;
             color: #000;
             line-height: 1.6;
-            margin: 40px;
+            margin: 40px 40px 12px 40px;
         }
         .header, .section {
             margin-bottom: 30px;
@@ -48,6 +48,22 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
+        }
+
+        .page-break {
+            page-break-before: always;
+            break-before: page;
+        }
+
+        img.invoice {
+            max-height: 700px;
+            max-width: 100%;
+            width: auto;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            object-fit: contain;
+            page-break-inside: avoid;
         }
     </style>
 </head>
@@ -119,18 +135,20 @@
                     Rp {{ number_format($reimbursement->total, 0, ',', '.') }}
                 </div>
             </div>
-            <div>
-                <div><span class="label">Invoice:</span></div>
-                <div class="box" style="height:300px;">
-                    @php
-                        $path = storage_path('app/public/' . $reimbursement->invoice_path);
-                        $type = pathinfo($path, PATHINFO_EXTENSION);
-                        $data = file_get_contents($path);
-                        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                    @endphp
-                    <img src="{{ $base64 }}" alt="Invoice" style="max-height:300px; max-width:100%; object-fit:fill;">
-                </div>
-            </div>
+        </div>
+    </div>
+
+    <!-- Invoice moved to a dedicated page -->
+    <div class="section page-break">
+        <h3>Invoice</h3>
+        <div class="box" style="padding:0; line-height:0; overflow:hidden;">
+            @php
+                $path = storage_path('app/public/' . $reimbursement->invoice_path);
+                $type = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            @endphp
+            <img src="{{ $base64 }}" alt="Invoice" class="invoice">
         </div>
     </div>
 

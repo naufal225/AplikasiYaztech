@@ -162,13 +162,13 @@ class ReimbursementController extends Controller
 
             $this->reimbursementApprovalService->handleApproval(
                 reimbursement: $reimbursement,
-                status: $request->input('status'),
+                status: $request->status_2,
                 note: $request->input('note'),
                 level: $level
             );
 
             return redirect()
-                ->route('approver.reimbursements.index')
+                ->route('admin.reimbursements.index')
                 ->with('success', "Reimbursement request {$request->status} successfully.");
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);

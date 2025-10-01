@@ -28,9 +28,22 @@ class ApproveReimbursementRequest extends FormRequest
      */
     public function rules(): array
     {
+        $activeRole = session('active_role');
+
+        $status1Rule = 'nullable|string|in:approved,rejected';
+        $status2Rule = 'nullable|string|in:approved,rejected';
+
+        if ($activeRole === Roles::Approver->value) {
+            $status1Rule = 'required|string|in:approved,rejected';
+        }
+
+        if ($activeRole === Roles::Manager->value) {
+            $status2Rule = 'required|string|in:approved,rejected';
+        }
+
         return [
-            'status_1' => 'required|string|in:approved,rejected',
-            'status_2' => 'required|string|in:approved,rejected',
+            'status_1' => $status1Rule,
+            'status_2' => $status2Rule,
             'note_1' => 'nullable|string|min:3|max:100',
             'note_2' => 'nullable|string|min:3|max:100',
         ];

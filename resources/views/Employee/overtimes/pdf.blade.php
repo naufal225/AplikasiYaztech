@@ -9,7 +9,7 @@
             font-size: 12px;
             color: #000;
             line-height: 1.6;
-            margin: 40px;
+            margin: 40px 40px 12px 40px;
         }
         .header, .section {
             margin-bottom: 30px;

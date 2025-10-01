@@ -429,6 +429,7 @@ document.addEventListener('keydown', function(event) {
 });
 
 function submitApproval(action){
+        console.log(action)
         document.getElementById('status_1').value = action;
         document.getElementById('approvalForm').submit();
     }

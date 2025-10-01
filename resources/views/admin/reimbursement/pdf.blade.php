@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -65,6 +65,12 @@
             color: orange;
         }
 
+        /* Force new page for invoice section */
+        .page-break {
+            page-break-before: always;
+            break-before: page;
+        }
+
         table.layout {
             width: 100%;
             border-collapse: collapse;
@@ -100,13 +106,14 @@
         }
 
         img.invoice {
-            max-height: 380px;
-            /* Sesuaikan dengan tinggi box jika perlu */
+            max-height: 700px;
             max-width: 100%;
+            height: auto;
+            width: auto;
             object-fit: contain;
+            display: block;
+            margin: 0 auto;
             page-break-inside: avoid;
-            vertical-align: middle;
-            /* Untuk centering vertikal jika diperlukan */
         }
 
         /* --- Gaya untuk catatan di bawah invoice --- */
@@ -165,13 +172,10 @@
 </head>
 
 <body>
-
-    <div class="header">
-        <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
-    </div>
+    @include('components.pdf.letterhead')
 
     @if($reimbursement->marked_down)
-        <div style="
+    <div style="
             position: fixed;
             top: 0;
             left: 0;
@@ -180,9 +184,7 @@
             background-color: rgba(255, 255, 255, 0.2);
             z-index: 9999;
         ">
-            <img src="{{ public_path('yaztech-logo-web.png') }}" 
-                alt="Yaztech Engineering Solusindo"
-                style="
+        <img src="{{ public_path('yaztech-logo-web.png') }}" alt="Yaztech Engineering Solusindo" style="
                     position: absolute;
                     bottom: 20px;
                     right: 20px;
@@ -190,7 +192,7 @@
                     z-index: 100;
                     opacity: 1;
                 ">
-        </div>
+    </div>
     @endif
 
     <div class="section">
@@ -281,37 +283,33 @@
                 </td>
             </tr>
             <tr>
-                <td class="label-col">Invoice:</td>
-                <td class="data-col">
-
-                    <div class="box" style="height:390px; text-align: center; line-height: 380px;">
-                        @php
-                            $path = storage_path('app/public/' . $reimbursement->invoice_path);
-                            $base64 = '';
-                            if (file_exists($path)) {
-                            $type = pathinfo($path, PATHINFO_EXTENSION);
-                            $data = file_get_contents($path);
-                            $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
-                            }
-                        @endphp
-
-                        @if($base64)
-                            <img src="{{ $base64 }}" alt="Invoice" class="invoice"
-                                style="width:auto; height:100%; object-fit:cover;">
-                        @else
-                            <span style="color: #777; font-style: italic;">No image available</span>
-                        @endif
-                    </div>
-                </td>
-            </tr>
-
-            <tr>
                 <td class="label-col">Type Reimbursement:</td>
                 <td class="data-col">
                     <div class="box">{{ $reimbursement->type->name ?? 'N/A' }}</div>
                 </td>
             </tr>
         </table>
+    </div>
+
+    <!-- Invoice moved to a dedicated page -->
+    <div class="section page-break">
+        <h3>Invoice</h3>
+        @php
+            $path = storage_path('app/public/' . $reimbursement->invoice_path);
+            $base64 = '';
+            if (file_exists($path)) {
+                $type = pathinfo($path, PATHINFO_EXTENSION);
+                $data = file_get_contents($path);
+                $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            }
+        @endphp
+        <div class="box" style="padding:0; line-height:0; overflow:hidden;">
+            @if($base64)
+                <img src="{{ $base64 }}" alt="Invoice" class="invoice">
+            @else
+                <span style="color:#777; font-style: italic;">No image available</span>
+            @endif
+        </div>
     </div>
 
 </body>

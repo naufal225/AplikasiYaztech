@@ -150,7 +150,7 @@ class OvertimeController extends Controller
         }
 
         if ($overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending') {
-            return redirect()->route('approver.overtimes.show', $overtime->id)
+            return redirect()->route('admin.overtimes.show', $overtime->id)
                 ->with('error', 'You cannot edit an overtime request that has already been processed.');
         }
 

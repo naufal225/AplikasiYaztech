@@ -172,7 +172,7 @@ class ReimbursementController extends Controller
 
             $this->reimbursementApprovalService->handleApproval(
                 reimbursement: $reimbursement,
-                status: $request->input('status'),
+                status: $request->status_1,
                 note: $request->input('note'),
                 level: $level
             );
