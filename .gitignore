@@ -24,3 +24,7 @@ Thumbs.db
 rr
 .rr.yaml
 .env
+*.zip
+*.apk
+/build/
+/dist/
