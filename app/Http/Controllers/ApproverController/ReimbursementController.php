@@ -219,7 +219,8 @@ class ReimbursementController extends Controller
 
     public function exportPdf(Reimbursement $reimbursement)
     {
-        $pdf = Pdf::loadView('admin.reimbursement.pdf', compact('reimbursement'));
+        $pdf = Pdf::loadView('admin.reimbursement.pdf', compact('reimbursement'))
+            ->setOptions(['isPhpEnabled' => true]);
         return $pdf->download('reimbursement-details.pdf');
     }
 

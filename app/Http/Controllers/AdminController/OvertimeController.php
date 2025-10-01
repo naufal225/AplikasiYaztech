@@ -228,7 +228,8 @@ class OvertimeController extends Controller
 
     public function exportPdf(Overtime $overtime)
     {
-        $pdf = Pdf::loadView('Employee.overtimes.pdf', compact('overtime'));
+        $pdf = Pdf::loadView('Employee.overtimes.pdf', compact('overtime'))
+            ->setOptions(['isPhpEnabled' => true]);
         return $pdf->download('overtime-details.pdf');
     }
 
@@ -313,7 +314,8 @@ class OvertimeController extends Controller
             foreach ($overtimes as $overtime) {
                 // Load view PDF dengan data overtime
                 // View harus menggunakan $overtime->employee, bukan Auth::user()
-                $pdf = Pdf::loadView('admin.overtime.pdf', compact('overtime'));
+                $pdf = Pdf::loadView('admin.overtime.pdf', compact('overtime'))
+                    ->setOptions(['isPhpEnabled' => true]);
 
                 // Buat nama file yang unik dan deskriptif
                 // Sanitasi nama file untuk menghindari karakter ilegal

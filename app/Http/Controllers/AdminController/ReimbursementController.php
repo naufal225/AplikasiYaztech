@@ -252,7 +252,8 @@ class ReimbursementController extends Controller
 
     public function exportPdf(Reimbursement $reimbursement)
     {
-        $pdf = Pdf::loadView('admin.reimbursement.pdf', compact('reimbursement'));
+        $pdf = Pdf::loadView('admin.reimbursement.pdf', compact('reimbursement'))
+            ->setOptions(['isPhpEnabled' => true]);
         return $pdf->download('reimbursement-details.pdf');
     }
 
@@ -330,7 +331,8 @@ class ReimbursementController extends Controller
             // Buat PDF untuk setiap reimbursement
             foreach ($reimbursements as $reimbursement) {
 
-                $pdf = Pdf::loadView('admin.reimbursement.pdf', compact('reimbursement'));
+                $pdf = Pdf::loadView('admin.reimbursement.pdf', compact('reimbursement'))
+                    ->setOptions(['isPhpEnabled' => true]);
 
                 // Nama file PDF unik
                 $fileName = "Reimbursement_{$reimbursement->employee->name}_RY{$reimbursement->id}.pdf";

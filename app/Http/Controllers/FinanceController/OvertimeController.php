@@ -637,7 +637,8 @@ class OvertimeController extends Controller
         $files = [];
 
         foreach ($overtimes as $overtime) {
-            $pdf = Pdf::loadView('Finance.overtimes.pdf', compact('overtime'));
+            $pdf = Pdf::loadView('Finance.overtimes.pdf', compact('overtime'))
+                ->setOptions(['isPhpEnabled' => true]);
             $fileName = "overtime_{$overtime->employee->name}_" . $overtime->id . ".pdf";
             $filePath = "{$tempFolder}/{$fileName}";
             Storage::disk('public')->put($filePath, $pdf->output());
@@ -695,7 +696,8 @@ class OvertimeController extends Controller
      */
     public function exportPdf(Overtime $overtime)
     {
-        $pdf = Pdf::loadView('Finance.overtimes.pdf', compact('overtime'));
+        $pdf = Pdf::loadView('Finance.overtimes.pdf', compact('overtime'))
+            ->setOptions(['isPhpEnabled' => true]);
         return $pdf->download('overtime-details-finance.pdf');
     }
 }

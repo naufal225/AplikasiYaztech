@@ -137,6 +137,7 @@ class LeaveBalancesController extends Controller
 
         // Generate PDF
         $pdf = Pdf::loadView('super-admin.leave-balances.export', compact('leaveBalances', 'year', 'divisionId', 'divisions'))
+            ->setOptions(['isPhpEnabled' => true])
             ->setPaper('A4', 'landscape');
 
         return $pdf->download($filename);

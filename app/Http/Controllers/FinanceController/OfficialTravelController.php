@@ -655,7 +655,8 @@ class OfficialTravelController extends Controller
         $files = [];
 
         foreach ($officialTravels as $officialTravel) {
-            $pdf = Pdf::loadView('Finance.travels.pdf', compact('officialTravel'));
+            $pdf = Pdf::loadView('Finance.travels.pdf', compact('officialTravel'))
+                ->setOptions(['isPhpEnabled' => true]);
             $fileName = "official_travel_{$officialTravel->employee->name}_" . $officialTravel->id . ".pdf";
             $filePath = "{$tempFolder}/{$fileName}";
             Storage::disk('public')->put($filePath, $pdf->output());
@@ -686,7 +687,9 @@ class OfficialTravelController extends Controller
      */
     public function exportPdf(OfficialTravel $officialTravel)
     {
-        $pdf = Pdf::loadView('Finance.travels.pdf', compact('officialTravel'));
+        $pdf = Pdf::loadView('Finance.travels.pdf', compact('officialTravel'))
+            ->setOptions(['isPhpEnabled' => true]);
         return $pdf->download('official-travel-details-finance.pdf');
     }
 }
+

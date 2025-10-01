@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <title>Overtime Request #OY{{ $overtime->id }}</title>
     <style>
+        @page { margin: 130px 30px 30px 30px; }
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
             color: #000;
             line-height: 1.6;
-            margin: 40px 40px 12px 40px;
+            margin: 0;
         }
         .header, .section {
             margin-bottom: 30px;
@@ -44,17 +45,15 @@
         .status-approved { color: green; }
         .status-rejected { color: red; }
         .status-pending { color: orange; }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .pdf-header { position: fixed; top: -110px; left: 0; right: 0; }
+        /* Footer drawn via script */
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
+    <div class="pdf-header">
+        @include('components.pdf.letterhead')
     </div>
 
     @if($overtime->marked_down)
@@ -97,6 +96,8 @@
         <div><span class="label">Approver 1:</span> <span class="value">{{ $overtime->approver->name ?? 'N/A' }}</span></div>
         <div><span class="label">Divisi:</span> <span class="value">{{ $overtime->employee->division->name ?? 'N/A' }}</span></div>
     </div>
+
+    
 
     <div class="section">
         <h3>Overtime Details</h3>

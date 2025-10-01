@@ -5,12 +5,13 @@
     <meta charset="UTF-8">
     <title>Reimbursement Request #RY{{ $reimbursement->id }}</title>
     <style>
+        @page { margin: 130px 30px 30px 30px; }
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
             color: #000;
             line-height: 1.6;
-            margin: 30px 30px 12px 30px;
+            margin: 0;
         }
 
         .header,
@@ -61,9 +62,10 @@
             color: red;
         }
 
-        .status-pending {
-            color: orange;
-        }
+        .status-pending { color: orange; }
+
+        .pdf-header { position: fixed; top: -110px; left: 0; right: 0; }
+        /* Footer drawn via Dompdf script */
 
         .page-break {
             page-break-before: always;
@@ -105,12 +107,12 @@
         }
 
         img.invoice {
-            max-height: 700px;
-            max-width: 100%;
             width: auto;
+            max-width: 100%;
             height: auto;
+            max-height: 640px;
             display: block;
-            margin: 0 auto;
+            margin: 0;
             object-fit: contain;
             page-break-inside: avoid;
         }
@@ -171,9 +173,8 @@
 </head>
 
 <body>
-
-    <div class="header">
-        <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
+    <div class="pdf-header">
+        @include('components.pdf.letterhead')
     </div>
 
     @if($reimbursement->marked_down)
@@ -273,6 +274,8 @@
             </tr>
         </table>
     </div>
+
+    
 
     <div class="section">
         <h3>Reimbursement Details</h3>

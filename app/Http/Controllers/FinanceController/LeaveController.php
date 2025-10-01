@@ -370,7 +370,8 @@ class LeaveController extends Controller
      */
     public function exportPdf(Leave $leave)
     {
-        $pdf = Pdf::loadView('Finance.leaves.pdf', compact('leave'));
+        $pdf = Pdf::loadView('Finance.leaves.pdf', compact('leave'))
+            ->setOptions(['isPhpEnabled' => true]);
         return $pdf->download('leave-details-finance.pdf');
     }
 
@@ -409,7 +410,8 @@ class LeaveController extends Controller
         $files = [];
 
         foreach ($leaves as $leave) {
-            $pdf = Pdf::loadView('Finance.leaves.pdf', compact('leave'));
+            $pdf = Pdf::loadView('Finance.leaves.pdf', compact('leave'))
+                ->setOptions(['isPhpEnabled' => true]);
             $fileName = "leave_{$leave->employee->name}_" . $leave->id . ".pdf";
             $filePath = "{$tempFolder}/{$fileName}";
             Storage::disk('public')->put($filePath, $pdf->output());

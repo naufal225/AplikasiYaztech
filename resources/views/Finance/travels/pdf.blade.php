@@ -5,12 +5,13 @@
     <meta charset="UTF-8">
     <title>Official Travel Request #TY{{ $travel->id }}</title>
     <style>
+        @page { margin: 130px 30px 30px 30px; }
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
             color: #000;
             line-height: 1.6;
-            margin: 30px 30px 12px 30px;
+            margin: 0;
         }
 
         .header,
@@ -58,9 +59,10 @@
             color: red;
         }
 
-        .status-pending {
-            color: orange;
-        }
+        .status-pending { color: orange; }
+
+        .pdf-header { position: fixed; top: -110px; left: 0; right: 0; }
+        /* Footer drawn via script */
 
         table.layout {
             width: 100%;
@@ -147,9 +149,8 @@
 </head>
 
 <body>
-
-    <div class="header">
-        <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
+    <div class="pdf-header">
+        @include('components.pdf.letterhead')
     </div>
 
     <div class="section">
@@ -209,6 +210,8 @@
             </tr>
         </table>
     </div>
+
+    
 
     <div class="section">
         <h3>Official Travel Details</h3>

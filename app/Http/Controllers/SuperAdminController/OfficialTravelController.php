@@ -233,7 +233,8 @@ class OfficialTravelController extends Controller
 
     public function exportPdf(OfficialTravel $officialTravel)
     {
-        $pdf = Pdf::loadView('admin.travels.pdf', compact('officialTravel'));
+        $pdf = Pdf::loadView('admin.travels.pdf', compact('officialTravel'))
+            ->setOptions(['isPhpEnabled' => true]);
         return $pdf->download('official-travel-details.pdf');
     }
 
@@ -310,7 +311,8 @@ class OfficialTravelController extends Controller
 
             // Buat PDF untuk setiap travel
             foreach ($travels as $travel) {
-                $pdf = Pdf::loadView('admin.official-travel.pdf', compact('travel'));
+                $pdf = Pdf::loadView('admin.official-travel.pdf', compact('travel'))
+                    ->setOptions(['isPhpEnabled' => true]);
 
                 // Nama file PDF unik dan deskriptif
                 $safeEmployeeName = preg_replace('/[^a-zA-Z0-9-_\.]/', '_', $travel->employee->name ?? 'Unknown');
@@ -364,3 +366,4 @@ class OfficialTravelController extends Controller
         }
     }
 }
+

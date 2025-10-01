@@ -195,7 +195,8 @@ class OfficialTravelController extends Controller
      */
     public function exportPdf(OfficialTravel $officialTravel)
     {
-        $pdf = Pdf::loadView('Employee.travels.pdf', compact('officialTravel'));
+        $pdf = Pdf::loadView('Employee.travels.pdf', compact('officialTravel'))
+            ->setOptions(['isPhpEnabled' => true]);
         return $pdf->download('official-travel-details.pdf');
     }
 

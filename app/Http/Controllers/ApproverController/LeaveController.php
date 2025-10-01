@@ -240,8 +240,9 @@ class LeaveController extends Controller
 
     public function exportPdf(Leave $leave)
     {
-        $pdf = Pdf::loadView('Employee.leaves.pdf', compact('leave'));
+        $pdf = Pdf::loadView('Employee.leaves.pdf', compact('leave'))->setOptions(["isPhpEnabled" => true]);
         return $pdf->download('leave-details.pdf');
     }
 
 }
+

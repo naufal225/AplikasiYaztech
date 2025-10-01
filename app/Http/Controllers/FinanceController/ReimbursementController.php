@@ -581,7 +581,8 @@ class ReimbursementController extends Controller
      */
     public function exportPdf(Reimbursement $reimbursement)
     {
-        $pdf = Pdf::loadView('Finance.reimbursements.pdf', compact('reimbursement'));
+        $pdf = Pdf::loadView('Finance.reimbursements.pdf', compact('reimbursement'))
+            ->setOptions(['isPhpEnabled' => true]);
         return $pdf->download('reimbursement-details-finance.pdf');
     }
 
@@ -620,7 +621,8 @@ class ReimbursementController extends Controller
         $files = [];
 
         foreach ($reimbursements as $reimbursement) {
-            $pdf = Pdf::loadView('Finance.reimbursements.pdf', compact('reimbursement'));
+            $pdf = Pdf::loadView('Finance.reimbursements.pdf', compact('reimbursement'))
+                ->setOptions(['isPhpEnabled' => true]);
             $fileName = "reimbursement_{$reimbursement->employee->name}_" . $reimbursement->id . ".pdf";
             $filePath = "{$tempFolder}/{$fileName}";
             Storage::disk('public')->put($filePath, $pdf->output());

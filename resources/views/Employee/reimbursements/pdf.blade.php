@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <title>Reimbursement Request #RY{{ $reimbursement->id }}</title>
     <style>
+        @page { margin: 130px 30px 30px 30px; }
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
             color: #000;
             line-height: 1.6;
-            margin: 40px 40px 12px 40px;
+            margin: 0;
         }
         .header, .section {
             margin-bottom: 30px;
@@ -56,21 +57,24 @@
         }
 
         img.invoice {
-            max-height: 700px;
-            max-width: 100%;
             width: auto;
+            max-width: 100%;
             height: auto;
+            max-height: 640px;
             display: block;
-            margin: 0 auto;
+            margin: 0;
             object-fit: contain;
             page-break-inside: avoid;
         }
+
+        .pdf-header { position: fixed; top: -110px; left: 0; right: 0; }
+        /* Footer drawn via script */
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="title">PT YAZTECH ENGINEERING SOLUSINDO</div>
+    <div class="pdf-header">
+        @include('components.pdf.letterhead')
     </div>
 
     @if($reimbursement->marked_down)
@@ -113,6 +117,8 @@
         <div><span class="label">Approver 1:</span> <span class="value">{{ $reimbursement->approver->name ?? 'N/A' }}</span></div>
         <div><span class="label">Divisi:</span> <span class="value">{{ $reimbursement->employee->division->name ?? 'N/A' }}</span></div>
     </div>
+
+    
 
     <div class="section">
         <h3>Reimbursement Details</h3>

@@ -5,12 +5,15 @@
     <meta charset="UTF-8">
     <title>Reimbursement Request #RY{{ $reimbursement->id }}</title>
     <style>
+        @page {
+            margin: 130px 30px 30px 30px; /* top, right, bottom, left */
+        }
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
             color: #000;
             line-height: 1.6;
-            margin: 30px;
+            margin: 0; /* handled by @page */
         }
 
         .header,
@@ -65,6 +68,15 @@
             color: orange;
         }
 
+        /* Repeating header/footer */
+        .pdf-header {
+            position: fixed;
+            top: -110px; /* place into top margin */
+            left: 0;
+            right: 0;
+        }
+        /* Footer drawn via Dompdf script to repeat per page */
+
         /* Force new page for invoice section */
         .page-break {
             page-break-before: always;
@@ -106,13 +118,13 @@
         }
 
         img.invoice {
-            max-height: 700px;
-            max-width: 100%;
+            width: auto;         /* jangan stretch lebar */
+            max-width: 100%;     /* cegah overflow kanan */
             height: auto;
-            width: auto;
+            max-height: 640px;   /* gunakan tinggi maksimum halaman konten */
             object-fit: contain;
             display: block;
-            margin: 0 auto;
+            margin: 0;           /* tetap rata kiri */
             page-break-inside: avoid;
         }
 
@@ -172,7 +184,9 @@
 </head>
 
 <body>
-    @include('components.pdf.letterhead')
+    <div class="pdf-header">
+        @include('components.pdf.letterhead')
+    </div>
 
     @if($reimbursement->marked_down)
     <div style="
@@ -311,6 +325,8 @@
             @endif
         </div>
     </div>
+
+    
 
 </body>
 
