@@ -58,7 +58,7 @@
                 <div>
                     <label for="customer" class="block mb-2 text-sm font-semibold text-neutral-700">
                         <i class="mr-2 fas fa-users text-primary-600"></i>
-                        Customer
+                        Perusahaan Customer
                     </label>
 
                     <!-- Input tampilan -->

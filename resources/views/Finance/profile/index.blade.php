@@ -58,7 +58,18 @@
                 <!-- User Info -->
                 <div class="flex-1">
                     <h1 class="text-2xl font-bold text-gray-900">{{ auth()->user()->name }}</h1>
-                    <p class="mt-1 text-gray-600">{{ auth()->user()->email }}</p>
+                    <div class="mt-1 space-y-2">
+                        <label class="text-sm font-semibold text-neutral-700">Email</label>
+                        <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200" x-data="{ tooltip: false }">
+                            <i class="flex-shrink-0 mr-3 fas fa-envelope text-primary-600"></i>
+                            <span class="font-medium truncate text-neutral-900" @mouseenter="tooltip = true" @mouseleave="tooltip = false" x-tooltip="'{{ auth()->user()->email }}'">
+                                {{ auth()->user()->email }}
+                            </span>
+                            <div x-show="tooltip" x-cloak class="absolute px-3 py-2 -mt-12 text-sm text-white bg-gray-900 rounded-lg shadow-lg">
+                                {{ auth()->user()->email }}
+                            </div>
+                        </div>
+                    </div>
                     <div class="mt-2">
                         <span
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">

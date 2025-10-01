@@ -154,17 +154,16 @@ class OfficialTravelController extends Controller
         $dataAll = OfficialTravel::where('status_1', 'approved')
             ->where('status_2', 'approved');
 
-        $totalRequests = $dataAll->count();
-        $approvedRequests = optional($dataAll->withFinalStatusCount()->first())->approved ?? 0;
+        $totalRequests = (clone $dataAll)->count();
+        $approvedRequests = optional((clone $dataAll)->reorder()->withFinalStatusCount()->first())->approved ?? 0;
         $markedRequests = (clone $dataAll)->where('marked_down', true)->count();
         $totalAllNoMark = (clone $dataAll)->where('marked_down', false)->count();
 
-        $countsYours = (clone $yourTravelsQuery)->withFinalStatusCount()->first();
-        $totalYoursRequests = $yourTravelsQuery->count();
+        $countsYours = (clone $yourTravelsQuery)->reorder()->withFinalStatusCount()->first();
+        $totalYoursRequests = (clone $yourTravelsQuery)->reorder()->count();
         $pendingYoursRequests = optional($countsYours)->pending ?? 0;
         $approvedYoursRequests = optional($countsYours)->approved ?? 0;
         $rejectedYoursRequests = optional($countsYours)->rejected ?? 0;
-
         // --- Manager
         $managerRole = Role::where('name', 'manager')->first();
 

@@ -201,7 +201,7 @@ class OfficialTravelController extends Controller
 
             return redirect()
                 ->route('approver.official-travels.index')
-                ->with('success', "official travel request {$request->status_1} successfully.");
+                ->with('success', "Official travel request {$request->status_1} successfully.");
 
         } catch (Exception $e) {
             return redirect()->back()->withErrors($e->getMessage());

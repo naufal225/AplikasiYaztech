@@ -106,7 +106,7 @@
                         </div>
                         <!-- Customer -->
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Customer</label>
+                            <label class="text-sm font-semibold text-neutral-700">Perusahaan Customer</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-users text-info-600"></i>
                                 <span class="font-medium text-neutral-900">{{ $reimbursement->customer ?? 'N/A'

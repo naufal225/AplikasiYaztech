@@ -46,7 +46,7 @@
                     <div>
                         <label for="customer" class="block mb-2 text-sm font-semibold text-neutral-700">
                             <i class="mr-2 fas fa-users text-primary-600"></i>
-                            Customer
+                            Perusahaan Customer
                         </label>
                         <input type="text" name="customer" id="customer" class="form-input"
                                value="{{ old('customer') }}" placeholder="e.g., John Doe" required>
@@ -132,7 +132,7 @@
                             <ul class="space-y-1 text-xs text-primary-700">
                                 <li>• All claims must be submitted within 30 days of the expense date.</li>
                                 <li>• Original receipts or digital copies are required for all claims.</li>
-                                <li>• Claims over Rp 1.000.000 require additional manager approval.</li>
+                                <li>• Claims over Rp 1.000.000 require additional Approver 2 approval.</li>
                                 <li>• Personal expenses are not eligible for reimbursement.</li>
                             </ul>
                         </div>

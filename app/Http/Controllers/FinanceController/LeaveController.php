@@ -89,11 +89,11 @@ class LeaveController extends Controller
         $allLeaves = $allLeavesQuery->paginate(10, ['*'], 'all_page')->withQueryString();
 
         // --- Hitung counts (sebelum paginate!)
-        $counts = (clone $allLeavesQuery)->withFinalStatusCount()->first();
+        $counts = (clone $allLeavesQuery)->reorder()->withFinalStatusCount()->first();
         $totalRequests = Leave::count();
         $approvedRequests = $counts ? (int) $counts->approved : 0;
 
-        $countsYours = (clone $yourLeavesQuery)->withFinalStatusCount()->first();
+        $countsYours = (clone $yourLeavesQuery)->reorder()->withFinalStatusCount()->first();
         $totalYoursRequests = $countsYours ? (int) ($countsYours->total ?? 0) : 0;
         $pendingYoursRequests = $countsYours ? (int) $countsYours->pending : 0;
         $approvedYoursRequests = $countsYours ? (int) $countsYours->approved : 0;

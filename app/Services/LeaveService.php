@@ -17,6 +17,28 @@ use Illuminate\Support\Str;
 
 class LeaveService
 {
+    public function sisaCutiForYear(User $user, int $tahun, $excludeLeaveId = null): int
+    {
+        $hariLibur = Holiday::whereYear('holiday_date', $tahun)
+            ->pluck('holiday_date')
+            ->map(fn($d) => Carbon::parse($d)->format('Y-m-d'))
+            ->toArray();
+
+        $cutiList = Leave::where('employee_id', $user->id)
+            ->where('status_1', 'approved')
+            ->when($excludeLeaveId, fn($q) => $q->where('id', '!=', $excludeLeaveId))
+            ->where(function ($q) use ($tahun) {
+                $q->whereYear('date_start', $tahun)
+                    ->orWhereYear('date_end', $tahun);
+            })
+            ->get();
+
+        $total = $cutiList->sum(
+            fn($cuti) => $this->hitungHariCuti($cuti->date_start, $cuti->date_end, $tahun, $hariLibur)
+        );
+
+        return max(0, (int) env('CUTI_TAHUNAN', 20) - $total);
+    }
     public function hitungHariCuti($dateStart, $dateEnd, int $tahun, array $hariLibur): int
     {
         $start = Carbon::parse($dateStart)->copy();
@@ -175,7 +197,7 @@ class LeaveService
         $manager = User::whereHas('roles', function ($query) use ($managerRole) {
             $query->where('roles.id', $managerRole->id);
         })->first();
-        
+
         if (!$manager)
             return;
 

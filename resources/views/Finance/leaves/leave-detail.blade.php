@@ -85,9 +85,14 @@
                         <!-- Email -->
                         <div class="space-y-2">
                             <label class="text-sm font-semibold text-neutral-700">Email</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ Auth::user()->email }}</span>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200" x-data="{ tooltip: false }">
+                                <i class="flex-shrink-0 mr-3 fas fa-envelope text-primary-600"></i>
+                                <span class="font-medium truncate text-neutral-900" @mouseenter="tooltip = true" @mouseleave="tooltip = false" x-tooltip="'{{ $leave->employee->email }}'">
+                                    {{ $leave->employee->email }}
+                                </span>
+                                <div x-show="tooltip" x-cloak class="absolute px-3 py-2 -mt-12 text-sm text-white bg-gray-900 rounded-lg shadow-lg">
+                                    {{ $leave->employee->email }}
+                                </div>
                             </div>
                         </div>
 
@@ -127,25 +132,21 @@
                                 <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                     <i class="mr-3 fas fa-clock text-secondary-600"></i>
                                     <span class="font-medium text-neutral-900">
-                                        @php
-                                            $tahunSekarang = now()->year;
-                                            $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
-                                                ->pluck('holiday_date')
-                                                ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
-                                                ->toArray();
+                                    @php
+                                        $tahunSekarang = now()->year;
+                                        $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                            ->pluck('holiday_date')
+                                            ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                            ->toArray();
+                                        $durasi = app()->call(\App\Services\LeaveService::class.'@hitungHariCuti', [
+                                            'dateStart' => $leave->date_start,
+                                            'dateEnd' => $leave->date_end,
+                                            'tahun' => $tahunSekarang,
+                                            'hariLibur' => $hariLibur,
+                                        ]);
+                                    @endphp
 
-                                            $start = \Carbon\Carbon::parse($leave->date_start);
-                                            $end   = \Carbon\Carbon::parse($leave->date_end);
-
-                                            $durasi = app()->call('App\Http\Controllers\EmployeeController\LeaveController@hitungHariCuti', [
-                                                'start' => $start,
-                                                'end' => $end,
-                                                'tahunSekarang' => $tahunSekarang,
-                                                'hariLibur' => $hariLibur,
-                                            ]);
-                                        @endphp
-
-                                        {{ $durasi }} {{ $durasi === 1 ? 'day' : 'days' }}
+                                    {{ $durasi }} {{ $durasi === 1 ? 'day' : 'days' }}
                                     </span>
                                 </div>
                             </div>

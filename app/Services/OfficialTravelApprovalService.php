@@ -18,7 +18,7 @@ class OfficialTravelApprovalService
     public function handleApproval(OfficialTravel $travel, string $status, ?string $note, string $level): OfficialTravel
     {
         // === APPROVER (Level 1) ===
-        if ($level === Roles::Approver->value) {
+        if ($level === 'status_1') {
             if ($travel->status_1 !== 'pending') {
                 throw new \Exception('Status 1 sudah final dan tidak dapat diubah.');
             }
@@ -47,7 +47,7 @@ class OfficialTravelApprovalService
                 $manager = User::whereHas('roles', function ($query) use ($managerRole) {
                     $query->where('roles.id', $managerRole->id);
                 })->first();
-                
+
                 if ($manager) {
                     $token = Str::random(48);
                     ApprovalLink::create([
@@ -76,8 +76,9 @@ class OfficialTravelApprovalService
         }
 
         // === MANAGER (Level 2) ===
-        if ($level === Roles::Manager->value) {
+        if ($level === 'status_2') {
             if ($travel->status_1 !== 'approved') {
+                dd($travel);
                 throw new \Exception('Manager hanya dapat memproses jika Approver sudah menyetujui.');
             }
 

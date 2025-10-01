@@ -188,7 +188,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Approver 2</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 1</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 2</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Customer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Perusahaan Customer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -351,7 +351,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Status 2 - Approver 2</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Approver 1</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Approver 2</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Customer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Perusahaan Customer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase">Actions</th>
                         </tr>
                     </thead>
@@ -485,7 +485,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status 2 - Approver 2</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 1</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Approver 2</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Customer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Perusahaan Customer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>

@@ -24,19 +24,19 @@
         $unseenOvertimeCount = 0;
         $unseenReimbursementCount = 0;
         $unseenLeaveCount = \App\Models\Leave::whereNull('seen_by_manager_at')
-        ->where('status_1','pending')
+        ->orWhere('status_1','pending')
         ->count();
         $unseenOfficialTravelCount = \App\Models\OfficialTravel::whereNull('seen_by_manager_at')
         ->where('status_1','!=','pending')
-        ->where('status_2','pending')
+        ->orWhere('status_2','pending')
         ->count();
         $unseenOvertimeCount = \App\Models\Overtime::whereNull('seen_by_manager_at')
         ->where('status_1','!=','pending')
-        ->where('status_2','pending')
+        ->orWhere('status_2','pending')
         ->count();
         $unseenReimbursementCount = \App\Models\Reimbursement::whereNull('seen_by_manager_at')
         ->where('status_1','!=','pending')
-        ->where('status_2','pending')
+        ->orWhere('status_2','pending')
         ->count();
 
         @endphp

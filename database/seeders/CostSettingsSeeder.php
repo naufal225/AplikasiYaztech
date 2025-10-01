@@ -44,6 +44,12 @@ class CostSettingsSeeder extends Seeder
                 'name' => 'Travel Costs Week End',
                 'description' => 'Biaya perjalanan dinas akhir pekan',
                 'value' => 225000
+            ],
+            [
+                'key' => 'ANNUAL_LEAVE',
+                'name' => 'Annual Leave',
+                'description' => 'Jumlah jatah cuti',
+                'value' => 20
             ]
         ];
 

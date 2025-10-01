@@ -188,7 +188,7 @@
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                             Approver 2</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Customer</th>
+                            Perusahaan Customer</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                             Actions</th>
                     </tr>
@@ -348,7 +348,7 @@
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                             Approver 2</th>
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
-                            Customer</th> {{-- Added Customer --}}
+                            Perusahaan Customer</th> {{-- Added Customer --}}
                         <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">
                             Actions</th>
                     </tr>

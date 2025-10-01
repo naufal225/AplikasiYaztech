@@ -143,12 +143,20 @@
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-clock text-secondary-600"></i>
                                 <span class="font-medium text-neutral-900">
-                                    {{ (int)
-                                    \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end,
-                                    ), false) + 1 }}
-                                    {{ (int)
-                                    \Carbon\Carbon::parse($leave->date_start)->diffInDays(\Carbon\Carbon::parse($leave->date_end,
-                                    ), false) + 1 === 1 ? 'day' : 'days' }}
+                                    @php
+                                        $tahunSekarang = now()->year;
+                                        $hariLibur = \App\Models\Holiday::whereYear('holiday_date', $tahunSekarang)
+                                            ->pluck('holiday_date')
+                                            ->map(fn($d) => \Carbon\Carbon::parse($d)->format('Y-m-d'))
+                                            ->toArray();
+                                        $durasi = app()->call(\App\Services\LeaveService::class.'@hitungHariCuti', [
+                                            'dateStart' => $leave->date_start,
+                                            'dateEnd' => $leave->date_end,
+                                            'tahun' => $tahunSekarang,
+                                            'hariLibur' => $hariLibur,
+                                        ]);
+                                    @endphp
+                                    {{ $durasi }} {{ $durasi === 1 ? 'day' : 'days' }}
                                 </span>
                             </div>
                         </div>

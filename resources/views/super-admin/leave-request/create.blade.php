@@ -100,7 +100,7 @@
                             <li>• Submit leave requests at least 3 days in advance</li>
                             <li>• Annual leave entitlement is 12 days per year</li>
                             <li>• Emergency leave may be submitted with shorter notice</li>
-                            <li>• All leave requests require manager approval</li>
+                            <li>• All leave requests require Approver 2 approval</li>
                         </ul>
                     </div>
                 </div>

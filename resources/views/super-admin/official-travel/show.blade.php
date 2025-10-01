@@ -71,14 +71,19 @@
                 <div class="p-6">
                     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Employee Email</label>
-                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
-                                <i class="mr-3 fas fa-envelope text-primary-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $officialTravel->employee->email }}</span>
+                            <label class="text-sm font-semibold text-neutral-700">Email</label>
+                            <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200" x-data="{ tooltip: false }">
+                                <i class="flex-shrink-0 mr-3 fas fa-envelope text-primary-600"></i>
+                                <span class="font-medium truncate text-neutral-900" @mouseenter="tooltip = true" @mouseleave="tooltip = false" x-tooltip="'{{ $officialTravel->employee->email }}'">
+                                    {{ $officialTravel->employee->email }}
+                                </span>
+                                <div x-show="tooltip" x-cloak class="absolute px-3 py-2 -mt-12 text-sm text-white bg-gray-900 rounded-lg shadow-lg">
+                                    {{ $officialTravel->employee->email }}
+                                </div>
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-user-check text-info-600"></i>
                                 <span class="font-medium text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A'
@@ -118,7 +123,7 @@
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status - Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">Status - Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($officialTravel->status_1 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -133,7 +138,7 @@
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Status - Manager</label>
+                            <label class="text-sm font-semibold text-neutral-700">Status - Approver 2</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 @if($officialTravel->status_2 === 'pending')
                                 <i class="mr-3 fas fa-clock text-warning-600"></i>
@@ -148,14 +153,14 @@
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Note - Team Lead</label>
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 1</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                 <span class="text-neutral-900">{{ $officialTravel->note_1 ?? '-' }}</span>
                             </div>
                         </div>
                         <div class="space-y-2">
-                            <label class="text-sm font-semibold text-neutral-700">Note - Manager</label>
+                            <label class="text-sm font-semibold text-neutral-700">Note - Approver 2</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-sticky-note text-info-600"></i>
                                 <span class="text-neutral-900">{{ $officialTravel->note_2 ?? '-' }}</span>

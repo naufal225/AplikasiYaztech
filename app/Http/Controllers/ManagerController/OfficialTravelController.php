@@ -163,13 +163,13 @@ class OfficialTravelController extends Controller
         return view('manager.official-travel.update', compact('officialTravel'));
     }
 
-    public function updateSelf(UpdateOfficialTravelRequest $request, OfficialTravel $travel)
+    public function updateSelf(UpdateOfficialTravelRequest $request, OfficialTravel $officialTravel)
     {
         try {
-            $this->officialTravelService->update($travel, $request->validated());
+            $this->officialTravelService->update($officialTravel, $request->validated());
 
             return redirect()
-                ->route('manager.official-travels.index', $travel->id)
+                ->route('manager.official-travels.index', $officialTravel->id)
                 ->with('success', 'Official travel updated successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors($e->getMessage());
@@ -177,12 +177,18 @@ class OfficialTravelController extends Controller
     }
 
 
-    public function update(ApproveOfficialTravelRequest $request, OfficialTravel $travel)
+    public function update(ApproveOfficialTravelRequest $request, OfficialTravel $officialTravel)
     {
         try {
             $level = Auth::user()->hasActiveRole(Roles::Manager->value) ? 'status_2' : 'status_1';
 
-            $this->officialTravelApprovalService->handleApproval($travel, status: $request->status_2, note: $request->note_2, level: $level);
+             $this->officialTravelApprovalService->handleApproval(
+                travel: $officialTravel,
+                status: $request->status_2,
+                note: $request->note_2,
+                level: $level
+            );
+
             return redirect()->route('manager.official-travels.index')
                 ->with('success', "Travel request {$request->status}.");
         } catch (\Exception $e) {
