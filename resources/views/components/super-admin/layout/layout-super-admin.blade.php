@@ -14,6 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
     <style>
+        [x-cloak]{display:none !important}
         /* Custom scrollbar untuk sidebar */
         .sidebar-scroll::-webkit-scrollbar {
             position: absolute;

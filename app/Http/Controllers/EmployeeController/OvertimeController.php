@@ -35,7 +35,7 @@ class OvertimeController extends Controller
 
         // Query utama untuk list data (ada orderBy)
         $query = Overtime::where('employee_id', $user->id)
-            ->with(['employee', 'approver'])
+            ->with(['employee', 'approver1','approver2'])
             ->orderBy('created_at', 'desc');
 
         // Apply filters ke query utama

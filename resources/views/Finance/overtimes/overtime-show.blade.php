@@ -293,10 +293,10 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $overtime->approver->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-neutral-900">{{ $overtime->approver1->name ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-neutral-900">{{ $overtime->approver2->name ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 font-medium whitespace-nowrap text-md">
                             <div class="flex items-center space-x-2">
@@ -358,9 +358,9 @@
         @csrf
         @method('PATCH')
 
-        <div class="flex flex-row items-center justify-between p-4 mb-2 max-md:flex-col gap-2">
+        <div class="flex flex-row items-center justify-between gap-2 p-4 mb-2 max-md:flex-col">
             <p class="text-sm text-neutral-500 max-md:mb-2">All employee overtime requests are listed below.</p>
-            <div class="flex flex-row gap-2 w-full sm:w-auto">
+            <div class="flex flex-row w-full gap-2 sm:w-auto">
                 <button type="button" id="mark-all-btn"
                     class="w-full px-4 py-2 text-white rounded-lg sm:w-auto bg-primary-600 hover:bg-primary-700">
                     <i class="mr-1 fas fa-list-check"></i> Mark All (Locked)
@@ -498,10 +498,10 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $overtime->approver->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-neutral-900">{{ $overtime->approver1->name ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-neutral-900">{{ $overtime->approver2->name ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 font-medium whitespace-nowrap text-md">
                             <div class="flex items-center space-x-2">
@@ -655,10 +655,10 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $overtime->approver->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-neutral-900">{{ $overtime->approver1->name ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-neutral-900">{{ $overtime->approver2->name ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 font-medium whitespace-nowrap text-md">
                             <div class="flex items-center space-x-2">

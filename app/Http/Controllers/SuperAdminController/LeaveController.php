@@ -34,12 +34,12 @@ class LeaveController extends Controller
     {
 
         // Query for user's own requests (all statuses)
-        $ownRequestsQuery = Leave::with(['employee', 'approver'])
+        $ownRequestsQuery = Leave::with(['employee', 'approver1'])
             ->where('employee_id', Auth::id())
             ->orderBy('created_at', 'desc');
 
         // Query for all users' requests (excluding own unless approved)
-        $allUsersQuery = Leave::with(['employee', 'approver'])
+        $allUsersQuery = Leave::with(['employee', 'approver1'])
             ->where(function ($q) {
                 $q->where('employee_id', '!=', Auth::id())
                     ->orWhere(function ($subQ) {

@@ -60,12 +60,15 @@
                     <h1 class="text-2xl font-bold text-gray-900">{{ auth()->user()->name }}</h1>
                     <div class="mt-1 space-y-2">
                         <label class="text-sm font-semibold text-neutral-700">Email</label>
-                        <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200" x-data="{ tooltip: false }">
+                        <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200"
+                            x-data="{ tooltip: false }">
                             <i class="flex-shrink-0 mr-3 fas fa-envelope text-primary-600"></i>
-                            <span class="font-medium truncate text-neutral-900" @mouseenter="tooltip = true" @mouseleave="tooltip = false" x-tooltip="'{{ auth()->user()->email }}'">
+                            <span class="font-medium truncate text-neutral-900" @mouseenter="tooltip = true"
+                                @mouseleave="tooltip = false" x-tooltip="'{{ auth()->user()->email }}'">
                                 {{ auth()->user()->email }}
                             </span>
-                            <div x-show="tooltip" x-cloak class="absolute px-3 py-2 -mt-12 text-sm text-white bg-gray-900 rounded-lg shadow-lg">
+                            <div x-show="tooltip" x-cloak
+                                class="absolute px-3 py-2 -mt-12 text-sm text-white bg-gray-900 rounded-lg shadow-lg">
                                 {{ auth()->user()->email }}
                             </div>
                         </div>
@@ -74,8 +77,7 @@
                         <span
                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             {{ auth()->user()->roles->map(fn($role) =>
-                            \App\Enums\Roles::from($role->name)->label())->join(', ') }}
-                        </span>
+                            \App\Enums\Roles::from($role->name)->label())->join(', ') }}</span>
                     </div>
                 </div>
 
@@ -113,7 +115,8 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Member Since</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->created_at ? auth()->user()->created_at->format('F j, Y') : '-' }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ optional(auth()->user()->created_at)->format('F j, Y') ??
+                        '-' }}</p>
                 </div>
             </div>
         </div>
@@ -136,7 +139,8 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Last Updated</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ auth()->user()->updated_at ? auth()->user()->updated_at->format('F j, Y g:i A') : '-'}}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ optional(auth()->user()->updated_at)->format('F j, Y g:i
+                        A') ?? '-' }}</p>
                 </div>
             </div>
         </div>
@@ -210,52 +214,93 @@
 </div>
 
 <!-- Change Password Modal -->
-<div id="passwordModal" class="fixed inset-0 z-50 hidden bg-black/20">
+<div id="passwordModal" class="fixed inset-0 z-50 hidden bg-black/20 backdrop-blur-sm">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="w-full max-w-md bg-white rounded-lg shadow-xl">
+        <div class="w-full max-w-md bg-white shadow-2xl rounded-xl">
             <form action="{{ route('super-admin.profile.password') }}" method="POST">
                 @csrf
                 @method('PUT')
 
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900">Change Password</h3>
+                <!-- Header -->
+                <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-xl">
+                    <div class="flex items-center">
+                        <div class="p-2 mr-3 bg-blue-100 rounded-lg">
+                            <i class="text-blue-600 fas fa-key"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">Ganti Password</h3>
+                            <p class="text-sm text-gray-600">Pastikan password baru Anda kuat dan aman</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="px-6 py-4 space-y-4">
+                <!-- Form Fields -->
+                <div class="px-6 py-4 space-y-5">
                     <!-- Current Password -->
                     <div>
-                        <label for="current_password" class="block text-sm font-medium text-gray-700">Current
-                            Password</label>
-                        <input type="password" name="current_password" id="current_password"
-                            class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            required>
+                        <label for="current_password" class="block mb-1 text-sm font-medium text-gray-700">
+                            <i class="mr-1 text-gray-500 fas fa-lock"></i>
+                            Password Saat Ini
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="current_password" id="current_password"
+                                class="block w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan password Anda saat ini" required>
+                            <button type="button" class="absolute text-gray-500 right-3 top-3 hover:text-gray-700"
+                                onclick="togglePassword('current_password', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- New Password -->
                     <div>
-                        <label for="new_password" class="block text-sm font-medium text-gray-700">New Password</label>
-                        <input type="password" name="new_password" id="new_password"
-                            class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            required>
+                        <label for="new_password" class="block mb-1 text-sm font-medium text-gray-700">
+                            <i class="mr-1 text-gray-500 fas fa-lock"></i>
+                            Password Baru
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="new_password" id="new_password"
+                                class="block w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Buat password baru yang kuat" required>
+                            <button type="button" class="absolute text-gray-500 right-3 top-3 hover:text-gray-700"
+                                onclick="togglePassword('new_password', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Confirm New Password -->
                     <div>
-                        <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700">Confirm
-                            New Password</label>
-                        <input type="password" name="new_password_confirmation" id="new_password_confirmation"
-                            class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                            required>
+                        <label for="new_password_confirmation" class="block mb-1 text-sm font-medium text-gray-700">
+                            <i class="mr-1 text-gray-500 fas fa-redo-alt"></i>
+                            Konfirmasi Password Baru
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="new_password_confirmation" id="new_password_confirmation"
+                                class="block w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Masukkan ulang password baru untuk konfirmasi" required>
+                            <button type="button" class="absolute text-gray-500 right-3 top-3 hover:text-gray-700"
+                                onclick="togglePassword('new_password_confirmation', this)">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <p class="flex items-center mt-2 text-xs text-gray-500">
+                            <i class="mr-1 text-blue-500 fas fa-info-circle"></i>
+                            Masukkan ulang password baru untuk memastikan tidak ada kesalahan ketik
+                        </p>
                     </div>
                 </div>
 
-                <div class="flex justify-end px-6 py-4 space-x-3 border-t border-gray-200">
+                <!-- Footer -->
+                <div class="flex justify-end px-6 py-4 space-x-3 border-t border-gray-200 bg-gray-50 rounded-b-xl">
                     <button type="button" onclick="closePasswordModal()"
-                        class="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-gray-100 rounded-lg hover:bg-gray-200">
-                        Cancel
+                        class="px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow-sm">
+                        Batal
                     </button>
                     <button type="submit"
-                        class="px-4 py-2 text-sm font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700">
+                        class="px-5 py-2.5 text-sm font-medium text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm flex items-center">
+                        <i class="mr-2 fas fa-save"></i>
                         Update Password
                     </button>
                 </div>
@@ -314,6 +359,29 @@
     document.getElementById('passwordModal').addEventListener('click', function(e) {
         if (e.target === this) closePasswordModal();
     });
+
+      function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    function openPasswordModal() {
+        document.getElementById('passwordModal').classList.remove('hidden');
+    }
+
+    function closePasswordModal() {
+        document.getElementById('passwordModal').classList.add('hidden');
+    }
 </script>
 @endpush
 @endsection

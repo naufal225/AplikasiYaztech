@@ -267,10 +267,10 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-neutral-900">{{ $officialTravel->approver1->name ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-neutral-900">{{ $officialTravel->approver2->name ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-neutral-900">{{ $officialTravel->customer ?? 'N/A' }}</div>
@@ -450,10 +450,10 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-neutral-900">{{ $officialTravel->approver1->name ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                            <div class="text-sm text-neutral-900">{{ $officialTravel->approver2->name ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-neutral-900">{{ $officialTravel->customer ?? 'N/A' }}</div>

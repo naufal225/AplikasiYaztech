@@ -33,12 +33,19 @@ class LeaveController extends Controller
     {
 
         // Query for user's own requests (all statuses)
-        $ownRequestsQuery = Leave::with(['employee', 'approver'])
+        $ownRequestsQuery = Leave::with(['employee', 'approver1'])
             ->where('employee_id', Auth::id())
             ->orderBy('created_at', 'desc');
 
         // Query for all users' requests (excluding own unless approved)
-        $allUsersQuery = Leave::with(['employee', 'approver'])->forLeader(Auth::id())
+        $allUsersQuery = Leave::with(['employee', 'approver1'])->forLeader(Auth::id())
+            // Only employees (not approver role and not division leaders)
+            ->whereHas('employee', function ($q) {
+                $q->whereDoesntHave('roles', fn($r) => $r->where('name', Roles::Approver->value));
+            })
+            ->whereHas('employee.division', function ($q) {
+                $q->whereColumn('leader_id', '!=', 'leaves.employee_id');
+            })
             ->where(function ($q) {
                 $q->where('employee_id', '!=', Auth::id())
                     ->orWhere(function ($subQ) {
@@ -120,7 +127,10 @@ class LeaveController extends Controller
         }
 
         $leave->load(['employee', 'approver']);
-        return view('approver.leave-request.show', compact('leave'));
+        $isLeaderApplicant = \App\Models\Division::where('leader_id', $leave->employee_id)->exists();
+        $isApproverApplicant = $leave->employee->roles()->where('name', Roles::Approver->value)->exists();
+        $canApprove = !$isLeaderApplicant && !$isApproverApplicant && $leave->status_1 === 'pending';
+        return view('approver.leave-request.show', compact('leave', 'canApprove'));
     }
 
     public function create()
@@ -186,6 +196,20 @@ class LeaveController extends Controller
 
     }
 
+    public function approval(\App\Http\Requests\ApproveLeaveRequest $request, Leave $leave)
+    {
+        try {
+            if ($request->status_1 === 'approved') {
+                $this->leaveApprovalService->approve($leave, $request->note_1 ?? null);
+            } else {
+                $this->leaveApprovalService->reject($leave, $request->note_1 ?? null);
+            }
+            return redirect()->route('approver.leaves.index')->with('success', 'Leave request '.$request->status_1.' successfully.');
+        } catch (\Exception $e) {
+            return back()->withErrors($e->getMessage());
+        }
+    }
+
 
     public function destroy(Leave $leave)
     {
@@ -245,4 +269,3 @@ class LeaveController extends Controller
     }
 
 }
-

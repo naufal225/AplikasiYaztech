@@ -228,7 +228,8 @@ class DashboardController extends Controller
                 return 0;
             });
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
+        $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
+        $sisaCuti = $annual - $totalHariCuti;
         $recentRequests = $this->getRecentRequests();
 
         // =========================

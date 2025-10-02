@@ -32,12 +32,16 @@ class LeaveController extends Controller
     {
 
         // Query for user's own requests (all statuses)
-        $ownRequestsQuery = Leave::with(['employee', 'approver'])
+        $ownRequestsQuery = Leave::with(['employee', 'approver1'])
             ->where('employee_id', Auth::id())
             ->orderBy('created_at', 'desc');
 
         // Query for all users' requests (excluding own unless approved)
-        $allUsersQuery = Leave::with(['employee', 'approver'])
+        $allUsersQuery = Leave::with(['employee', 'approver1'])
+            ->where(function ($qq) {
+                $qq->whereHas('employee.roles', fn($r) => $r->where('name', Roles::Approver->value))
+                   ->orWhereHas('employee.division', fn($d) => $d->whereColumn('leader_id', 'leaves.employee_id'));
+            })
             ->where(function ($q) {
                 $q->where('employee_id', '!=', Auth::id())
                     ->orWhere(function ($subQ) {
@@ -115,7 +119,10 @@ class LeaveController extends Controller
     public function show(Leave $leave)
     {
         $leave->load(['employee', 'approver']);
-        return view('manager.leave-request.show', compact('leave'));
+        $isLeaderApplicant = \App\Models\Division::where('leader_id', $leave->employee_id)->exists();
+        $isApproverApplicant = $leave->employee->roles()->where('name', Roles::Approver->value)->exists();
+        $canApprove = ($isLeaderApplicant || $isApproverApplicant) && $leave->status_1 === 'pending';
+        return view('manager.leave-request.show', compact('leave', 'canApprove'));
     }
     public function create(LeaveService $leaveService)
     {
@@ -227,5 +234,6 @@ class LeaveController extends Controller
     }
 }
 
-
+
+
 

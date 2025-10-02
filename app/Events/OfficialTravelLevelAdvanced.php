@@ -34,7 +34,7 @@ class OfficialTravelLevelAdvanced implements ShouldBroadcast
     public function broadcastOn(): PrivateChannel
     {
         return $this->newLevel === 'manager'
-            ? new PrivateChannel("manager.approval")
+            ? new PrivateChannel('manager.approval')
             : new PrivateChannel("approver.division.{$this->divisionId}");
     }
 

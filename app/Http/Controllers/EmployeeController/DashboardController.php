@@ -30,21 +30,21 @@ class DashboardController extends Controller
 
         // Query untuk list data (pakai orderBy)
         $queryLeave = Leave::where('employee_id', $userId)
-            ->with(['employee', 'approver'])
+            ->with(['employee', 'approver1','approver2'])
             ->orderBy('created_at', 'desc');
 
         $queryClone = (clone $queryLeave);
 
         $queryReimbursement = Reimbursement::where('employee_id', $userId)
-            ->with(['employee', 'approver'])
+            ->with(['employee', 'approver1','approver2'])
             ->orderBy('created_at', 'desc');
 
         $queryOvertime = Overtime::where('employee_id', $userId)
-            ->with(['employee', 'approver'])
+            ->with(['employee', 'approver1','approver2'])
             ->orderBy('created_at', 'desc');
 
         $queryTravel = OfficialTravel::where('employee_id', $userId)
-            ->with(['employee', 'approver'])
+            ->with(['employee', 'approver1','approver2'])
             ->orderBy('created_at', 'desc');
 
         // 🔹 Query khusus untuk count (tanpa orderBy)
@@ -108,7 +108,8 @@ class DashboardController extends Controller
 
             });
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
+        $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
+        $sisaCuti = $annual - $totalHariCuti;
 
         // Data cuti semua karyawan untuk kalender
         $karyawanCuti = Leave::with(['employee:id,name,email,url_profile'])

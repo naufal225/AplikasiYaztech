@@ -54,13 +54,13 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="mb-1 text-xs font-medium text-neutral-600 md:text-sm">Remaining Days</p>
-                    <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $sisaCuti }}/{{ env('CUTI_TAHUNAN', 20) }} ({{ now()->year }})</p>
+                    <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $sisaCuti }}/{{ (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20)) }} ({{ now()->year }})</p>
                     <p class="mt-1 text-xs text-neutral-500">Remaining leave</p>
                 </div>
-                <div class="w-10 h-10 md:w-12 md:h-12 {{ $sisaCuti <= 0 ? 'bg-error-100 text-error-600' : ($sisaCuti > ((int) env('CUTI_TAHUNAN', 20) / 2) ? 'bg-success-100 text-success-600' : 'bg-warning-100 text-warning-600')}} rounded-xl flex items-center justify-center">
+                <div class="w-10 h-10 md:w-12 md:h-12 {{ $sisaCuti <= 0 ? 'bg-error-100 text-error-600' : ($sisaCuti > ((int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20)) / 2) ? 'bg-success-100 text-success-600' : 'bg-warning-100 text-warning-600')}} rounded-xl flex items-center justify-center">
                     @if ($sisaCuti <= 0)
                         <i class="text-lg fas fa-times-circle md:text-xl"></i>
-                    @elseif ($sisaCuti > ((int) env('CUTI_TAHUNAN', 20) / 2))
+                    @elseif ($sisaCuti > ((int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20)) / 2))
                         <i class="text-lg fas fa-check-circle md:text-xl"></i>
                     @else
                         <i class="text-lg fas fa-exclamation-circle md:text-xl"></i>

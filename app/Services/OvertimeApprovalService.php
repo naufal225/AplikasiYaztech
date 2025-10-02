@@ -29,6 +29,7 @@ class OvertimeApprovalService
                     'note_1' => $note,
                     'rejected_date' => Carbon::now(),
                     'status_2' => 'rejected', // cascade reject
+                    'approver_1_id' => Auth::id(),
                 ]);
                 return;
             }
@@ -37,9 +38,15 @@ class OvertimeApprovalService
                 $overtime->update([
                     'status_1' => 'approved',
                     'note_1' => $note,
+                    'approver_1_id' => Auth::id(),
                 ]);
 
-                event(new OvertimeLevelAdvanced($overtime->fresh(), Auth::user()->division_id, 'manager'));
+                $emp = $overtime->employee;
+                $isLeader = $emp && \App\Models\Division::where('leader_id', $emp->id)->exists();
+                $isApprover = $emp && $emp->roles()->where('name', \App\Enums\Roles::Approver->value)->exists();
+                // if ($isLeader || $isApprover) {
+                event(new OvertimeLevelAdvanced($overtime->fresh(), $emp->division_id ?? 0, 'manager'));
+                // }
 
                 // Kirim approval ke Manager
                 $managerRole = Role::where('name', 'manager')->first();
@@ -47,7 +54,7 @@ class OvertimeApprovalService
                 $manager = User::whereHas('roles', function ($query) use ($managerRole) {
                     $query->where('roles.id', $managerRole->id);
                 })->first();
-                
+
                 if ($manager) {
                     $token = Str::random(48);
                     ApprovalLink::create([
@@ -86,6 +93,7 @@ class OvertimeApprovalService
             $overtime->update([
                 'status_2' => $status,
                 'note_2' => $note,
+                'approver_2_id' => Auth::id(),
             ]);
 
             if ($status == 'approved') {

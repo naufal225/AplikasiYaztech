@@ -34,7 +34,7 @@ class LeaveController extends Controller
         $tahunSekarang = now()->year;
 
         // --- Query untuk "Your Leaves"
-        $yourLeavesQuery = Leave::with(['employee', 'approver'])
+        $yourLeavesQuery = Leave::with(['employee', 'approver1'])
             ->where('employee_id', $userId)
             ->orderBy('created_at', 'desc');
 
@@ -66,7 +66,7 @@ class LeaveController extends Controller
         $yourLeaves = $yourLeavesQuery->paginate(10, ['*'], 'your_page')->withQueryString();
 
         // --- Query untuk "All Leaves" (approved)
-        $allLeavesQuery = Leave::with(['employee', 'approver'])
+        $allLeavesQuery = Leave::with(['employee', 'approver1'])
             ->where('status_1', 'approved')
             ->orderBy('created_at', 'desc');
 
@@ -122,7 +122,8 @@ class LeaveController extends Controller
                 return $this->hitungHariCuti($start, $end, $tahunSekarang, $hariLibur);
             });
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
+        $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
+        $sisaCuti = $annual - $totalHariCuti;
 
         $managerRole = Role::where('name', 'manager')->first();
 
@@ -164,7 +165,7 @@ class LeaveController extends Controller
 
         // Hitung total cuti yang sudah diambil
         $totalHariCuti = (int) Leave::where('employee_id', Auth::id())
-            ->with(['employee', 'approver'])
+            ->with(['employee', 'approver1'])
             ->orderBy('created_at', 'desc')
             ->where('status_1', 'approved')
             ->where(function ($q) use ($tahunSekarang) {
@@ -206,7 +207,8 @@ class LeaveController extends Controller
                 return $hariCuti;
             });
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
+        $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
+        $sisaCuti = $annual - $totalHariCuti;
 
         if ($sisaCuti <= 0) {
             abort(422, 'Sisa cuti tidak cukup.');
@@ -262,7 +264,7 @@ class LeaveController extends Controller
         $endBaru = \Carbon\Carbon::parse($request->date_end);
         $hariCutiBaru = $this->hitungHariCuti($startBaru, $endBaru, $tahunSekarang, $hariLibur);
 
-        $jatahTahunan = (int) env('CUTI_TAHUNAN', 20);
+        $jatahTahunan = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
         $sisaCuti = $jatahTahunan - $totalHariCuti;
 
         if ($hariCutiBaru > $sisaCuti) {
@@ -297,7 +299,7 @@ class LeaveController extends Controller
             DB::afterCommit(function () use ($leave, $request, $tokenRaw, $manager) {
                 $fresh = $leave->fresh(); // ambil ulang (punya created_at dll)
 
-                event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, 'manager'));
+                event(new \App\Events\LeaveLevelAdvanced($fresh, $fresh->employee->division_id ?? (Auth::user()->division_id ?? 0), 'manager'));
 
                 if (!$fresh || !$fresh->approver || !$tokenRaw) {
                     return;

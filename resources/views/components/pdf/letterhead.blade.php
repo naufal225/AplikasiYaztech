@@ -23,12 +23,12 @@
 
 <table width="100%" style="width:100%; border-collapse:collapse; margin-bottom: 10px;">
     <tr>
-        <td style="width:25%; vertical-align:middle; padding:0;">
+        <td style="width:25%; vertical-align:middle; padding:0; border: none;">
             @if($logoBase64)
                 <img src="{{ $logoBase64 }}" alt="Yaztech Logo" style="height:60px; width:auto; display:block;">
             @endif
         </td>
-        <td style="width:75%; text-align:center; vertical-align:middle; padding:0;">
+        <td style="width:75%; text-align:center; vertical-align:middle; padding:0; border: none;">
             <div style="font-weight:700; font-size:14px;">PT. Yaztech Engineering Solusindo</div>
             <div style="font-size:11px; line-height:1.4; position: relative; left: -8px;">
                 Bellezza BSA 1st Floor SA1-06 Jl. Letjen Soepeno,<br>

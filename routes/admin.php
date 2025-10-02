@@ -78,10 +78,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('profile', ProfileController::class);
 
     // Cost Settings Routes
-    Route::get('/cost-settings', [CostSettingController::class, 'index'])->name('cost-settings.index');
-    Route::get('/cost-settings/{costSetting}/edit', [CostSettingController::class, 'edit'])->name('cost-settings.edit');
-    Route::put('/cost-settings/{costSetting}', [CostSettingController::class, 'update'])->name('cost-settings.update');
-    Route::post('/cost-settings/update-multiple', [CostSettingController::class, 'updateMultiple'])->name('cost-settings.update-multiple');
+    Route::get('/settings', [CostSettingController::class, 'index'])->name('settings.index');
+    Route::get('/settings/{costSetting}/edit', [CostSettingController::class, 'edit'])->name('settings.edit');
+    Route::put('/settings/{costSetting}', [CostSettingController::class, 'update'])->name('settings.update');
+    Route::post('/settings/update-multiple', [CostSettingController::class, 'updateMultiple'])->name('settings.update-multiple');
 
     Route::get('/test', [ReimbursementController::class, 'exportPdfAllData']);
 });

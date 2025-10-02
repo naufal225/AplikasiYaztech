@@ -39,7 +39,7 @@ class LeaveController extends Controller
 
         // Query utama untuk list data
         $query = Leave::where('employee_id', $user->id)
-            ->with(['employee', 'approver'])
+            ->with(['employee', 'approver1'])
             ->orderBy('created_at', 'desc');
 
         // Filter status
@@ -128,7 +128,8 @@ class LeaveController extends Controller
                 return $this->hitungHariCuti($start, $end, $tahunSekarang, $hariLibur);
             });
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20) - $totalHariCuti;
+        $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
+        $sisaCuti = $annual - $totalHariCuti;
 
         // 🔹 Ambil count aman
         $totalRequests = (int) Leave::where('employee_id', $user->id)->count();

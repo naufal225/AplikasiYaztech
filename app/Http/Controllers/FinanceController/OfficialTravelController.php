@@ -33,7 +33,7 @@ class OfficialTravelController extends Controller
         $userId = Auth::id();
 
         // --- Query untuk "Your Official Travels"
-        $yourTravelsQuery = OfficialTravel::with(['employee', 'approver'])
+        $yourTravelsQuery = OfficialTravel::with(['employee', 'approver1', 'approver2'])
             ->where('employee_id', $userId)
             ->orderBy('created_at', 'desc');
 
@@ -80,7 +80,7 @@ class OfficialTravelController extends Controller
         $yourTravels = $yourTravelsQuery->paginate(5, ['*'], 'your_page')->withQueryString();
 
         // --- Query untuk "All Official Travels Done (Marked Down)"
-        $allTravelsDoneQuery = OfficialTravel::with(['employee', 'approver'])
+        $allTravelsDoneQuery = OfficialTravel::with(['employee', 'approver1', 'approver2'])
             ->where('status_1', 'approved')
             ->where('status_2', 'approved')
             ->where('marked_down', true)
@@ -107,7 +107,7 @@ class OfficialTravelController extends Controller
         // --- Query untuk "All Official Travels Not Marked (lockable)"
         $allTravels = collect();
         DB::transaction(function () use (&$allTravels, $request, $userId) {
-            $query = OfficialTravel::with(['employee', 'approver'])
+            $query = OfficialTravel::with(['employee', 'approver1', 'approver2'])
                 ->where('status_1', 'approved')
                 ->where('status_2', 'approved')
                 ->where('marked_down', false)
@@ -139,14 +139,21 @@ class OfficialTravelController extends Controller
                 );
             }
 
-            $allTravels = $query->limit(5)->lockForUpdate()->get();
+            $lockedIds = $query->limit(5)->lockForUpdate()->pluck('id');
 
-            if ($allTravels->isNotEmpty()) {
-                OfficialTravel::whereIn('id', $allTravels->pluck('id'))
+            if ($lockedIds->isNotEmpty()) {
+                OfficialTravel::whereIn('id', $lockedIds)
                     ->update([
                         'locked_by' => $userId,
                         'locked_at' => now(),
                     ]);
+
+                // Fetch ulang data yang udah updated!
+                $allTravels = OfficialTravel::with(['employee', 'approver1', 'approver2'])
+                    ->whereIn('id', $lockedIds)
+                    ->get();
+            } else {
+                $allTravels = collect();
             }
         });
 
@@ -170,6 +177,8 @@ class OfficialTravelController extends Controller
         $manager = User::whereHas('roles', function ($query) use ($managerRole) {
             $query->where('roles.id', $managerRole->id);
         })->first();
+
+        $allTravels->fresh();
 
         return view('Finance.travels.travel-show', compact(
             'yourTravels',
@@ -291,11 +300,16 @@ class OfficialTravelController extends Controller
 
                 DB::afterCommit(function () use ($officialTravel, $token) {
                     $fresh = $officialTravel->fresh();
-                    event(new \App\Events\OfficialTravelLevelAdvanced(
-                        $fresh,
-                        Auth::user()->division_id,
-                        'manager'
-                    ));
+                    $emp = $fresh->employee;
+                    $isLeader = $emp && \App\Models\Division::where('leader_id', $emp->id)->exists();
+                    $isApprover = $emp && $emp->roles()->where('name', \App\Enums\Roles::Approver->value)->exists();
+                    if ($isLeader || $isApprover) {
+                        event(new \App\Events\OfficialTravelLevelAdvanced(
+                            $fresh,
+                            $emp->division_id ?? (Auth::user()->division_id ?? 0),
+                            'manager'
+                        ));
+                    }
 
                     if (!$fresh || !$token) {
                         return;
@@ -526,11 +540,16 @@ class OfficialTravelController extends Controller
 
             DB::afterCommit(function () use ($officialTravel, $token) {
                 $fresh = $officialTravel->fresh();
-                event(new \App\Events\OfficialTravelLevelAdvanced(
-                    $fresh,
-                    Auth::user()->division_id,
-                    'manager'
-                ));
+                $emp = $fresh->employee;
+                $isLeader = $emp && \App\Models\Division::where('leader_id', $emp->id)->exists();
+                $isApprover = $emp && $emp->roles()->where('name', \App\Enums\Roles::Approver->value)->exists();
+                if ($isLeader || $isApprover) {
+                    event(new \App\Events\OfficialTravelLevelAdvanced(
+                        $fresh,
+                        $emp->division_id ?? (Auth::user()->division_id ?? 0),
+                        'manager'
+                    ));
+                }
 
                 if (!$fresh || !$token) {
                     return;
@@ -691,4 +710,3 @@ class OfficialTravelController extends Controller
         return $pdf->download('official-travel-details-finance.pdf');
     }
 }
-

@@ -10,6 +10,8 @@
     @vite(['resources/js/app.js', 'resources/css/app.css'])
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>[x-cloak]{display:none !important}</style>
 
     @stack('styles')
 </head>
@@ -43,15 +45,16 @@
             const leaveNav = document.getElementById('leave-nav');
             const officialTravelNav = document.getElementById('official-travel-nav');
             const overtimeNav = document.getElementById('overtime-nav');
-            const reimbursementlNav = document.getElementById('reimbursement-nav');
+            const reimbursementNav = document.getElementById('reimbursement-nav');
             const badgeLeave = document.getElementById('leave-badge');
             const badgeTravel = document.getElementById('official-travel-badge');
             const badgeOvertime = document.getElementById('overtime-badge');
             const badgeReimbursement = document.getElementById('reimbursement-badge');
 
-            if (!leaveNav || !officialTravelNav || !reimbursementlNav || !overtimeNav || !window.Echo) return;
+            if (!leaveNav || !officialTravelNav || !reimbursementNav || !overtimeNav || !window.Echo) return;
 
-            const roles = leaveNav.dataset.roles;
+            let roles = [];
+            try { roles = JSON.parse(leaveNav.dataset.roles || '[]'); } catch (e) { roles = []; }
             const divisionId = leaveNav.dataset.divisionId;
 
             function incrementBadge(badgeElement) {

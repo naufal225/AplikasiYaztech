@@ -30,12 +30,12 @@ class ReimbursementController extends Controller
     public function index(Request $request)
     {
         // Query for user's own requests (all statuses)
-        $ownRequestsQuery = Reimbursement::with(['employee', 'approver'])
+        $ownRequestsQuery = Reimbursement::with(['employee', 'approver1','approver2'])
             ->where('employee_id', Auth::id())
             ->orderBy('created_at', 'desc');
 
         // Query for all users' requests (excluding own unless approved)
-        $allUsersQuery = Reimbursement::with(['employee', 'approver'])
+        $allUsersQuery = Reimbursement::with(['employee', 'approver1','approver2'])
             ->where(function ($q) {
                 $q->where('employee_id', '!=', Auth::id())
                     ->orWhere(function ($subQ) {

@@ -64,11 +64,14 @@ class PublicApprovalController extends Controller
                         'note_1' => $validated['note'] ?? null,
                         'status_2' => 'rejected',
                         'note_2' => $validated['note'] ?? null,
+                        'approver_1_id' => $link->approver_user_id,
+                        'rejected_date' => now(),
                     ]);
                 } else {
                     $subject->update([
                         'status_1' => 'approved',
                         'note_1' => $validated['note'] ?? null,
+                        'approver_1_id' => $link->approver_user_id,
                     ]);
 
                     // Flag untuk mengirim email setelah commit
@@ -92,11 +95,16 @@ class PublicApprovalController extends Controller
                                 return;
                             }
 
-                            $divisionId = Auth::user()->division_id; // walau untuk manager channel tidak dipakai
+                            $divisionId = Auth::user()->division_id; // fallback
                             // pakai fresh biar field (timestamps, relasi) up-to-date
                             $freshSubject = $subject->fresh();
 
-                            event(new $eventClass($freshSubject, $divisionId, 'manager'));
+                            $emp = $freshSubject->employee;
+                            $isLeader = $emp && \App\Models\Division::where('leader_id', $emp->id)->exists();
+                            $isApprover = $emp && $emp->roles()->where('name', \App\Enums\Roles::Approver->value)->exists();
+                            if ($isLeader || $isApprover) {
+                                event(new $eventClass($freshSubject, ($emp->division_id ?? $divisionId), 'manager'));
+                            }
 
                             // 2) Buat token & simpan hash di DB untuk approval Level 2 (Manager)
                             $rawToken = Str::random(48);
@@ -144,6 +152,9 @@ class PublicApprovalController extends Controller
                 $subject->update([
                     'status_2' => $validated['action'],
                     'note_2' => $validated['note'] ?? null,
+                    'approver_2_id' => $link->approver_user_id,
+                    'approved_date' => $validated['action'] === 'approved' ? now() : $subject->approved_date,
+                    'rejected_date' => $validated['action'] === 'rejected' ? now() : $subject->rejected_date,
                 ]);
             }
 

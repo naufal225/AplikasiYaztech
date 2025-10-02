@@ -230,12 +230,36 @@
                     <h3 class="text-lg font-bold text-neutral-900">Approver Review</h3>
                 </div>
                 <div class="p-6">
-                    @if($leave->status_1 === 'pending')
-                    <div class="p-4 text-center text-yellow-800 rounded-lg bg-yellow-50">
-                        <i class="mb-2 text-xl fas fa-clock"></i>
-                        <p class="font-medium">Pending Approver Review</p>
-                        <p class="text-sm">Waiting for approval from approver.</p>
-                    </div>
+                    @if(isset($canApprove) && $canApprove)
+                        <form id="approvalForm" method="POST" action="{{ route('approver.leaves.approval', $leave) }}">
+                            @csrf
+                            @method('PATCH')
+                            <input type="hidden" name="status_1" id="status_1" value="">
+                            <div class="space-y-3">
+                                <label for="note_1" class="block text-sm font-medium text-neutral-700">Notes (optional)</label>
+                                <textarea id="note_1" name="note_1" rows="3" class="w-full p-3 border rounded-lg border-neutral-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="Add a note for your decision"></textarea>
+                                <div class="flex flex-col gap-3 sm:flex-col">
+                                    <button type="button" onclick="submitApproval('approved')" class="inline-flex items-center justify-center px-4 py-2 text-white rounded-lg bg-success-600 hover:bg-success-700">
+                                        <i class="mr-2 fas fa-check"></i> Approve Request
+                                    </button>
+                                    <button type="button" onclick="submitApproval('rejected')" class="inline-flex items-center justify-center px-4 py-2 text-white rounded-lg bg-error-600 hover:bg-error-700">
+                                        <i class="mr-2 fas fa-times"></i> Reject Request
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        <script>
+                            function submitApproval(action) {
+                                document.getElementById('status_1').value = action;
+                                document.getElementById('approvalForm').submit();
+                            }
+                        </script>
+                    @elseif($leave->status_1 === 'pending')
+                        <div class="p-4 text-center text-yellow-800 rounded-lg bg-yellow-50">
+                            <i class="mb-2 text-xl fas fa-clock"></i>
+                            <p class="font-medium">Pending Approver Review</p>
+                            <p class="text-sm">Waiting for approval from approver.</p>
+                        </div>
                     @elseif($leave->status_1 === 'approved')
                     <div class="p-4 text-center text-green-800 rounded-lg bg-green-50">
                         <i class="mb-2 text-xl fas fa-check-circle"></i>

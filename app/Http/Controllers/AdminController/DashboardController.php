@@ -71,12 +71,13 @@ class DashboardController extends Controller
             $officialTravelsChartData[] = OfficialTravel::whereBetween('created_at', [$start, $end])->count();
         }
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20)
-            - (int) Leave::where('employee_id', Auth::id())
+        $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
+        $usedDays = (int) Leave::where('employee_id', Auth::id())
                 ->where('status_1', 'approved')
                 ->whereYear('date_start', now()->year)
                 ->select(DB::raw('SUM(DATEDIFF(date_end, date_start) + 1) as total_days'))
                 ->value('total_days');
+        $sisaCuti = $annual - $usedDays;
 
         $recentRequests = $this->getRecentRequests(Auth::id());
 

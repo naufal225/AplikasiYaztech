@@ -141,14 +141,21 @@ class ReimbursementController extends Controller
                 );
             }
 
-            $allReimbursements = $query->limit(5)->lockForUpdate()->get();
+            $lockedIds = $query->limit(5)->lockForUpdate()->pluck('id');
 
-            if ($allReimbursements->isNotEmpty()) {
-                Reimbursement::whereIn('id', $allReimbursements->pluck('id'))
+            if ($lockedIds->isNotEmpty()) {
+                Reimbursement::whereIn('id', $lockedIds)
                     ->update([
                         'locked_by' => $userId,
                         'locked_at' => now(),
                     ]);
+
+                // Fetch ulang data yang udah updated!
+                $allReimbursements = Reimbursement::with(['employee', 'approver1', 'approver2'])
+                    ->whereIn('id', $lockedIds)
+                    ->get();
+            } else {
+                $allReimbursements = collect();
             }
         });
 
@@ -284,11 +291,16 @@ class ReimbursementController extends Controller
 
                 DB::afterCommit(function () use ($reimbursement, $token) {
                     $fresh = $reimbursement->fresh();
-                    event(new \App\Events\ReimbursementLevelAdvanced(
-                        $fresh,
-                        Auth::user()->division_id,
-                        'manager'
-                    ));
+                    $emp = $fresh->employee;
+                    $isLeader = $emp && \App\Models\Division::where('leader_id', $emp->id)->exists();
+                    $isApprover = $emp && $emp->roles()->where('name', \App\Enums\Roles::Approver->value)->exists();
+                    if ($isLeader || $isApprover) {
+                        event(new \App\Events\ReimbursementLevelAdvanced(
+                            $fresh,
+                            $emp->division_id ?? (Auth::user()->division_id ?? 0),
+                            'manager'
+                        ));
+                    }
 
                     if (!$fresh || !$token) {
                         return;
@@ -468,11 +480,16 @@ class ReimbursementController extends Controller
 
             DB::afterCommit(function () use ($reimbursement, $token) {
                 $fresh = $reimbursement->fresh();
-                event(new \App\Events\ReimbursementLevelAdvanced(
-                    $fresh,
-                    Auth::user()->division_id,
-                    'manager'
-                ));
+                $emp = $fresh->employee;
+                $isLeader = $emp && \App\Models\Division::where('leader_id', $emp->id)->exists();
+                $isApprover = $emp && $emp->roles()->where('name', \App\Enums\Roles::Approver->value)->exists();
+                if ($isLeader || $isApprover) {
+                    event(new \App\Events\ReimbursementLevelAdvanced(
+                        $fresh,
+                        $emp->division_id ?? (Auth::user()->division_id ?? 0),
+                        'manager'
+                    ));
+                }
                 if (!$fresh || !$token) {
                     return;
                 }

@@ -10,6 +10,8 @@ class Reimbursement extends Model
     use HasDualStatus;
     protected $fillable = [
         'employee_id',
+        'approver_1_id',
+        'approver_2_id',
         'date',
         'total',
         'invoice_path',
@@ -35,6 +37,8 @@ class Reimbursement extends Model
         'marked_down' => 'boolean',
         'locked_at' => 'datetime',
         'employee_id' => 'integer',
+        'approver_1_id' => 'integer',
+        'approver_2_id' => 'integer',
         'approved_date' => 'datetime',
         'rejected_date' => 'datetime',
     ];
@@ -59,5 +63,25 @@ class Reimbursement extends Model
     public function type()
     {
         return $this->belongsTo(ReimbursementType::class, 'reimbursement_type_id');
+    }
+
+    public function approver1()
+    {
+        return $this->belongsTo(User::class, 'approver_1_id');
+    }
+
+    public function approver2()
+    {
+        return $this->belongsTo(User::class, 'approver_2_id');
+    }
+
+    public function getApprover1NameAttribute(): ?string
+    {
+        return $this->approver1?->name;
+    }
+
+    public function getApprover2NameAttribute(): ?string
+    {
+        return $this->approver2?->name;
     }
 }

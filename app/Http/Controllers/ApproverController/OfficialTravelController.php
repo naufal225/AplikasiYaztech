@@ -34,12 +34,12 @@ class OfficialTravelController extends Controller
     public function index(Request $request)
     {
         // Query for user's own requests (all statuses)
-        $ownRequestsQuery = OfficialTravel::with(['employee', 'approver'])
+        $ownRequestsQuery = OfficialTravel::with(['employee', 'approver1','approver2'])
             ->where('employee_id', Auth::id())
             ->orderBy('created_at', 'desc');
 
         // Query for all users' requests (excluding own unless approved)
-        $allUsersQuery = OfficialTravel::with(['employee', 'approver'])->forLeader(Auth::id())
+        $allUsersQuery = OfficialTravel::with(['employee', 'approver1','approver2'])->forLeader(Auth::id())
             ->where(function ($q) {
                 $q->where('employee_id', '!=', Auth::id())
                     ->orWhere(function ($subQ) {
@@ -266,4 +266,3 @@ class OfficialTravelController extends Controller
         return $pdf->download('official-travel-details.pdf');
     }
 }
-

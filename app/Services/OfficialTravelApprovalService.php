@@ -29,6 +29,7 @@ class OfficialTravelApprovalService
                     'status_2' => 'rejected', // cascade reject
                     'rejected_date' => Carbon::now(),
                     'note_1' => $note,
+                    'approver_1_id' => Auth::id(),
                 ]);
                 return $travel;
             }
@@ -37,9 +38,15 @@ class OfficialTravelApprovalService
                 $travel->update([
                     'status_1' => 'approved',
                     'note_1' => $note,
+                    'approver_1_id' => Auth::id(),
                 ]);
 
-                event(new OfficialTravelLevelAdvanced($travel->fresh(), Auth::user()->division_id ?? 0, 'manager'));
+                $emp = $travel->employee;
+                $isLeader = $emp && \App\Models\Division::where('leader_id', $emp->id)->exists();
+                $isApprover = $emp && $emp->roles()->where('name', \App\Enums\Roles::Approver->value)->exists();
+                // if ($isLeader || $isApprover) {
+                event(new OfficialTravelLevelAdvanced($travel->fresh(), $emp->division_id ?? 0, 'manager'));
+                // }
 
                 // Buat approval link untuk Manager
                 $managerRole = Role::where('name', 'manager')->first();
@@ -89,6 +96,7 @@ class OfficialTravelApprovalService
             $travel->update([
                 'status_2' => $status,
                 'note_2' => $note,
+                'approver_2_id' => Auth::id(),
             ]);
 
             if ($status === 'approved') {

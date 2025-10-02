@@ -32,7 +32,7 @@ class OvertimeController extends Controller
         $userId = Auth::id();
 
         // --- Query untuk "Your Overtimes"
-        $yourOvertimesQuery = Overtime::with(['employee', 'approver'])
+        $yourOvertimesQuery = Overtime::with(['employee', 'approver1', 'approver2'])
             ->where('employee_id', $userId)
             ->orderBy('created_at', 'desc');
 
@@ -81,7 +81,7 @@ class OvertimeController extends Controller
             ->withQueryString();
 
         // --- Query untuk "All Overtimes Done (Marked Down)"
-        $allOvertimesDoneQuery = Overtime::with(['employee', 'approver'])
+        $allOvertimesDoneQuery = Overtime::with(['employee', 'approver1', 'approver2'])
             ->where('status_1', 'approved')
             ->where('status_2', 'approved')
             ->where('marked_down', true)
@@ -110,7 +110,7 @@ class OvertimeController extends Controller
         // --- Query untuk "All Overtimes Not Marked (lockable)"
         $allOvertimes = collect();
         DB::transaction(function () use (&$allOvertimes, $request, $userId) {
-            $query = Overtime::with(['employee', 'approver'])
+            $query = Overtime::with(['employee', 'approver1', 'approver2'])
                 ->where('status_1', 'approved')
                 ->where('status_2', 'approved')
                 ->where('marked_down', false)
@@ -142,14 +142,21 @@ class OvertimeController extends Controller
                 );
             }
 
-            $allOvertimes = $query->limit(5)->lockForUpdate()->get();
+            $lockedIds = $query->limit(5)->lockForUpdate()->pluck('id');
 
-            if ($allOvertimes->isNotEmpty()) {
-                Overtime::whereIn('id', $allOvertimes->pluck('id'))
+            if ($lockedIds->isNotEmpty()) {
+                Overtime::whereIn('id', $lockedIds)
                     ->update([
                         'locked_by' => $userId,
                         'locked_at' => now(),
                     ]);
+
+                // Fetch ulang data yang udah updated!
+                $allOvertimes = Overtime::with(['employee', 'approver1', 'approver2'])
+                    ->whereIn('id', $lockedIds)
+                    ->get();
+            } else {
+                $allOvertimes = collect();
             }
         });
 
@@ -180,6 +187,8 @@ class OvertimeController extends Controller
         $manager = User::whereHas('roles', function ($query) use ($managerRole) {
             $query->where('roles.id', $managerRole->id);
         })->first();
+
+        $allOvertimes->fresh();
 
         return view('Finance.overtimes.overtime-show', compact(
             'yourOvertimes',
@@ -284,7 +293,7 @@ class OvertimeController extends Controller
 
             if ($isLeader) {
                 // --- Jika leader, langsung kirim ke Manager (level 2)
-            $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
+                $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
 
                 if ($manager) {
                     $token = \Illuminate\Support\Str::random(48);
@@ -301,11 +310,16 @@ class OvertimeController extends Controller
 
                 DB::afterCommit(function () use ($overtime, $token) {
                     $fresh = $overtime->fresh();
-                    event(new \App\Events\OvertimeLevelAdvanced(
-                        $fresh,
-                        Auth::user()->division_id,
-                        'manager'
-                    ));
+                    $emp = $fresh->employee;
+                    $isLeader = $emp && \App\Models\Division::where('leader_id', $emp->id)->exists();
+                    $isApprover = $emp && $emp->roles()->where('name', \App\Enums\Roles::Approver->value)->exists();
+                    if ($isLeader || $isApprover) {
+                        event(new \App\Events\OvertimeLevelAdvanced(
+                            $fresh,
+                            $emp->division_id ?? (Auth::user()->division_id ?? 0),
+                            'manager'
+                        ));
+                    }
 
                     if (!$fresh || !$token) {
                         return;
@@ -313,7 +327,7 @@ class OvertimeController extends Controller
 
                     $linkTanggapan = route('public.approval.show', $token);
 
-                $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
+                    $manager = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
                     Mail::to($manager->email)->queue(
                         new \App\Mail\SendMessage(
                             namaPengaju: Auth::user()->name,
@@ -390,7 +404,7 @@ class OvertimeController extends Controller
         $isLeader = \App\Models\Division::where('leader_id', $user->id)->exists();
 
         if (($isLeader && $overtime->status_2 !== 'pending') || (!$isLeader && $overtime->status_1 !== 'pending' || $overtime->status_2 !== 'pending')) {
-            return redirect()->route('employee.overtimes.show', $overtime->id)
+            return redirect()->route('finance.overtimes.show', $overtime->id)
                 ->with('error', 'You cannot edit an overtime request that has already been processed.');
         }
 
@@ -498,11 +512,16 @@ class OvertimeController extends Controller
 
             DB::afterCommit(function () use ($overtime, $token) {
                 $fresh = $overtime->fresh();
-                event(new \App\Events\OvertimeLevelAdvanced(
-                    $fresh,
-                    Auth::user()->division_id,
-                    'manager'
-                ));
+                $emp = $fresh->employee;
+                $isLeader = $emp && \App\Models\Division::where('leader_id', $emp->id)->exists();
+                $isApprover = $emp && $emp->roles()->where('name', \App\Enums\Roles::Approver->value)->exists();
+                if ($isLeader || $isApprover) {
+                    event(new \App\Events\OvertimeLevelAdvanced(
+                        $fresh,
+                        $emp->division_id ?? (Auth::user()->division_id ?? 0),
+                        'manager'
+                    ));
+                }
 
                 if (!$fresh || !$token) {
                     return;

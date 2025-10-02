@@ -10,6 +10,7 @@ class Leave extends Model
     use HasDualStatus;
     protected $fillable = [
         'employee_id',
+        'approver_1_id',
         'date_start',
         'date_end',
         'reason',
@@ -35,7 +36,9 @@ class Leave extends Model
         'date_end' => 'date',
         'approved_date' => 'datetime',
         'rejected_date' => 'datetime',
-        'employee_id' => 'integer'
+        'employee_id' => 'integer',
+        'approver_1_id' => 'integer',
+        'approver_2_id' => 'integer',
     ];
 
     public function approver()
@@ -53,6 +56,21 @@ class Leave extends Model
     public function getApproverAttribute()
     {
         return $this->employee?->division?->leader; // bisa null-safe
+    }
+
+    public function approver1()
+    {
+        return $this->belongsTo(User::class, 'approver_1_id');
+    }
+
+    public function approver2()
+    {
+        return $this->belongsTo(User::class, 'approver_2_id');
+    }
+
+    public function getApprover1NameAttribute(): ?string
+    {
+        return $this->approver1?->name;
     }
 
 }

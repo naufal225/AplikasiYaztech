@@ -99,6 +99,8 @@ class UserAndDivisionSeeder extends Seeder
                         $roles[] = $roleIds['approver'];
                         $roles[] = $roleIds['admin'];
                         $roles[] = $roleIds['superAdmin'];
+                        $roles[] = $roleIds['manager'];
+                        $roles[] = $roleIds['finance'];
                     }
 
                     if (strtolower($name) === 'stevano') {

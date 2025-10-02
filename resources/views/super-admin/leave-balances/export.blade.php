@@ -4,6 +4,15 @@
     <title>Leave Balances Report</title>
     <meta charset="utf-8">
     <style>
+        @page {
+            margin: 120px 25px 25px 25px;
+        }
+        #page-header {
+            position: fixed;
+            top: -100px;
+            left: 0;
+            right: 0;
+        }
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
@@ -66,7 +75,9 @@
     </style>
 </head>
 <body>
-    @include('components.pdf.letterhead')
+    <div id="page-header">
+        @include('components.pdf.letterhead')
+    </div>
     <div class="header" style="border:none; padding-bottom:0; margin-top:0;">
         <h1>EMPLOYEE LEAVE BALANCES REPORT</h1>
         <p>Generated on {{ now()->format('F d, Y H:i') }}</p>

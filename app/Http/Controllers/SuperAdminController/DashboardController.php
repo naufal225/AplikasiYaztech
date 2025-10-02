@@ -71,7 +71,8 @@ class DashboardController extends Controller
             $officialTravelsChartData[] = OfficialTravel::whereBetween('created_at', [$start, $end])->count();
         }
 
-        $sisaCuti = (int) env('CUTI_TAHUNAN', 20)
+        $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
+        $sisaCuti = $annual
             - (int) Leave::where('employee_id', Auth::id())
                 ->where('status_1', 'approved')
                 ->whereYear('date_start', now()->year)

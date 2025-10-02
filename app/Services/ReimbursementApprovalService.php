@@ -29,6 +29,7 @@ class ReimbursementApprovalService
                     'status_2' => 'rejected', // cascade reject
                     'rejected_date' => Carbon::now(),
                     'note_1' => $note,
+                    'approver_1_id' => Auth::id(),
                 ]);
                 return;
             }
@@ -37,9 +38,15 @@ class ReimbursementApprovalService
                 $reimbursement->update([
                     'status_1' => 'approved',
                     'note_1' => $note,
+                    'approver_1_id' => Auth::id(),
                 ]);
 
-                event(new ReimbursementLevelAdvanced($reimbursement->fresh(), Auth::user()->division_id ?? 0, 'manager'));
+                $emp = $reimbursement->employee;
+                $isLeader = $emp && \App\Models\Division::where('leader_id', $emp->id)->exists();
+                $isApprover = $emp && $emp->roles()->where('name', \App\Enums\Roles::Approver->value)->exists();
+                // if ($isLeader || $isApprover) {
+                event(new ReimbursementLevelAdvanced($reimbursement->fresh(), $emp->division_id ?? 0, 'manager'));
+                // }
 
                 // kirim approval link ke Manager
                 $managerRole = Role::where('name', 'manager')->first();
@@ -86,6 +93,7 @@ class ReimbursementApprovalService
             $reimbursement->update([
                 'status_2' => $status,
                 'note_2' => $note,
+                'approver_2_id' => Auth::id(),
             ]);
 
             if ($status === 'approved') {

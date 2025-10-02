@@ -4,6 +4,8 @@ namespace App\Events;
 
 use App\Models\Leave;
 use Illuminate\Broadcasting\Channel;
+use App\Enums\Roles;
+use App\Models\Division;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
@@ -24,9 +26,16 @@ class LeaveLevelAdvanced implements ShouldBroadcast
     }
     public function broadcastOn()
     {
-        return $this->newLevel === 'manager'
-            ? new PrivateChannel("manager.approval")
-            : new PrivateChannel("approver.division.{$this->divisionId}");
+        $employee = $this->leave->employee;
+        $isLeader = $employee && Division::where('leader_id', $employee->id)->exists();
+        $isApprover = $employee && $employee->roles()->where('name', Roles::Approver->value)->exists();
+
+        if ($isLeader || $isApprover) {
+            return new PrivateChannel('manager.approval');
+        }
+
+        $divId = $employee->division_id ?? $this->divisionId;
+        return new PrivateChannel("approver.division.{$divId}");
     }
     public function broadcastAs()
     {

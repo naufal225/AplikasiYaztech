@@ -276,10 +276,10 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $overtime->approver->name ?? 'N/A' }}</div>
+                                <div class="text-sm text-neutral-900">{{ $overtime->approver1->name ?? 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                                <div class="text-sm text-neutral-900">{{ $overtime->approver2->name ?? 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-900">{{ $overtime->customer ?? 'N/A' }}</div>
@@ -479,10 +479,10 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $overtime->approver->name ?? 'N/A' }}</div>
+                                <div class="text-sm text-neutral-900">{{ $overtime->approver1->name ?? 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                                <div class="text-sm text-neutral-900">{{ $overtime->approver2->name ?? 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-900">{{ $overtime->customer ?? 'N/A' }}</div>

@@ -18,7 +18,7 @@
 
         .header,
         .section {
-            margin-bottom: 20px;
+            margin-bottom: 15px; /* Dikurangi dari 20px */
         }
 
         .header {
@@ -34,7 +34,7 @@
 
         .sub-title {
             font-size: 11px;
-            margin-bottom: 12px;
+            margin-bottom: 8px; /* Dikurangi dari 12px */
             text-align: center
         }
 
@@ -53,7 +53,6 @@
             background-color: #f8f8f8;
             page-break-inside: avoid;
             word-wrap: break-word;
-            /* Tambahkan untuk mencegah overflow teks */
         }
 
         .status-approved {
@@ -75,13 +74,6 @@
             left: 0;
             right: 0;
         }
-        /* Footer drawn via Dompdf script to repeat per page */
-
-        /* Force new page for invoice section */
-        .page-break {
-            page-break-before: always;
-            break-before: page;
-        }
 
         table.layout {
             width: 100%;
@@ -90,95 +82,98 @@
 
         table.layout td {
             vertical-align: top;
-            padding: 4px 8px;
+            padding: 4px 6px; /* Dikurangi dari 4px 8px */
         }
 
-        /* --- Gaya untuk tabel detail --- */
-        table.details-table {
+        /* Split layout for details (left) and invoice (right) */
+        table.split {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
             table-layout: fixed;
         }
 
-        table.details-table td {
-            padding: 4px 6px;
+        table.split td {
             vertical-align: top;
+            padding: 4px 6px; /* Dikurangi dari 4px 8px */
         }
 
-        /* Kolom label kecil */
-        table.details-table td.label-col {
-            width: 30%;
+        table.split td.left-col {
+            width: 24%;
+        }
+        table.split td.right-col {
+            width: 76%;
+        }
+        table.split h3 {
+            margin: 0 0 4px 0; /* Dikurangi dari 6px */
+        }
+
+        /* Stacked detail items: label above value */
+        .detail-item {
+            margin-bottom: 3px; /* Dikurangi dari 4px */
+        }
+        .detail-label {
             font-weight: bold;
+            display: block;
+        }
+        .detail-item .box {
+            margin-top: 2px; /* Dikurangi dari 3px */
+            padding: 4px;
         }
 
-        /* Kolom data mengambil sisa ruang */
-        table.details-table td.data-col {
-            width: 70%;
+        /* Reduce spacing around the split section to maximize space */
+        .split-section {
+            margin-top: 2px; /* Dikurangi dari 4px */
+            margin-bottom: 0;
+            page-break-after: avoid;
+        }
+
+        /* Invoice container dengan tinggi maksimal */
+        .invoice-box {
+            padding: 0;
+            line-height: 0;
+            overflow: hidden;
+            page-break-inside: avoid;
+            height: 720px; /* Tinggi ditambah lagi */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #000;
+            background-color: #f8f8f8;
+        }
+
+        /* Hide legacy blocks we keep for reference */
+        .hide-old {
+            display: none;
         }
 
         img.invoice {
-            width: auto;         /* jangan stretch lebar */
-            max-width: 100%;     /* cegah overflow kanan */
+            width: auto;
+            max-width: 100%;
             height: auto;
-            max-height: 640px;   /* gunakan tinggi maksimum halaman konten */
+            max-height: 710px; /* Sesuaikan dengan container */
             object-fit: contain;
             display: block;
-            margin: 0;           /* tetap rata kiri */
+            margin: 0;
             page-break-inside: avoid;
         }
 
-        /* --- Gaya untuk catatan di bawah invoice --- */
-        .notes-section {
-            margin-top: 20px;
+        /* Adjust spacing untuk memaksimalkan ruang */
+        .section {
+            margin-bottom: 12px; /* Dikurangi dari 15px */
         }
 
-        .notes-section h3 {
-            margin-bottom: 10px;
+        .split-section {
+            margin-bottom: 8px; /* Dikurangi dari 10px */
         }
 
-        /* Gaya untuk tabel dua kolom catatan */
-        table.grid-2 {
-            width: 100%;
-            border-collapse: collapse;
+        /* Perbaikan untuk info-table yang lebih compact */
+        .info-table tr td {
+            padding: 1px 4px !important; /* Dikurangi dari 2px 4px */
         }
 
-        table.grid-2 td {
-            width: 50%;
-            vertical-align: top;
-            padding: 0 8px;
-            /* Memberi sedikit jarak antar kolom */
-        }
-
-        /* Gaya khusus untuk box catatan */
-        .note-box {
-            border: 1px solid #000;
-            padding: 6px;
-            margin-top: 4px;
-            background-color: #f8f8f8;
-            /* Sama dengan .box */
-            page-break-inside: avoid;
-            word-wrap: break-word;
-            min-height: 40px;
-            /* Tinggi minimum untuk konsistensi jika kosong */
-        }
-
-        .note-label {
-            font-weight: bold;
-            font-style: italic;
-            display: block;
-        }
-
-        .note-content {
-            display: block;
-            white-space: pre-wrap;
-            /* Agar line break (\n) terlihat */
-        }
-
-        /* Untuk memastikan tidak ada teks di luar box */
-        .no-note {
-            font-style: italic;
-            color: #777;
+        /* Reduce margin untuk approval status boxes */
+        .approval-box-margin {
+            margin-top: 6px !important; /* Dikurangi dari 10px */
         }
     </style>
 </head>
@@ -217,28 +212,28 @@
             <tr>
                 <!-- Employee Information -->
                 <td>
-                    <h3>Employee Information</h3>
-                    <table class="info-table" style="width: 100%; border-collapse: collapse; margin-top: 4px;">
+                    <h3 style="margin: 0 0 4px 0;">Employee Information</h3>
+                    <table class="info-table" style="width: 100%; border-collapse: collapse; margin-top: 2px;">
                         <tr>
-                            <td style="padding: 2px 4px; vertical-align: top; width: 30%;"><span
+                            <td style="padding: 1px 4px; vertical-align: top; width: 30%;"><span
                                     class="label">Email:</span></td>
-                            <td style="padding: 2px 4px; vertical-align: top;"><span class="text-data">{{
+                            <td style="padding: 1px 4px; vertical-align: top;"><span class="text-data">{{
                                     $reimbursement->employee->email ?? 'N/A' }}</span></td>
                         </tr>
                         <tr>
-                            <td style="padding: 2px 4px; vertical-align: top;"><span class="label">Name:</span></td>
-                            <td style="padding: 2px 4px; vertical-align: top;"><span class="text-data">{{
+                            <td style="padding: 1px 4px; vertical-align: top;"><span class="label">Name:</span></td>
+                            <td style="padding: 1px 4px; vertical-align: top;"><span class="text-data">{{
                                     $reimbursement->employee->name ?? 'N/A' }}</span></td>
                         </tr>
                         <tr>
-                            <td style="padding: 2px 4px; vertical-align: top;"><span class="label">Approver 1:</span>
+                            <td style="padding: 1px 4px; vertical-align: top;"><span class="label">Approver 1:</span>
                             </td>
-                            <td style="padding: 2px 4px; vertical-align: top;"><span class="text-data">{{
+                            <td style="padding: 1px 4px; vertical-align: top;"><span class="text-data">{{
                                     $reimbursement->approver->name ?? 'N/A' }}</span></td>
                         </tr>
                         <tr>
-                            <td style="padding: 2px 4px; vertical-align: top;"><span class="label">Divisi:</span></td>
-                            <td style="padding: 2px 4px; vertical-align: top;"><span class="text-data">{{
+                            <td style="padding: 1px 4px; vertical-align: top;"><span class="label">Divisi:</span></td>
+                            <td style="padding: 1px 4px; vertical-align: top;"><span class="text-data">{{
                                     $reimbursement->employee->division->name ?? 'N/A' }}</span></td>
                         </tr>
                     </table>
@@ -246,7 +241,7 @@
 
                 <!-- Approval Status -->
                 <td>
-                    <h3>Approval Status</h3>
+                    <h3 style="margin: 0 0 4px 0;">Approval Status</h3>
                     <div><span class="label">Approver 1 Status:</span></div>
                     <div class="box status-{{ $reimbursement->status_1 }}">
                         @if($reimbursement->status_1 === 'pending')
@@ -258,7 +253,7 @@
                         @endif
                     </div>
 
-                    <div style="margin-top: 10px;"><span class="label">Approver 2 Status:</span></div>
+                    <div style="margin-top: 6px;"><span class="label">Approver 2 Status:</span></div>
                     <div class="box status-{{ $reimbursement->status_2 }}">
                         @if($reimbursement->status_2 === 'pending')
                         Pending Review
@@ -273,9 +268,59 @@
         </table>
     </div>
 
-    <div class="section">
+    <!-- Reimbursement Details (left) and Invoice (right) side-by-side -->
+    <div class="section split-section">
+        <table class="split">
+            <tr>
+                <td class="left-col">
+                    <h3 style="margin: 0 0 4px 0;">Reimbursement Details</h3>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Date of Expense</span>
+                        <div class="box">{{ \Carbon\Carbon::parse($reimbursement->date)->format('l, M d, Y') }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Customer</span>
+                        <div class="box">{{ $reimbursement->customer ?? 'N/A' }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Total Amount</span>
+                        <div class="box">Rp {{ number_format($reimbursement->total, 0, ',', '.') }}</div>
+                    </div>
+
+                    <div class="detail-item">
+                        <span class="detail-label">Type Reimbursement</span>
+                        <div class="box">{{ $reimbursement->type->name ?? 'N/A' }}</div>
+                    </div>
+                </td>
+                <td class="right-col">
+                    <h3 style="margin: 0 0 4px 0;">Invoice</h3>
+                    @php
+                        $path = storage_path('app/public/' . $reimbursement->invoice_path);
+                        $base64 = '';
+                        if (file_exists($path)) {
+                            $type = pathinfo($path, PATHINFO_EXTENSION);
+                            $data = file_get_contents($path);
+                            $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                        }
+                    @endphp
+                    <div class="box invoice-box">
+                        @if($base64)
+                            <img src="{{ $base64 }}" alt="Invoice" class="invoice">
+                        @else
+                            <span style="color:#777; font-style: italic;">No image available</span>
+                        @endif
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Hidden legacy content -->
+    <div class="section hide-old">
         <h3>Reimbursement Details</h3>
-        <!-- Gunakan tabel untuk detail -->
         <table class="details-table">
             <tr>
                 <td class="label-col">Date of Expanse:</td>
@@ -289,7 +334,6 @@
                     <div class="box">{{ $reimbursement->customer ?? 'N/A' }}</div>
                 </td>
             </tr>
-
             <tr>
                 <td class="label-col">Total Amount:</td>
                 <td class="data-col">
@@ -305,8 +349,7 @@
         </table>
     </div>
 
-    <!-- Invoice moved to a dedicated page -->
-    <div class="section page-break">
+    <div class="section page-break hide-old">
         <h3>Invoice</h3>
         @php
             $path = storage_path('app/public/' . $reimbursement->invoice_path);
@@ -325,9 +368,5 @@
             @endif
         </div>
     </div>
-
-    
-
 </body>
-
 </html>

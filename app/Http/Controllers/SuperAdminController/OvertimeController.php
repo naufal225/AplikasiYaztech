@@ -34,12 +34,12 @@ class OvertimeController extends Controller
     public function index(Request $request)
     {
         // Query for user's own requests (all statuses)
-        $ownRequestsQuery = Overtime::with(['employee', 'approver'])
+        $ownRequestsQuery = Overtime::with(['employee', 'approver1','approver2'])
             ->where('employee_id', Auth::id())
             ->orderBy('created_at', 'desc');
 
         // Query for all users' requests (excluding own unless approved)
-        $allUsersQuery = Overtime::with(['employee', 'approver'])
+        $allUsersQuery = Overtime::with(['employee', 'approver1','approver2'])
             ->where(function ($q) {
                 $q->where('employee_id', '!=', Auth::id())
                     ->orWhere(function ($subQ) {

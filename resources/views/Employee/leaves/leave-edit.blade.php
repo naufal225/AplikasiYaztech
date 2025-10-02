@@ -119,7 +119,7 @@
                         <div>
                             <h4 class="mb-1 text-sm font-semibold text-warning-800">Important Notice</h4>
                             <p class="text-xs text-warning-700">
-                                Editing this request will reset its status to pending and require re-approval from your Approver 2.
+                                Editing this request will reset its status to pending and require re-approval from your Approver.
                             </p>
                         </div>
                     </div>

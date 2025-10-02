@@ -20,6 +20,7 @@ Route::middleware(['auth', 'role:approver'])->prefix('approver')->name('approver
     Route::get('/leaves/export', [LeaveController::class, 'export'])
         ->name('leaves.export');
     Route::get('/leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
+    Route::patch('/leaves/{leave}/approval', [LeaveController::class, 'approval'])->name('leaves.approval');
 
     Route::resource('leaves', LeaveController::class)
         ->parameters([

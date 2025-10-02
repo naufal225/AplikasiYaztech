@@ -121,7 +121,7 @@ $minutes = $totalMinutes % 60;
                             <label class="text-sm font-semibold text-neutral-700">Approver</label>
                             <div class="flex items-center p-3 border rounded-lg bg-neutral-50 border-neutral-200">
                                 <i class="mr-3 fas fa-user-check text-info-600"></i>
-                                <span class="font-medium text-neutral-900">{{ $overtime->approver->name ?? 'N/A'
+                                <span class="font-medium text-neutral-900">{{ $overtime->approver1->name ?? 'N/A'
                                     }}</span>
                             </div>
                         </div>

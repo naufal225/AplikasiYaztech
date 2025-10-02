@@ -18,7 +18,7 @@ class LeaveBalancesController extends Controller
         $year = (int) $request->get('year', now()->year);
 
         $divisionId = $request->get('division_id');
-        $totalCutiTahunan = (int) env('CUTI_TAHUNAN', 20);
+        $totalCutiTahunan = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
 
         $divisions = Division::orderBy('name')->get();
 
@@ -82,7 +82,7 @@ class LeaveBalancesController extends Controller
 
         // Calculate leave balances for each employee
         $leaveBalances = [];
-        $totalCutiTahunan = (int) env('CUTI_TAHUNAN', 20);
+        $totalCutiTahunan = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
 
         foreach ($employees as $employee) {
             $sisaCuti = app(LeaveService::class)->sisaCutiForYear($employee, (int) $year);

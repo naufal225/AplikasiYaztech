@@ -37,7 +37,8 @@ class LeaveService
             fn($cuti) => $this->hitungHariCuti($cuti->date_start, $cuti->date_end, $tahun, $hariLibur)
         );
 
-        return max(0, (int) env('CUTI_TAHUNAN', 20) - $total);
+        $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
+        return max(0, $annual - $total);
     }
     public function hitungHariCuti($dateStart, $dateEnd, int $tahun, array $hariLibur): int
     {
@@ -106,7 +107,8 @@ class LeaveService
 
         // dd($total);
 
-        return max(0, (int) env('CUTI_TAHUNAN', 20) - $total);
+        $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
+        return max(0, $annual - $total);
     }
 
     public function store(array $data): Leave
@@ -137,9 +139,11 @@ class LeaveService
 
             $fresh = $leave->fresh();
 
-            event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, 'manager'));
+            [$approverUser, $newLevel] = $this->resolveApprover(Auth::user());
 
-            $this->notify($leave);
+            event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, $newLevel));
+
+            $this->notify($leave, $approverUser);
 
             return $leave;
         });
@@ -182,48 +186,62 @@ class LeaveService
 
         $fresh = $leave->fresh();
 
-        event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, 'manager'));
+        [$approverUser, $newLevel] = $this->resolveApprover(Auth::user());
+
+        event(new \App\Events\LeaveLevelAdvanced($fresh, Auth::user()->division_id, $newLevel));
 
 
-        $this->notify($leave);
+        $this->notify($leave, $approverUser);
 
         return $leave;
     }
 
-    private function notify(Leave $leave): void
+    private function notify(Leave $leave, ?User $approver): void
     {
-        $managerRole = Role::where('name', 'manager')->first();
-
-        $manager = User::whereHas('roles', function ($query) use ($managerRole) {
-            $query->where('roles.id', $managerRole->id);
-        })->first();
-
-        if (!$manager)
-            return;
+        if (!$approver) return;
 
         $tokenRaw = Str::random(48);
 
         ApprovalLink::create([
             'model_type' => get_class($leave),
             'model_id' => $leave->id,
-            'approver_user_id' => $manager->id,
+            'approver_user_id' => $approver->id,
             'level' => 1,
             'scope' => 'both',
             'token' => hash('sha256', $tokenRaw),
             'expires_at' => now()->addDays(3),
         ]);
 
-        DB::afterCommit(function () use ($leave, $manager, $tokenRaw) {
+        DB::afterCommit(function () use ($leave, $approver, $tokenRaw) {
             $linkTanggapan = route('public.approval.show', $tokenRaw);
 
-            Mail::to($manager->email)->queue(
+            Mail::to($approver->email)->queue(
                 new \App\Mail\SendMessage(
                     namaPengaju: $leave->employee->name,
-                    namaApprover: $manager->name,
-                    linkTanggapan: $linkTanggapan,
-                    emailPengaju: $leave->employee->email
+                    namaApprover: $approver->name,
+                linkTanggapan: $linkTanggapan,
+                emailPengaju: $leave->employee->email
                 )
             );
         });
+    }
+
+    /**
+     * Resolve approver for applicant.
+     */
+    private function resolveApprover(User $applicant): array
+    {
+        $isLeader = \App\Models\Division::where('leader_id', $applicant->id)->exists();
+        $isApprover = $applicant->roles()->where('name', Roles::Approver->value)->exists();
+
+        if (!$isLeader && !$isApprover) {
+            $leader = $applicant->division?->leader;
+            if ($leader) {
+                return [$leader, 'approver'];
+            }
+        }
+
+        $managerUser = User::whereHas('roles', fn($q) => $q->where('name', Roles::Manager->value))->first();
+        return [$managerUser, 'manager'];
     }
 }

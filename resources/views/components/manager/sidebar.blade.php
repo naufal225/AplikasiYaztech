@@ -19,25 +19,32 @@
         </a>
 
         @php
-        $unseenLeaveCount = 0;
-        $unseenOfficialTravelCount = 0;
-        $unseenOvertimeCount = 0;
-        $unseenReimbursementCount = 0;
-        $unseenLeaveCount = \App\Models\Leave::whereNull('seen_by_manager_at')
-        ->orWhere('status_1','pending')
-        ->count();
-        $unseenOfficialTravelCount = \App\Models\OfficialTravel::whereNull('seen_by_manager_at')
-        ->where('status_1','!=','pending')
-        ->orWhere('status_2','pending')
-        ->count();
-        $unseenOvertimeCount = \App\Models\Overtime::whereNull('seen_by_manager_at')
-        ->where('status_1','!=','pending')
-        ->orWhere('status_2','pending')
-        ->count();
-        $unseenReimbursementCount = \App\Models\Reimbursement::whereNull('seen_by_manager_at')
-        ->where('status_1','!=','pending')
-        ->orWhere('status_2','pending')
-        ->count();
+        // Sinkronkan definisi "pekerjaan Manager" dengan event LevelAdvanced
+        // - Leave: hanya jika pengaju adalah Leader/Approver dan status_1 pending
+        // - Reimbursement/Overtime/OfficialTravel: status_1 approved dan status_2 pending
+
+        $leaderIds = \App\Models\Division::pluck('leader_id')->filter()->all();
+
+        $unseenLeaveCount = \App\Models\Leave::where('status_1', 'pending')
+            ->where(function ($q) use ($leaderIds) {
+                $q->whereIn('employee_id', $leaderIds)
+                  ->orWhereHas('employee.roles', function ($r) {
+                      $r->where('name', \App\Enums\Roles::Approver->value);
+                  });
+            })
+            ->count();
+
+        $unseenOfficialTravelCount = \App\Models\OfficialTravel::where('status_1', 'approved')
+            ->where('status_2', 'pending')
+            ->count();
+
+        $unseenOvertimeCount = \App\Models\Overtime::where('status_1', 'approved')
+            ->where('status_2', 'pending')
+            ->count();
+
+        $unseenReimbursementCount = \App\Models\Reimbursement::where('status_1', 'approved')
+            ->where('status_2', 'pending')
+            ->count();
 
         @endphp
 

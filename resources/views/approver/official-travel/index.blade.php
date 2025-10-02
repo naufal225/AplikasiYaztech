@@ -241,16 +241,16 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A' }}
+                                <div class="text-sm text-neutral-900">{{ $officialTravel->approver1->name ?? 'N/A' }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                                <div class="text-sm text-neutral-900">{{ $officialTravel->approver2->name ?? 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-900">{{ $officialTravel->customer ?? 'N/A' }}</div>
                             </td>
-                            <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
+                            <td class="px-6 py-4 font-medium text-md whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('approver.official-travels.show', $officialTravel->id) }}"
                                         class="text-primary-600 hover:text-primary-900" title="View Details">
@@ -442,16 +442,16 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $officialTravel->approver->name ?? 'N/A' }}
+                                <div class="text-sm text-neutral-900">{{ $officialTravel->approver1->name ?? 'N/A' }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                                <div class="text-sm text-neutral-900">{{ $officialTravel->approver2->name ?? 'N/A' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-neutral-900">{{ $officialTravel->customer ?? 'N/A' }}</div>
                             </td>
-                            <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
+                            <td class="px-6 py-4 font-medium text-md whitespace-nowrap">
                                 <div class="flex items-center space-x-2">
                                     <a href="{{ route('approver.official-travels.show', $officialTravel->id) }}"
                                         class="text-primary-600 hover:text-primary-900" title="View Details">

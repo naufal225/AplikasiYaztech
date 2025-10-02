@@ -66,12 +66,12 @@
             </div>
             <div class="p-6 bg-white border rounded-xl shadow-soft border-neutral-200">
                 <div class="flex items-center">
-                    <div class="p-3 rounded-full {{ $sisaCuti <= 0 ? 'bg-error-100 text-error-600' : ($sisaCuti > ((int) env('CUTI_TAHUNAN', 20) / 2) ? 'bg-success-100 text-success-600' : 'bg-warning-100 text-warning-600')}}">
+                    <div class="p-3 rounded-full {{ $sisaCuti <= 0 ? 'bg-error-100 text-error-600' : ($sisaCuti > ((int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20)) / 2) ? 'bg-success-100 text-success-600' : 'bg-warning-100 text-warning-600')}}">
                         <i class="text-xl fas fa-calendar-xmark"></i>
                     </div>
                     <div class="ml-4">
                         <p class="text-sm text-neutral-500">Remaining days</p>
-                        <p class="text-lg font-semibold">{{ $sisaCuti }}/{{ env('CUTI_TAHUNAN', 20) }} ({{ now()->year }})</p>
+                        <p class="text-lg font-semibold">{{ $sisaCuti }}/{{ (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20)) }} ({{ now()->year }})</p>
                     </div>
                 </div>
             </div>
@@ -129,7 +129,7 @@
                             <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Request ID</th>
                             <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Duration</th>
                             <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Status</th>
-                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Approver 2</th>
+                            <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Approver</th>
                             <th class="px-6 py-3 text-xs font-medium tracking-wider text-left uppercase text-neutral-500">Actions</th>
                         </tr>
                     </thead>
@@ -187,9 +187,9 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-neutral-900">{{ $manager->name ?? 'N/A' }}</div>
+                                    <div class="text-sm text-neutral-900">{{ $leave->approver1->name ?? 'N/A' }}</div>
                                 </td>
-                                <td class="px-6 py-4 text-md font-medium whitespace-nowrap">
+                                <td class="px-6 py-4 font-medium text-md whitespace-nowrap">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('employee.leaves.show', $leave->id) }}" class="text-primary-600 hover:text-primary-900" title="View Details">
                                             <i class="fas fa-eye"></i>
@@ -239,4 +239,3 @@
         </div>
     </div>
 @endsection
-

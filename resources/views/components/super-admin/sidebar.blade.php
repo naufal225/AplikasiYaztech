@@ -96,10 +96,10 @@
         </a>
 
         <!-- Cost Settings Menu -->
-        <a href="{{ route('super-admin.cost-settings.index') }}"
-            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('super-admin.cost-settings.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
+        <a href="{{ route('super-admin.settings.index') }}"
+            class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('super-admin.settings.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
             <i class="w-5 mr-3 text-center fas fa-cog"></i>
-            <span class="font-medium">Cost Settings</span>
+            <span class="font-medium">Settings</span>
         </a>
     </nav>
 
