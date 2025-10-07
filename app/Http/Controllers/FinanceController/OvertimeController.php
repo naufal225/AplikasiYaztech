@@ -188,7 +188,7 @@ class OvertimeController extends Controller
             $query->where('roles.id', $managerRole->id);
         })->first();
 
-        $allOvertimes->fresh();
+        // $allOvertimes->fresh();
 
         return view('Finance.overtimes.overtime-show', compact(
             'yourOvertimes',
