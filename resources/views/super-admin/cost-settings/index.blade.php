@@ -32,50 +32,52 @@
 
         <form action="{{ route('super-admin.settings.update-multiple') }}" method="POST" class="p-6">
             @csrf
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                 @foreach($settings->chunk(ceil($settings->count() / 2)) as $chunk)
                 <div class="space-y-6">
                     @foreach($chunk as $setting)
-                        <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-                            <div class="md:col-span-1">
-                                <label class="block text-sm font-semibold text-neutral-700">
-                                    {{ $setting->name }}
-                                </label>
-                                <p class="mt-1 text-sm text-neutral-500">{{ $setting->description }}</p>
-                            </div>
-                            <div class="md:col-span-2">
-                                @if($setting->key !== 'ANNUAL_LEAVE')
-                                    <div class="flex items-center">
-                                        <span class="px-3 py-2 text-sm border border-r-0 rounded-l-lg bg-neutral-50 border-neutral-300">Rp</span>
-                                        <input type="text" inputmode="numeric" autocomplete="off"
-                                               value="{{ old($setting->key, $setting->value) }}"
-                                               class="flex-1 block w-full px-3 py-2 border rounded-r-lg border-neutral-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm js-currency"
-                                               data-hidden="#setting-{{ $setting->key }}-hidden" placeholder="0">
-                                        <input type="hidden" id="setting-{{ $setting->key }}-hidden" name="{{ $setting->key }}" value="{{ old($setting->key, $setting->value) }}">
-                                    </div>
-                                @else
-                                    <input type="number" name="{{ $setting->key }}"
-                                           value="{{ (int) old($setting->key, $setting->value) }}" step="1" min="0"
-                                           class="flex-1 block w-full px-3 py-2 border rounded-lg border-neutral-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                                           placeholder="Enter value">
-                                @endif
-                                @error($setting->key)
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
+                    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+                        <div class="md:col-span-1">
+                            <label class="block text-sm font-semibold text-neutral-700">
+                                {{ $setting->name }}
+                            </label>
+                            <p class="mt-1 text-sm text-neutral-500">{{ $setting->description }}</p>
                         </div>
-                        <hr class="border-neutral-200">
+                        <div class="md:col-span-2">
+                            @if($setting->key !== 'ANNUAL_LEAVE')
+                            <div class="flex items-center">
+                                <span
+                                    class="px-3 py-2 text-sm border border-r-0 rounded-l-lg bg-neutral-50 border-neutral-300">Rp</span>
+                                <input type="text" inputmode="numeric" autocomplete="off"
+                                    value="{{ old($setting->key, $setting->value) }}"
+                                    class="flex-1 block w-full px-3 py-2 border rounded-r-lg border-neutral-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm js-currency"
+                                    data-hidden="#setting-{{ $setting->key }}-hidden" placeholder="0">
+                                <input type="hidden" id="setting-{{ $setting->key }}-hidden" name="{{ $setting->key }}"
+                                    value="{{ old($setting->key, $setting->value) }}">
+                            </div>
+                            @else
+                            <input type="number" name="{{ $setting->key }}"
+                                value="{{ (int) old($setting->key, $setting->value) }}" step="1" min="0"
+                                class="flex-1 block w-full px-3 py-2 border rounded-lg border-neutral-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                placeholder="Enter value">
+                            @endif
+                            @error($setting->key)
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                    <hr class="border-neutral-200">
                     @endforeach
                 </div>
                 @endforeach
             </div>
 
             <div class="flex justify-end pt-6 mt-6 space-x-4 border-t border-neutral-200">
-                <button type="reset"
+                <a href="{{ route('super-admin.settings.index') }}"
                     class="px-6 py-2 text-sm font-medium transition-colors duration-200 rounded-lg text-neutral-700 bg-neutral-100 hover:bg-neutral-200">
                     <i class="mr-2 fas fa-undo"></i>
                     Reset Changes
-                </button>
+                </a>
                 <button type="submit" class="btn-primary">
                     <i class="mr-2 fas fa-save"></i>
                     Save All Changes
@@ -88,49 +90,59 @@
 
 @push('scripts')
 <script>
-    (function(){
-        function formatRupiahDisplay(val){
-            if (val == null) return '';
-            val = String(val).replace(/[^0-9,\.]/g, '');
-            if (val.indexOf(',') === -1 && val.indexOf('.') !== -1) {
-                val = val.replace(/\./g, ',');
-            }
-            const parts = val.split(',');
-            let intPart = parts[0].replace(/\D/g, '');
-            if (!intPart) return '';
-            intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            if (parts.length > 1) {
-                const dec = parts.slice(1).join('').replace(/\D/g, '').slice(0, 2);
-                return dec ? intPart + ',' + dec : intPart;
-            }
-            return intPart;
-        }
+    document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
+    const currencyInputs = document.querySelectorAll('.js-currency');
 
-        function normalizeForSubmit(displayVal){
-            if (!displayVal) return '';
-            return String(displayVal).replace(/\./g, '').replace(',', '.');
-        }
+    function formatRupiah(angka) {
+        if (!angka || angka === '') return '';
+        const num = parseInt(angka, 10);
+        return isNaN(num) ? '' : num.toLocaleString('id-ID');
+    }
 
-        function initCurrencyInputs(){
-            document.querySelectorAll('.js-currency').forEach(function(input){
-                const hiddenSelector = input.getAttribute('data-hidden');
-                const hidden = hiddenSelector ? document.querySelector(hiddenSelector) : null;
-                if (!hidden) return;
-                input.value = formatRupiahDisplay(hidden.value);
-                const syncHidden = function(){ hidden.value = normalizeForSubmit(input.value); };
-                input.addEventListener('input', function(){
-                    const cursorFromEnd = input.value.length - (input.selectionStart || 0);
-                    input.value = formatRupiahDisplay(input.value);
-                    syncHidden();
-                    const pos = Math.max(0, input.value.length - cursorFromEnd);
-                    if (input.setSelectionRange) input.setSelectionRange(pos, pos);
+    // Simpan nilai awal & format saat halaman dimuat
+    currencyInputs.forEach(input => {
+        const hiddenInput = document.querySelector(input.dataset.hidden);
+        if (hiddenInput && hiddenInput.value) {
+            // Simpan nilai asli ke dataset untuk keperluan reset
+            input.dataset.originalValue = hiddenInput.value;
+            input.value = formatRupiah(hiddenInput.value);
+        }
+    });
+
+    // Handle input user
+    currencyInputs.forEach(input => {
+        const hiddenInput = document.querySelector(input.dataset.hidden);
+
+        input.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            hiddenInput.value = value;
+            e.target.value = formatRupiah(value);
+        });
+
+        input.addEventListener('blur', function (e) {
+            if (e.target.value === '') {
+                hiddenInput.value = '';
+            }
+        });
+    });
+
+    // Handle RESET: kembalikan ke nilai awal yang disimpan
+    if (form) {
+        form.addEventListener('reset', function (e) {
+            // Browser reset terjadi secara async, jadi pakai setTimeout
+            setTimeout(() => {
+                currencyInputs.forEach(input => {
+                    const hiddenInput = document.querySelector(input.dataset.hidden);
+                    if (!hiddenInput || !input.dataset.originalValue) return;
+
+                    const original = input.dataset.originalValue;
+                    hiddenInput.value = original;
+                    input.value = formatRupiah(original);
                 });
-                input.form && input.form.addEventListener('submit', syncHidden);
-            });
-        }
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initCurrencyInputs);
-        } else { initCurrencyInputs(); }
-    })();
+            }, 10);
+        });
+    }
+});
 </script>
 @endpush
