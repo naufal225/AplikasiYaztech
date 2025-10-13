@@ -37,8 +37,6 @@
                 <p class="text-neutral-600 text-sm">Fill in the details for your overtime request</p>
             </div>
 
-            
-
             <form action="{{ route('employee.overtimes.store') }}" method="POST" class="p-6 space-y-6">
                 @csrf
 
@@ -61,8 +59,6 @@
                         <i class="fas fa-users mr-2 text-primary-600"></i>
                         Customer
                     </label>
-                    
-                    <!-- Input tampilan -->
                     <input type="text" name="customer" id="customer" class="form-input"
                         value="{{ old('customer') }}" placeholder="e.g., John Doe" required>
                 </div>
@@ -78,7 +74,8 @@
                             id="date_start"
                             value="{{ old('date_start', now()->format('Y-m-d\TH:i')) }}"
                             class="form-input"
-                            required>
+                            required
+                            onchange="calculateHours()">
                         <p class="text-xs text-neutral-500 mt-1">When did you start working overtime?</p>
                     </div>
 
@@ -92,13 +89,14 @@
                             id="date_end"
                             value="{{ old('date_end', now()->format('Y-m-d\TH:i')) }}"
                             class="form-input"
-                            required>
+                            required
+                            onchange="calculateHours()">
                         <p class="text-xs text-neutral-500 mt-1">When did you finish working overtime?</p>
                     </div>
                 </div>
 
                 <!-- Overtime Duration Display -->
-                <div id="duration-calculation" class="bg-green-50 border border-green-200 rounded-lg p-4" style="display:none;">
+                <div id="duration-calculation" class="bg-green-50 border border-green-200 rounded-lg p-4">
                     <div class="flex items-start">
                         <i class="fas fa-calculator text-green-600 mr-3 mt-0.5"></i>
                         <div>
@@ -121,62 +119,49 @@
             </form>
         </div>
     </div>
-@endsection
 
-@push('scripts')
-    const startInput = document.getElementById("date_start");
-    const endInput = document.getElementById("date_end");
-    const durationBox = document.getElementById("duration-calculation");
-    const durationTotal = document.getElementById("duration-total");
+    @push('scripts')
+        function calculateHours() {
+            const startInput = document.getElementById('date_start');
+            const endInput = document.getElementById('date_end');
+            const calculationDiv = document.getElementById('duration-calculation');
+            const totalP = document.getElementById('duration-total');
 
-    function setRestrictions() {
-        const now = new Date();
-        const todayStr = now.toISOString().split("T")[0];
+            // Jika salah satu kosong, reset tampilan
+            if (startInput.value === "" || endInput.value === "") {
+                totalP.textContent = `Total Duration: 0 hours`;
+                return;
+            }
 
-        // Aturan untuk startInput (kalau hari ini, minimal jam 17:00)
-        if (startInput.value) {
             const startDate = new Date(startInput.value);
-            const startDay = startInput.value.split("T")[0];
-            if (startDay === todayStr) {
-                // min jam 17:00
-                startInput.min = todayStr + "T17:00";
+            const endDate = new Date(endInput.value);
+
+            // Validasi waktu
+            if (endDate <= startDate) {
+                totalP.textContent = `Total Duration: 0 hours`;
+                return;
+            }
+
+            // Hitung selisih waktu (ms)
+            const diffMs = endDate.getTime() - startDate.getTime();
+
+            // Hitung jam & menit
+            const totalMinutes = Math.floor(diffMs / (1000 * 60));
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            // Tampilkan hasil
+            if (hours > 0 || minutes > 0) {
+                if (minutes > 0) {
+                    totalP.textContent = `Total Duration: ${hours} hour${hours !== 1 ? 's' : ''}`;
+                } else {
+                    totalP.textContent = `Total Duration: ${hours} hour${hours !== 1 ? 's' : ''}`;
+                }
             } else {
-                // kalau bukan hari ini, minimal jam 00:00
-                startInput.min = startDay + "T00:00";
+                totalP.textContent = `Total Duration: 0 hours`;
             }
         }
 
-        // Aturan untuk endInput (harus >= startInput)
-        if (startInput.value) {
-            endInput.min = startInput.value;
-        }
-    }
-
-    function calculateDuration() {
-        if (!startInput.value || !endInput.value) return;
-
-        const start = new Date(startInput.value);
-        const end = new Date(endInput.value);
-
-        if (end <= start) {
-            durationBox.style.display = "none";
-            return;
-        }
-
-        const diffMs = end - start;
-        const diffHours = diffMs / (1000 * 60 * 60);
-        const roundedHours = Math.floor(diffHours);
-
-        durationBox.style.display = "block";
-        durationTotal.textContent = "Total Duration: " + roundedHours + " hours";
-    }
-
-    startInput.addEventListener("change", () => {
-        setRestrictions();
-        calculateDuration();
-    });
-    endInput.addEventListener("change", calculateDuration);
-
-    // apply restriction saat pertama kali load
-    setRestrictions();
-@endpush
+        document.addEventListener("DOMContentLoaded", calculateHours);
+    @endpush
+@endsection
