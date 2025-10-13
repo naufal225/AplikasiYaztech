@@ -16,5 +16,11 @@ class DatabaseSeeder extends Seeder
         $this->call(CostSettingsSeeder::class);
         $this->call(RoleSeeder::class);
         $this->call(UserAndDivisionSeeder::class);
+        $this->call([
+            ReimbursementSeeder::class,
+            OvertimeSeeder::class,
+            OfficialTravelSeeder::class,
+            LeaveSeeder::class,
+        ]);
     }
 }
