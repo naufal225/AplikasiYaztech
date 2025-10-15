@@ -18,10 +18,19 @@
         </div>
     @endif
     <div class="space-y-3">
-        <a href="{{ url('/') }}"
+        @php
+            $shouldLogin = !auth()->check();
+            if (isset($exception) && $exception->getMessage()) {
+                $msg = \Illuminate\Support\Str::lower($exception->getMessage());
+                if (\Illuminate\Support\Str::contains($msg, ['belum punya divisi', 'login', 'expired', 'kadaluarsa'])) {
+                    $shouldLogin = true;
+                }
+            }
+        @endphp
+        <a href="{{ $shouldLogin ? route('login') : url('/') }}"
            class="inline-block px-6 py-2 text-white rounded-lg transition-colors
-                  {{ auth()->check() ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700' }}">
-            {{ auth()->check() ? 'Kembali ke Beranda' : 'Kembali ke Login' }}
+                  {{ $shouldLogin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700' }}">
+            {{ $shouldLogin ? 'Ke Login' : 'Kembali ke Beranda' }}
         </a>
     </div>
 @endsection
