@@ -7,7 +7,7 @@ use App\Http\Controllers\ManagerController\ReimbursementController;
 use App\Http\Controllers\ManagerController\DashboardController;
 use App\Http\Controllers\ManagerController\ProfileController;
 use Illuminate\Support\Facades\Route;
-Route::middleware(['auth', 'role:manager'])->prefix('manager')->name('manager.')->group(function () {
+Route::middleware(['auth', 'role:manager', 'division'])->prefix('manager')->name('manager.')->group(function () {
     Route::get('/', function () {
         return redirect()->route('manager.dashboard');
     });

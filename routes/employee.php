@@ -8,7 +8,7 @@ use App\Http\Controllers\EmployeeController\OvertimeController;
 use App\Http\Controllers\EmployeeController\OfficialTravelController;
 use App\Http\Controllers\EmployeeController\ProfileController;
 
-Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee.')->group(function () {
+Route::middleware(['auth', 'role:employee', 'division'])->prefix('employee')->name('employee.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/', function () {
         return redirect()->route('employee.dashboard');

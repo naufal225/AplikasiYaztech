@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\CheckFeatureActive;
+use App\Http\Middleware\EnsureHasDivision;
 use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -24,7 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             "role" => RoleMiddleware::class,
-            "feature" => CheckFeatureActive::class
+            "feature" => CheckFeatureActive::class,
+            "division" => EnsureHasDivision::class,
         ]);
     })
     ->withCommands([

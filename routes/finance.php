@@ -8,7 +8,7 @@ use App\Http\Controllers\FinanceController\ProfileController;
 use App\Http\Controllers\FinanceController\OfficialTravelController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:finance'])->prefix('approver3')->name('finance.')->group(function () {
+Route::middleware(['auth', 'role:finance', 'division'])->prefix('approver3')->name('finance.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/', function() {
         return redirect()->route('finance.dashboard');

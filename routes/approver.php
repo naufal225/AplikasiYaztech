@@ -10,7 +10,7 @@ use App\Models\OfficialTravel;
 use App\Models\Reimbursement;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:approver'])->prefix('approver')->name('approver.')->group(function () {
+Route::middleware(['auth', 'role:approver', 'division'])->prefix('approver')->name('approver.')->group(function () {
     Route::get('/', function () {
         return redirect()->route('approver.dashboard');
     });
