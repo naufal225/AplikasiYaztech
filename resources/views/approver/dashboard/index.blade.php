@@ -268,9 +268,9 @@
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal dengan Pagination (Sama seperti Super Admin) -->
 <div id="cutiModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/50 backdrop-blur-sm">
-    <div class="bg-white p-6 sm:p-8 rounded-2xl w-[90%] max-w-md shadow-lg transform transition-all scale-95 opacity-0"
+    <div class="bg-white p-6 rounded-2xl w-[95%] max-w-2xl shadow-lg transform transition-all scale-95 opacity-0"
         id="cutiModalContent">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-bold text-gray-800">Employees on Leave</h2>
@@ -278,7 +278,30 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <ul id="cutiList" class="space-y-3 text-sm text-left sm:text-base"></ul>
+
+        <!-- Navigation dan Info -->
+        <div class="flex items-center justify-between mb-4">
+            <span id="currentPageInfo" class="text-sm text-gray-600">Page 1 of 1</span>
+            <div class="flex gap-2">
+                <button id="prevPage"
+                    class="px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button id="nextPage"
+                    class="px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Container untuk daftar karyawan dengan grid horizontal -->
+        <div id="cutiContainer" class="overflow-hidden">
+            <div id="cutiPages" class="flex transition-transform duration-300 ease-in-out">
+                <!-- Halaman akan diisi oleh JavaScript -->
+            </div>
+        </div>
     </div>
 </div>
 
@@ -298,7 +321,7 @@
 
 @push('scripts')
 <script>
-    // Calendar functionality (same as admin)
+    // Calendar functionality
     const monthYear = document.getElementById("monthYear");
     const datesContainer = document.getElementById("dates");
     const prevBtn = document.getElementById("prev");
@@ -335,7 +358,7 @@
             let classes = `
                 relative aspect-square flex items-center justify-center
                 rounded-lg cursor-pointer text-sm sm:text-base
-                hover:bg-blue-100 transition
+                hover:bg-red-100 transition
                 ${isToday ? 'bg-gray-200 font-bold' : ''}
             `;
 
@@ -355,34 +378,71 @@
         }
     }
 
+    // Variabel global untuk pagination
+    let currentPage = 1;
+    let totalPages = 1;
+    const itemsPerPage = 6; // Jumlah item per halaman
+
     function showEvent(dateStr) {
         const modal = document.getElementById('cutiModal');
         const modalContent = document.getElementById('cutiModalContent');
-        const list = document.getElementById('cutiList');
-        list.innerHTML = "";
+        const cutiPages = document.getElementById('cutiPages');
+        const currentPageInfo = document.getElementById('currentPageInfo');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+
+        cutiPages.innerHTML = "";
+        currentPage = 1;
 
         if (cutiPerTanggal[dateStr]) {
-            cutiPerTanggal[dateStr].forEach(cuti => {
-                let firstLetter = cuti.employee ? cuti.employee.substring(0, 1).toUpperCase() : "?";
-                list.innerHTML += `
-                    <li class="flex items-start gap-2">
-                        ${cuti.url_profile ? `
-                            <img class="flex items-center justify-center object-cover w-10 h-10 rounded-full me-1"
-                                src="${cuti.url_profile}" alt="${cuti.employee}">
-                        ` : `
-                            <span class="flex items-center justify-center w-10 h-10 text-xs text-blue-600 bg-blue-100 rounded-full me-1">
-                                ${firstLetter}
-                            </span>
-                        `}
-                        <div>
-                            <p class="font-medium text-gray-800">${cuti.employee ?? '-'}</p>
-                            <p class="text-xs text-gray-500">${cuti.email ?? '-'}</p>
+            const employees = cutiPerTanggal[dateStr];
+            totalPages = Math.ceil(employees.length / itemsPerPage);
+
+            // Buat halaman-halaman
+            for (let page = 0; page < totalPages; page++) {
+                const pageContainer = document.createElement('div');
+                pageContainer.className = 'w-full flex-shrink-0 grid grid-cols-2 gap-3';
+
+                const startIndex = page * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, employees.length);
+
+                for (let i = startIndex; i < endIndex; i++) {
+                    const cuti = employees[i];
+                    let firstLetter = cuti.employee ? cuti.employee.substring(0, 1).toUpperCase() : "?";
+
+                    pageContainer.innerHTML += `
+                        <div class="flex items-center gap-2 p-3 rounded-lg bg-gray-50">
+                            ${cuti.url_profile ? `
+                                <img class="flex items-center justify-center object-cover w-10 h-10 rounded-full"
+                                    src="${cuti.url_profile}" alt="${cuti.employee}">
+                            ` : `
+                                <span class="flex items-center justify-center w-10 h-10 text-xs text-blue-600 bg-blue-100 rounded-full">
+                                    ${firstLetter}
+                                </span>
+                            `}
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-800 truncate">${cuti.employee ?? '-'}</p>
+                                <p class="text-xs text-gray-500 truncate">${cuti.email ?? '-'}</p>
+                            </div>
                         </div>
-                    </li>
-                `;
-            });
+                    `;
+                }
+
+                cutiPages.appendChild(pageContainer);
+            }
+
+            // Update info halaman dan tombol
+            updatePaginationInfo();
+
         } else {
-            list.innerHTML = "<li class='text-gray-600'>No employees on leave</li>";
+            cutiPages.innerHTML = `
+                <div class="w-full py-8 text-center text-gray-600">
+                    No employees on leave for this date
+                </div>
+            `;
+            currentPageInfo.textContent = "Page 1 of 1";
+            prevPageBtn.disabled = true;
+            nextPageBtn.disabled = true;
         }
 
         modal.classList.remove("hidden");
@@ -393,6 +453,35 @@
             modalContent.classList.add("scale-100", "opacity-100");
         }, 10);
     }
+
+    function updatePaginationInfo() {
+        const currentPageInfo = document.getElementById('currentPageInfo');
+        const prevPageBtn = document.getElementById('prevPage');
+        const nextPageBtn = document.getElementById('nextPage');
+        const cutiPages = document.getElementById('cutiPages');
+
+        currentPageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevPageBtn.disabled = currentPage === 1;
+        nextPageBtn.disabled = currentPage === totalPages;
+
+        // Geser halaman
+        cutiPages.style.transform = `translateX(-${(currentPage - 1) * 100}%)`;
+    }
+
+    // Event listeners untuk pagination
+    document.getElementById('prevPage').addEventListener('click', function() {
+        if (currentPage > 1) {
+            currentPage--;
+            updatePaginationInfo();
+        }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', function() {
+        if (currentPage < totalPages) {
+            currentPage++;
+            updatePaginationInfo();
+        }
+    });
 
     function closeModal() {
         const modal = document.getElementById('cutiModal');
