@@ -27,10 +27,24 @@
                 }
             }
         @endphp
-        <a href="{{ $shouldLogin ? route('login') : url('/') }}"
-           class="inline-block px-6 py-2 text-white rounded-lg transition-colors
-                  {{ $shouldLogin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-green-600 hover:bg-green-700' }}">
-            {{ $shouldLogin ? 'Ke Login' : 'Kembali ke Beranda' }}
-        </a>
+        @if($shouldLogin && auth()->check())
+            <form action="{{ route('logout') }}" method="POST" class="inline-block">
+                @csrf
+                <button type="submit"
+                        class="px-6 py-2 text-white rounded-lg transition-colors bg-blue-600 hover:bg-blue-700">
+                    Ke Login
+                </button>
+            </form>
+        @elseif($shouldLogin)
+            <a href="{{ route('login') }}"
+               class="inline-block px-6 py-2 text-white rounded-lg transition-colors bg-blue-600 hover:bg-blue-700">
+                Ke Login
+            </a>
+        @else
+            <a href="{{ url('/') }}"
+               class="inline-block px-6 py-2 text-white rounded-lg transition-colors bg-green-600 hover:bg-green-700">
+                Kembali ke Beranda
+            </a>
+        @endif
     </div>
 @endsection
