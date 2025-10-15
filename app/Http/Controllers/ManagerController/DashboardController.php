@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Enums\Roles;
 use App\Models\Role;
 use App\Traits\HelperController;
+use App\Models\FeatureSetting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,6 +22,12 @@ class DashboardController extends Controller
     use HelperController;
     public function index()
     {
+        $featureActive = [
+            'cuti' => FeatureSetting::isActive('cuti'),
+            'reimbursement' => FeatureSetting::isActive('reimbursement'),
+            'overtime' => FeatureSetting::isActive('overtime'),
+            'perjalanan_dinas' => FeatureSetting::isActive('perjalanan_dinas'),
+        ];
         $models = [
             "reimbursements" => Reimbursement::class,
             "overtimes" => Overtime::class,
@@ -31,7 +38,19 @@ class DashboardController extends Controller
         $startOfMonth = Carbon::now()->startOfMonth();
         $pendings = $approveds = $rejecteds = [];
 
+        $mapFeature = [
+            'reimbursements' => 'reimbursement',
+            'overtimes' => 'overtime',
+            'leaves' => 'cuti',
+            'official_travels' => 'perjalanan_dinas',
+        ];
         foreach ($models as $key => $model) {
+            if (isset($mapFeature[$key]) && !$featureActive[$mapFeature[$key]]) {
+                $pendings[$key] = 0;
+                $rejecteds[$key] = 0;
+                $approveds[$key] = 0;
+                continue;
+            }
             $base = $model::query()->where('created_at', '>=', $startOfMonth);
 
             // Aman untuk single/dual status karena pakai scope trait
@@ -63,46 +82,49 @@ class DashboardController extends Controller
             $end = $date->copy()->endOfMonth();
 
             $months[] = $monthName;
-            $reimbursementsChartData[] = Reimbursement::whereBetween('created_at', [$start, $end])->count();
-            $reimbursementsRupiahChartData[] = Reimbursement::whereBetween('created_at', [$start, $end])->sum('total');
-            $overtimesChartData[] = Overtime::whereBetween('created_at', [$start, $end])->count();
-            $leavesChartData[] = Leave::whereBetween('created_at', [$start, $end])->count();
-            $officialTravelsChartData[] = OfficialTravel::whereBetween('created_at', [$start, $end])->count();
+            $reimbursementsChartData[] = $featureActive['reimbursement'] ? Reimbursement::whereBetween('created_at', [$start, $end])->count() : 0;
+            $reimbursementsRupiahChartData[] = $featureActive['reimbursement'] ? Reimbursement::whereBetween('created_at', [$start, $end])->sum('total') : 0;
+            $overtimesChartData[] = $featureActive['overtime'] ? Overtime::whereBetween('created_at', [$start, $end])->count() : 0;
+            $leavesChartData[] = $featureActive['cuti'] ? Leave::whereBetween('created_at', [$start, $end])->count() : 0;
+            $officialTravelsChartData[] = $featureActive['perjalanan_dinas'] ? OfficialTravel::whereBetween('created_at', [$start, $end])->count() : 0;
         }
 
-        $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
-        $sisaCuti = $annual
-            - (int) Leave::where('employee_id', Auth::id())
-                ->where('status_1', 'approved')
-                ->whereYear('date_start', now()->year)
-                ->select(DB::raw('SUM(DATEDIFF(date_end, date_start) + 1) as total_days'))
-                ->value('total_days');
+        $sisaCuti = 0;
+        if ($featureActive['cuti']) {
+            $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
+            $sisaCuti = $annual
+                - (int) Leave::where('employee_id', Auth::id())
+                    ->where('status_1', 'approved')
+                    ->whereYear('date_start', now()->year)
+                    ->select(DB::raw('SUM(DATEDIFF(date_end, date_start) + 1) as total_days'))
+                    ->value('total_days');
+        }
 
         $recentRequests = $this->getRecentRequests(Auth::id());
 
         $cutiPerTanggal = [];
+        if ($featureActive['cuti']) {
+            $karyawanCuti = Leave::with(['employee:id,name,email,url_profile'])
+                ->where('status_1', 'approved')
+                ->where(function ($q) {
+                    $q->whereYear('date_start', now()->year)
+                        ->orWhereYear('date_end', now()->year);
+                })
+                ->get(['id', 'employee_id', 'date_start', 'date_end']);
 
-        $karyawanCuti = Leave::with(['employee:id,name,email,url_profile'])
-            ->where('status_1', 'approved')
-            ->where(function ($q) {
-                $q->whereYear('date_start', now()->year)
-                    ->orWhereYear('date_end', now()->year);
-            })
-            ->get(['id', 'employee_id', 'date_start', 'date_end']);
-
-        foreach ($karyawanCuti as $cuti) {
-            $start = Carbon::parse($cuti->date_start);
-            $end = Carbon::parse($cuti->date_end);
-            while ($start->lte($end)) {
-                $tanggal = $start->format('Y-m-d');
-                $cutiPerTanggal[$tanggal][] = [
-                    'employee' => $cuti->employee->name,
-                    'email' => $cuti->employee->email,
-                    'url_profile' => $cuti->employee->url_profile,
-                ];
-                $start->addDay();
+            foreach ($karyawanCuti as $cuti) {
+                $start = Carbon::parse($cuti->date_start);
+                $end = Carbon::parse($cuti->date_end);
+                while ($start->lte($end)) {
+                    $tanggal = $start->format('Y-m-d');
+                    $cutiPerTanggal[$tanggal][] = [
+                        'employee' => $cuti->employee->name,
+                        'email' => $cuti->employee->email,
+                        'url_profile' => $cuti->employee->url_profile,
+                    ];
+                    $start->addDay();
+                }
             }
-
         }
         return view('manager.dashboard.index', compact([
             'total_employees',
@@ -117,7 +139,8 @@ class DashboardController extends Controller
             'reimbursementsRupiahChartData',
             'sisaCuti',
             'recentRequests',
-            'cutiPerTanggal'
+            'cutiPerTanggal',
+            'featureActive'
         ]));
 
     }

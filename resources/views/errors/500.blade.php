@@ -8,6 +8,15 @@
     <p class="mb-6 text-gray-600">
         Maaf, terjadi kesalahan pada server. Silakan coba lagi nanti.
     </p>
+    @if(isset($exception) && $exception->getMessage())
+        <div class="px-4 py-3 mb-6 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg">
+            {{ $exception->getMessage() }}
+        </div>
+    @elseif(!empty($message))
+        <div class="px-4 py-3 mb-6 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg">
+            {{ $message }}
+        </div>
+    @endif
     <div class="space-y-3">
         <a href="{{ url('/') }}"
            class="inline-block px-6 py-2 text-white rounded-lg transition-colors

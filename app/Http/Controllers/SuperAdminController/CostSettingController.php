@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SuperAdminController;
 
 use App\Http\Controllers\Controller;
 use App\Models\CostSetting;
+use App\Models\FeatureSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -12,8 +13,9 @@ class CostSettingController extends Controller
     public function index()
     {
         $settings = CostSetting::all();
+        $features = FeatureSetting::pluck('status', 'nama_fitur');
 
-        return view('super-admin.cost-settings.index', compact('settings'));
+        return view('super-admin.cost-settings.index', compact('settings', 'features'));
     }
 
     public function edit(CostSetting $costSetting)
@@ -54,5 +56,20 @@ class CostSettingController extends Controller
 
         return redirect()->route('super-admin.settings.index')
             ->with('success', 'Settings updated successfully.');
+    }
+
+    public function updateFeatures(Request $request)
+    {
+        $allowed = ['cuti', 'reimbursement', 'overtime', 'perjalanan_dinas'];
+        foreach ($allowed as $key) {
+            $active = $request->boolean($key);
+            FeatureSetting::updateOrCreate(
+                ['nama_fitur' => $key],
+                ['status' => $active]
+            );
+        }
+
+        return redirect()->route('super-admin.settings.index')
+            ->with('success', 'Feature settings updated successfully.');
     }
 }

@@ -24,7 +24,114 @@
     </div>
     @endif
 
-    <div class="bg-white border rounded-xl shadow-soft border-neutral-200">
+    <div class="bg-white border border-gray-200 shadow-sm rounded-xl">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Feature Management</h2>
+            <p class="text-sm text-gray-600">Enable or disable application modules</p>
+        </div>
+        <form action="{{ route('admin.settings.features.update') }}" method="POST" class="p-6">
+            @csrf
+            @php
+            $f = $features ?? collect();
+            $isOn = fn($k) => (bool) ($f[$k] ?? false);
+            @endphp
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <!-- Leave Feature -->
+                <label
+                    class="relative flex items-start p-4 transition-all duration-200 border border-gray-200 rounded-lg cursor-pointer group hover:border-blue-300 hover:shadow-md hover:bg-blue-50/30">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-lg">
+                                <i class="text-sm text-blue-600 fas fa-calendar-alt"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-800">Leave (Cuti)</div>
+                                <div class="text-xs text-gray-500">Show leave requests & calendar</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center ml-4">
+                        <input type="checkbox" name="cuti" value="1"
+                            class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500" {{ $isOn('cuti')
+                            ? 'checked' : '' }}>
+                    </div>
+                </label>
+
+                <!-- Reimbursement Feature -->
+                <label
+                    class="relative flex items-start p-4 transition-all duration-200 border border-gray-200 rounded-lg cursor-pointer group hover:border-purple-300 hover:shadow-md hover:bg-purple-50/30">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-lg">
+                                <i class="text-sm text-purple-600 fas fa-receipt"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-800">Reimbursement</div>
+                                <div class="text-xs text-gray-500">Show reimbursement flows</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center ml-4">
+                        <input type="checkbox" name="reimbursement" value="1"
+                            class="w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-purple-500" {{
+                            $isOn('reimbursement') ? 'checked' : '' }}>
+                    </div>
+                </label>
+
+                <!-- Overtime Feature -->
+                <label
+                    class="relative flex items-start p-4 transition-all duration-200 border border-gray-200 rounded-lg cursor-pointer group hover:border-green-300 hover:shadow-md hover:bg-green-50/30">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center justify-center w-8 h-8 bg-green-100 rounded-lg">
+                                <i class="text-sm text-green-600 fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-800">Overtime</div>
+                                <div class="text-xs text-gray-500">Show overtime requests</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center ml-4">
+                        <input type="checkbox" name="overtime" value="1"
+                            class="w-5 h-5 text-green-600 border-gray-300 rounded focus:ring-green-500" {{
+                            $isOn('overtime') ? 'checked' : '' }}>
+                    </div>
+                </label>
+
+                <!-- Official Travel Feature -->
+                <label
+                    class="relative flex items-start p-4 transition-all duration-200 border border-gray-200 rounded-lg cursor-pointer group hover:border-yellow-300 hover:shadow-md hover:bg-yellow-50/30">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center justify-center w-8 h-8 bg-yellow-100 rounded-lg">
+                                <i class="text-sm text-yellow-600 fas fa-plane"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-semibold text-gray-800">Official Travel</div>
+                                <div class="text-xs text-gray-500">Show official travel requests</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center ml-4">
+                        <input type="checkbox" name="perjalanan_dinas" value="1"
+                            class="w-5 h-5 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500" {{
+                            $isOn('perjalanan_dinas') ? 'checked' : '' }}>
+                    </div>
+                </label>
+            </div>
+
+            <div class="flex justify-end pt-6 mt-6 border-t border-gray-200">
+                <button type="submit"
+                    class="px-6 py-2.5 text-sm font-medium text-white transition-all duration-200 bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 focus:outline-none">
+                    <i class="mr-2 fas fa-save"></i>
+                    Save Feature Settings
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="mt-6 bg-white border rounded-xl shadow-soft border-neutral-200">
         <div class="px-6 py-4 border-b border-neutral-200">
             <h2 class="text-lg font-bold text-neutral-900">Application Settings</h2>
             <p class="text-sm text-neutral-600">Update the values used throughout the application</p>

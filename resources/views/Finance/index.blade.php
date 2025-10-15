@@ -3,6 +3,26 @@
 @section('title', 'Dashboard')
 
 @section('content')
+@php
+    $flags = $featureActive ?? [
+        'cuti' => \App\Models\FeatureSetting::isActive('cuti'),
+        'reimbursement' => \App\Models\FeatureSetting::isActive('reimbursement'),
+        'overtime' => \App\Models\FeatureSetting::isActive('overtime'),
+        'perjalanan_dinas' => \App\Models\FeatureSetting::isActive('perjalanan_dinas'),
+    ];
+    $pendingYoursTotal = ($flags['cuti'] ? $pendingYoursLeaves : 0)
+        + ($flags['reimbursement'] ? $pendingYoursReimbursements : 0)
+        + ($flags['overtime'] ? $pendingYoursOvertimes : 0)
+        + ($flags['perjalanan_dinas'] ? $pendingYoursTravels : 0);
+    $approvedYoursTotal = ($flags['cuti'] ? $approvedYoursLeaves : 0)
+        + ($flags['reimbursement'] ? $approvedYoursReimbursements : 0)
+        + ($flags['overtime'] ? $approvedYoursOvertimes : 0)
+        + ($flags['perjalanan_dinas'] ? $approvedYoursTravels : 0);
+    $rejectedYoursTotal = ($flags['cuti'] ? $rejectedYoursLeaves : 0)
+        + ($flags['reimbursement'] ? $rejectedYoursReimbursements : 0)
+        + ($flags['overtime'] ? $rejectedYoursOvertimes : 0)
+        + ($flags['perjalanan_dinas'] ? $rejectedYoursTravels : 0);
+@endphp
 <div class="space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -15,6 +35,7 @@
     <p class="mb-2 text-sm text-neutral-500 ms-4">All Requests</p>
     <div class="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-5 md:mb-6">
         <!-- Leaves -->
+        @if($flags['cuti'])
         <div
             class="p-4 transition-shadow duration-300 bg-white border rounded-xl shadow-soft md:p-6 border-neutral-200 hover:shadow-medium">
             <div class="flex items-center justify-between">
@@ -28,8 +49,10 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Overtimes -->
+        @if($flags['overtime'])
         <div
             class="p-4 transition-shadow duration-300 bg-white border rounded-xl shadow-soft md:p-6 border-neutral-200 hover:shadow-medium">
             <div class="flex items-center justify-between">
@@ -43,8 +66,10 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Reimbursements -->
+        @if($flags['reimbursement'])
         <div
             class="p-4 transition-shadow duration-300 bg-white border rounded-xl shadow-soft md:p-6 border-neutral-200 hover:shadow-medium">
             <div class="flex items-center justify-between">
@@ -58,8 +83,10 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Official Travels -->
+        @if($flags['perjalanan_dinas'])
         <div
             class="p-4 transition-shadow duration-300 bg-white border rounded-xl shadow-soft md:p-6 border-neutral-200 hover:shadow-medium">
             <div class="flex items-center justify-between">
@@ -73,6 +100,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     <!-- Statistics Yours Cards - Adjusted for mobile -->
@@ -84,8 +112,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="mb-1 text-xs font-medium text-neutral-600 md:text-sm">Pending Approvals</p>
-                    <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $pendingYoursLeaves +
-                        $pendingYoursReimbursements + $pendingYoursOvertimes + $pendingYoursTravels }}</p>
+                    <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $pendingYoursTotal }}</p>
                     <p class="mt-1 text-xs text-neutral-500">Awaiting review</p>
                 </div>
                 <div class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-warning-100 rounded-xl">
@@ -100,8 +127,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="mb-1 text-xs font-medium text-neutral-600 md:text-sm">Approved This Month</p>
-                    <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $approvedYoursLeaves +
-                        $approvedYoursReimbursements + $approvedYoursOvertimes + $approvedYoursTravels }}</p>
+                    <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $approvedYoursTotal }}</p>
                     <p class="mt-1 text-xs text-neutral-500">Successfully approved</p>
                 </div>
                 <div class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-success-100 rounded-xl">
@@ -116,8 +142,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="mb-1 text-xs font-medium text-neutral-600 md:text-sm">Rejected This Month</p>
-                    <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $rejectedYoursLeaves +
-                        $rejectedYoursReimbursements + $rejectedYoursOvertimes + $rejectedYoursTravels }}</p>
+                    <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $rejectedYoursTotal }}</p>
                     <p class="mt-1 text-xs text-neutral-500">Rejected approved</p>
                 </div>
                 <div class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-error-100 rounded-xl">
@@ -127,6 +152,7 @@
         </div>
 
         <!-- Remaining Days Requests Card -->
+        @if($flags['cuti'])
         <div
             class="p-4 transition-shadow duration-300 bg-white border rounded-xl shadow-soft md:p-6 border-neutral-200 hover:shadow-medium">
             <div class="flex items-center justify-between">
@@ -147,10 +173,12 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     <!-- Action Buttons -->
     <div class="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4">
+        @if($flags['cuti'])
         <button onclick="window.location.href='{{ route('finance.leaves.create') }}'" @if($sisaCuti <=0) disabled @endif
             class="bg-primary-600 hover:bg-primary-700 text-white rounded-lg p-4 hover:shadow-md transition-all @if($sisaCuti <= 0) cursor-not-allowed @else cursor-pointer @endif">
             <div class="flex flex-col items-center text-center">
@@ -161,7 +189,9 @@
                 <p class="text-sm text-primary-100">Submit new leave request</p>
             </div>
         </button>
+        @endif
 
+        @if($flags['reimbursement'])
         <a href="{{ route('finance.reimbursements.create') }}"
             class="p-4 text-white transition-all rounded-lg bg-secondary-600 hover:bg-secondary-700 hover:shadow-md">
             <div class="flex flex-col items-center text-center">
@@ -172,7 +202,9 @@
                 <p class="text-sm text-secondary-100">Upload expense receipts</p>
             </div>
         </a>
+        @endif
 
+        @if($flags['overtime'])
         <a href="{{ route('finance.overtimes.create') }}"
             class="p-4 text-white transition-all rounded-lg bg-success-600 hover:bg-success-700 hover:shadow-md">
             <div class="flex flex-col items-center text-center">
@@ -183,7 +215,9 @@
                 <p class="text-sm text-success-100">Log overtime hours</p>
             </div>
         </a>
+        @endif
 
+        @if($flags['perjalanan_dinas'])
         <a href="{{ route('finance.official-travels.create') }}"
             class="p-4 text-white transition-all rounded-lg bg-warning-600 hover:bg-warning-700 hover:shadow-md">
             <div class="flex flex-col items-center text-center">
@@ -194,6 +228,7 @@
                 <p class="text-sm text-warning-100">Plan business trip</p>
             </div>
         </a>
+        @endif
     </div>
 
     <!-- Divider -->
@@ -215,6 +250,7 @@
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <!-- Calendar Section -->
+        @if($flags['cuti'])
         <div class="mb-8 bg-white border border-gray-200 rounded-xl shadow-soft">
             <div class="px-6 py-4 border-b border-gray-200">
                 <h3 class="text-lg font-semibold text-center text-gray-800">Employee Leave Calendar</h3>
@@ -251,6 +287,7 @@
                 </p>
             </div>
         </div>
+        @endif
 
         <!-- Recent Requests Section -->
         <div class="mb-8 bg-white border border-gray-200 rounded-lg">
@@ -259,7 +296,15 @@
                 <p class="text-sm text-gray-500">Employee latest submissions</p>
             </div>
             <div class="p-6">
-                @forelse($recentRequests as $request)
+                @php
+                    $recentFiltered = collect($recentRequests)->filter(function ($r) use ($flags) {
+                        return ($r['type'] === App\Enums\TypeRequest::Leaves->value && $flags['cuti'])
+                            || ($r['type'] === App\Enums\TypeRequest::Reimbursements->value && $flags['reimbursement'])
+                            || ($r['type'] === App\Enums\TypeRequest::Overtimes->value && $flags['overtime'])
+                            || ($r['type'] === App\Enums\TypeRequest::Travels->value && $flags['perjalanan_dinas']);
+                    })->values();
+                @endphp
+                @forelse($recentFiltered as $request)
                 <div class="flex items-center justify-between py-4 border-b border-gray-100 cursor-pointer last:border-0"
                     onclick="window.location.href='{{ $request['url'] }}'">
                     <!-- Kiri: ikon + judul -->
@@ -606,36 +651,50 @@
     const monthlyRequestsCtx = document
         .getElementById("monthlyRequestsChart")
         .getContext("2d");
+    const isActive = {
+        cuti: @json($flags['cuti']),
+        reimbursement: @json($flags['reimbursement']),
+        overtime: @json($flags['overtime']),
+        perjalanan_dinas: @json($flags['perjalanan_dinas']),
+    };
+    const datasets = [];
+    if (isActive.cuti) {
+        datasets.push({
+            label: "Leave Requests",
+            data: chartData.leaves,
+            backgroundColor: colors.primary,
+            borderRadius: 6,
+        });
+    }
+    if (isActive.reimbursement) {
+        datasets.push({
+            label: "Reimbursement",
+            data: chartData.reimbursements,
+            backgroundColor: colors.secondary,
+            borderRadius: 6,
+        });
+    }
+    if (isActive.overtime) {
+        datasets.push({
+            label: "Overtime",
+            data: chartData.overtimes,
+            backgroundColor: colors.accent,
+            borderRadius: 6,
+        });
+    }
+    if (isActive.perjalanan_dinas) {
+        datasets.push({
+            label: "Official Travel",
+            data: chartData.officialTravels,
+            backgroundColor: colors.warning,
+            borderRadius: 6,
+        });
+    }
     new Chart(monthlyRequestsCtx, {
         type: "bar",
         data: {
             labels: chartData.months,
-            datasets: [
-                {
-                    label: "Leave Requests",
-                    data: chartData.leaves,
-                    backgroundColor: colors.primary,
-                    borderRadius: 6,
-                },
-                {
-                    label: "Reimbursement",
-                    data: chartData.reimbursements,
-                    backgroundColor: colors.secondary,
-                    borderRadius: 6,
-                },
-                {
-                    label: "Overtime",
-                    data: chartData.overtimes,
-                    backgroundColor: colors.accent,
-                    borderRadius: 6,
-                },
-                {
-                    label: "Official Travel",
-                    data: chartData.officialTravels,
-                    backgroundColor: colors.warning,
-                    borderRadius: 6,
-                },
-            ],
+            datasets,
         },
         options: {
             responsive: true,

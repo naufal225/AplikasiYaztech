@@ -15,27 +15,35 @@ Route::middleware(['auth', 'role:employee'])->prefix('employee')->name('employee
     });
 
 
-    // Leave Requests
-    Route::get('leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
-    Route::resource('leaves', LeaveController::class)
-        ->parameters([
-            "leaves" => "leave"
-        ]);
+    // Leave Requests (feature: cuti)
+    Route::middleware('feature:cuti')->group(function () {
+        Route::get('leaves/{leave}/export-pdf', [LeaveController::class, 'exportPdf'])->name('leaves.exportPdf');
+        Route::resource('leaves', LeaveController::class)
+            ->parameters([
+                "leaves" => "leave"
+            ]);
+    });
 
 
-    // Reimbursements
-    Route::get('reimbursements/{reimbursement}/export-pdf', [ReimbursementController::class, 'exportPdf'])->name('reimbursements.exportPdf');
-    Route::resource('reimbursements', ReimbursementController::class);
+    // Reimbursements (feature: reimbursement)
+    Route::middleware('feature:reimbursement')->group(function () {
+        Route::get('reimbursements/{reimbursement}/export-pdf', [ReimbursementController::class, 'exportPdf'])->name('reimbursements.exportPdf');
+        Route::resource('reimbursements', ReimbursementController::class);
+    });
 
 
-    // Overtimes
-    Route::get('overtimes/{overtime}/export-pdf', [OvertimeController::class, 'exportPdf'])->name('overtimes.exportPdf');
-    Route::resource('overtimes', OvertimeController::class);
+    // Overtimes (feature: overtime)
+    Route::middleware('feature:overtime')->group(function () {
+        Route::get('overtimes/{overtime}/export-pdf', [OvertimeController::class, 'exportPdf'])->name('overtimes.exportPdf');
+        Route::resource('overtimes', OvertimeController::class);
+    });
 
 
-    // Official Travels
-    Route::get('official-travels/{official_travel}/export-pdf', [OfficialTravelController::class, 'exportPdf'])->name('official-travels.exportPdf');
-    Route::resource('official-travels', OfficialTravelController::class);
+    // Official Travels (feature: perjalanan_dinas)
+    Route::middleware('feature:perjalanan_dinas')->group(function () {
+        Route::get('official-travels/{official_travel}/export-pdf', [OfficialTravelController::class, 'exportPdf'])->name('official-travels.exportPdf');
+        Route::resource('official-travels', OfficialTravelController::class);
+    });
 
 
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');

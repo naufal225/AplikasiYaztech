@@ -83,5 +83,6 @@ Route::middleware(['auth', 'role:superAdmin'])->prefix('super-admin')->name('sup
     Route::get('/settings/{costSetting}/edit', [CostSettingController::class, 'edit'])->name('settings.edit');
     Route::put('/settings/{costSetting}', [CostSettingController::class, 'update'])->name('settings.update');
     Route::post('/settings/update-multiple', [CostSettingController::class, 'updateMultiple'])->name('settings.update-multiple');
+    Route::post('/settings/features', [CostSettingController::class, 'updateFeatures'])->name('settings.features.update');
 
 });

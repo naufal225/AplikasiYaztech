@@ -12,7 +12,8 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-    public function run() {
+    public function run()
+    {
         $this->call(CostSettingsSeeder::class);
         $this->call(RoleSeeder::class);
         $this->call(UserAndDivisionSeeder::class);
@@ -22,5 +23,6 @@ class DatabaseSeeder extends Seeder
             OfficialTravelSeeder::class,
             LeaveSeeder::class,
         ]);
+        $this->call(FeatureSettingsSeeder::class);
     }
 }

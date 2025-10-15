@@ -5,6 +5,26 @@
 @section('subtitle', 'Overview of all employee requests')
 
 @section('content')
+@php
+    $flags = $featureActive ?? [
+        'cuti' => \App\Models\FeatureSetting::isActive('cuti'),
+        'reimbursement' => \App\Models\FeatureSetting::isActive('reimbursement'),
+        'overtime' => \App\Models\FeatureSetting::isActive('overtime'),
+        'perjalanan_dinas' => \App\Models\FeatureSetting::isActive('perjalanan_dinas'),
+    ];
+    $pendingTotal = ($flags['cuti'] ? $pendingLeaves : 0)
+        + ($flags['reimbursement'] ? $pendingReimbursements : 0)
+        + ($flags['overtime'] ? $pendingOvertimes : 0)
+        + ($flags['perjalanan_dinas'] ? $pendingTravels : 0);
+    $approvedTotal = ($flags['cuti'] ? $approvedLeaves : 0)
+        + ($flags['reimbursement'] ? $approvedReimbursements : 0)
+        + ($flags['overtime'] ? $approvedOvertimes : 0)
+        + ($flags['perjalanan_dinas'] ? $approvedTravels : 0);
+    $rejectedTotal = ($flags['cuti'] ? $rejectedLeaves : 0)
+        + ($flags['reimbursement'] ? $rejectedReimbursements : 0)
+        + ($flags['overtime'] ? $rejectedOvertimes : 0)
+        + ($flags['perjalanan_dinas'] ? $rejectedTravels : 0);
+@endphp
 <!-- Statistics Cards - Adjusted for mobile -->
 <div class="grid grid-cols-1 gap-3 mb-6 sm:grid-cols-2 lg:grid-cols-4 md:gap-5 md:mb-8">
     <!-- Pending Approvals Card -->
@@ -13,8 +33,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="mb-1 text-xs font-medium text-neutral-600 md:text-sm">Pending Approvals</p>
-                <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $pendingLeaves + $pendingReimbursements +
-                    $pendingOvertimes + $pendingTravels }}</p>
+                <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $pendingTotal }}</p>
                 <p class="mt-1 text-xs text-neutral-500">Awaiting review</p>
             </div>
             <div class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-warning-100 rounded-xl">
@@ -29,8 +48,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="mb-1 text-xs font-medium text-neutral-600 md:text-sm">Approved This Month</p>
-                <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $approvedLeaves + $approvedReimbursements
-                    + $approvedOvertimes + $approvedTravels }}</p>
+                <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $approvedTotal }}</p>
                 <p class="mt-1 text-xs text-neutral-500">Successfully approved</p>
             </div>
             <div class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-success-100 rounded-xl">
@@ -45,8 +63,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="mb-1 text-xs font-medium text-neutral-600 md:text-sm">Rejected This Month</p>
-                <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $rejectedLeaves + $rejectedReimbursements
-                    + $rejectedOvertimes + $rejectedTravels }}</p>
+                <p class="text-2xl font-bold md:text-3xl text-neutral-900">{{ $rejectedTotal }}</p>
                 <p class="mt-1 text-xs text-neutral-500">Rejected approved</p>
             </div>
             <div class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-error-100 rounded-xl">
@@ -56,6 +73,7 @@
     </div>
 
     <!-- Remaining Days Requests Card -->
+    @if($flags['cuti'])
     <div
         class="p-4 transition-shadow duration-300 bg-white border rounded-xl shadow-soft md:p-6 border-neutral-200 hover:shadow-medium">
         <div class="flex items-center justify-between">
@@ -78,10 +96,12 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 
 <!-- Action Buttons -->
 <div class="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4">
+    @if($flags['cuti'])
     <button onclick="window.location.href='{{ route('employee.leaves.create') }}'" @if($sisaCuti <=0) disabled @endif
         class="bg-primary-600 hover:bg-primary-700 text-white rounded-lg p-4 hover:shadow-md transition-all @if($sisaCuti <= 0) cursor-not-allowed @else cursor-pointer @endif">
         <div class="flex flex-col items-center text-center">
@@ -92,7 +112,9 @@
             <p class="text-sm text-primary-100">Submit new leave request</p>
         </div>
     </button>
+    @endif
 
+    @if($flags['reimbursement'])
     <a href="{{ route('employee.reimbursements.create') }}"
         class="p-4 text-white transition-all rounded-lg bg-secondary-600 hover:bg-secondary-700 hover:shadow-md">
         <div class="flex flex-col items-center text-center">
@@ -103,7 +125,9 @@
             <p class="text-sm text-secondary-100">Upload expense receipts</p>
         </div>
     </a>
+    @endif
 
+    @if($flags['overtime'])
     <a href="{{ route('employee.overtimes.create') }}"
         class="p-4 text-white transition-all rounded-lg bg-success-600 hover:bg-success-700 hover:shadow-md">
         <div class="flex flex-col items-center text-center">
@@ -114,7 +138,9 @@
             <p class="text-sm text-success-100">Log overtime hours</p>
         </div>
     </a>
+    @endif
 
+    @if($flags['perjalanan_dinas'])
     <a href="{{ route('employee.official-travels.create') }}"
         class="p-4 text-white transition-all rounded-lg bg-warning-600 hover:bg-warning-700 hover:shadow-md">
         <div class="flex flex-col items-center text-center">
@@ -125,6 +151,7 @@
             <p class="text-sm text-warning-100">Plan business trip</p>
         </div>
     </a>
+    @endif
 </div>
 
 <!-- Divider -->
@@ -132,6 +159,7 @@
 
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <!-- Calendar Section -->
+    @if($flags['cuti'])
     <div class="mb-8 bg-white border border-gray-200 rounded-xl shadow-soft">
         <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-semibold text-center text-gray-800">Employee Leave Calendar</h3>
@@ -168,6 +196,7 @@
             </p>
         </div>
     </div>
+    @endif
 
     <!-- Recent Requests Section -->
     <div class="mb-8 bg-white border border-gray-200 rounded-lg">
@@ -176,7 +205,15 @@
             <p class="text-sm text-gray-500">Your latest submissions</p>
         </div>
         <div class="p-6">
-            @forelse($recentRequests as $request)
+            @php
+                $recentFiltered = collect($recentRequests)->filter(function ($r) use ($flags) {
+                    return ($r['type'] === App\Enums\TypeRequest::Leaves->value && $flags['cuti'])
+                        || ($r['type'] === App\Enums\TypeRequest::Reimbursements->value && $flags['reimbursement'])
+                        || ($r['type'] === App\Enums\TypeRequest::Overtimes->value && $flags['overtime'])
+                        || ($r['type'] === App\Enums\TypeRequest::Travels->value && $flags['perjalanan_dinas']);
+                })->values();
+            @endphp
+            @forelse($recentFiltered as $request)
             <div class="flex items-center justify-between py-4 border-b border-gray-100 cursor-pointer last:border-0"
                 onclick="window.location.href='{{ $request['url'] }}'">
                 <!-- Kiri: ikon + judul -->

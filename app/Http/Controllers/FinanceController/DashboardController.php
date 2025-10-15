@@ -9,6 +9,7 @@ use App\Enums\TypeRequest;
 use App\Models\Reimbursement;
 use App\Models\Overtime;
 use App\Models\OfficialTravel;
+use App\Models\FeatureSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -28,6 +29,13 @@ class DashboardController extends Controller
         $thisYear = now()->year;
         $thisMonth = now()->month;
 
+        $featureActive = [
+            'cuti' => FeatureSetting::isActive('cuti'),
+            'reimbursement' => FeatureSetting::isActive('reimbursement'),
+            'overtime' => FeatureSetting::isActive('overtime'),
+            'perjalanan_dinas' => FeatureSetting::isActive('perjalanan_dinas'),
+        ];
+
         $holidays = \App\Models\Holiday::pluck('holiday_date')
             ->map(fn($d) => Carbon::parse($d)->toDateString())
             ->toArray();
@@ -35,90 +43,82 @@ class DashboardController extends Controller
         // =========================
         // DATA PRIBADI FINANCE (YOURS)
         // =========================
-        $pendingYoursLeaves = Leave::where('employee_id', $userId)
-            ->where('status_1', 'pending')
-            ->count();
+        $pendingYoursLeaves = $featureActive['cuti']
+            ? Leave::where('employee_id', $userId)->where('status_1', 'pending')->count()
+            : 0;
 
-        $pendingYoursOvertimes = Overtime::where('employee_id', $userId)
-            ->where(fn($q) => $q->where('status_1', 'pending')->orWhere('status_2', 'pending'))
-            ->count();
+        $pendingYoursOvertimes = $featureActive['overtime']
+            ? Overtime::where('employee_id', $userId)->where(fn($q) => $q->where('status_1', 'pending')->orWhere('status_2', 'pending'))->count()
+            : 0;
 
-        $pendingYoursReimbursements = Reimbursement::where('employee_id', $userId)
-            ->where(fn($q) => $q->where('status_1', 'pending')->orWhere('status_2', 'pending'))
-            ->count();
+        $pendingYoursReimbursements = $featureActive['reimbursement']
+            ? Reimbursement::where('employee_id', $userId)->where(fn($q) => $q->where('status_1', 'pending')->orWhere('status_2', 'pending'))->count()
+            : 0;
 
-        $pendingYoursTravels = OfficialTravel::where('employee_id', $userId)
-            ->where(fn($q) => $q->where('status_1', 'pending')->orWhere('status_2', 'pending'))
-            ->count();
+        $pendingYoursTravels = $featureActive['perjalanan_dinas']
+            ? OfficialTravel::where('employee_id', $userId)->where(fn($q) => $q->where('status_1', 'pending')->orWhere('status_2', 'pending'))->count()
+            : 0;
 
         // Approved this month
-        $approvedYoursLeaves = Leave::where('employee_id', $userId)
-            ->where('status_1', 'approved')
-            ->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)
-            ->count();
+        $approvedYoursLeaves = $featureActive['cuti']
+            ? Leave::where('employee_id', $userId)->where('status_1', 'approved')->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)->count()
+            : 0;
 
-        $approvedYoursOvertimes = Overtime::where('employee_id', $userId)
-            ->where('status_1', 'approved')->where('status_2', 'approved')
-            ->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)
-            ->count();
+        $approvedYoursOvertimes = $featureActive['overtime']
+            ? Overtime::where('employee_id', $userId)->where('status_1', 'approved')->where('status_2', 'approved')->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)->count()
+            : 0;
 
-        $approvedYoursReimbursements = Reimbursement::where('employee_id', $userId)
-            ->where('status_1', 'approved')->where('status_2', 'approved')
-            ->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)
-            ->count();
+        $approvedYoursReimbursements = $featureActive['reimbursement']
+            ? Reimbursement::where('employee_id', $userId)->where('status_1', 'approved')->where('status_2', 'approved')->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)->count()
+            : 0;
 
-        $approvedYoursTravels = OfficialTravel::where('employee_id', $userId)
-            ->where('status_1', 'approved')->where('status_2', 'approved')
-            ->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)
-            ->count();
+        $approvedYoursTravels = $featureActive['perjalanan_dinas']
+            ? OfficialTravel::where('employee_id', $userId)->where('status_1', 'approved')->where('status_2', 'approved')->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)->count()
+            : 0;
 
         // Rejected this month
-        $rejectedYoursLeaves = Leave::where('employee_id', $userId)
-            ->where('status_1', 'rejected')
-            ->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)
-            ->count();
+        $rejectedYoursLeaves = $featureActive['cuti']
+            ? Leave::where('employee_id', $userId)->where('status_1', 'rejected')->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)->count()
+            : 0;
 
-        $rejectedYoursOvertimes = Overtime::where('employee_id', $userId)
-            ->where(fn($q) => $q->where('status_1', 'rejected')->orWhere('status_2', 'rejected'))
-            ->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)
-            ->count();
+        $rejectedYoursOvertimes = $featureActive['overtime']
+            ? Overtime::where('employee_id', $userId)->where(fn($q) => $q->where('status_1', 'rejected')->orWhere('status_2', 'rejected'))->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)->count()
+            : 0;
 
-        $rejectedYoursReimbursements = Reimbursement::where('employee_id', $userId)
-            ->where(fn($q) => $q->where('status_1', 'rejected')->orWhere('status_2', 'rejected'))
-            ->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)
-            ->count();
+        $rejectedYoursReimbursements = $featureActive['reimbursement']
+            ? Reimbursement::where('employee_id', $userId)->where(fn($q) => $q->where('status_1', 'rejected')->orWhere('status_2', 'rejected'))->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)->count()
+            : 0;
 
-        $rejectedYoursTravels = OfficialTravel::where('employee_id', $userId)
-            ->where(fn($q) => $q->where('status_1', 'rejected')->orWhere('status_2', 'rejected'))
-            ->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)
-            ->count();
+        $rejectedYoursTravels = $featureActive['perjalanan_dinas']
+            ? OfficialTravel::where('employee_id', $userId)->where(fn($q) => $q->where('status_1', 'rejected')->orWhere('status_2', 'rejected'))->whereMonth('created_at', $thisMonth)->whereYear('created_at', $thisYear)->count()
+            : 0;
 
         // =========================
         // DATA UNTUK CARD (SEMUA EMPLOYEE)
         // =========================
-        $leaveCount = Leave::whereHas('employee', function ($q) {
+        $leaveCount = $featureActive['cuti'] ? Leave::whereHas('employee', function ($q) {
             $q->whereHas('roles', fn($q) => $q->where('name', Roles::Employee->value));
         })
             ->where('status_1', 'approved')
-            ->count();
+            ->count() : 0;
 
-        $overtimeCount = Overtime::whereHas('employee', function ($q) {
+        $overtimeCount = $featureActive['overtime'] ? Overtime::whereHas('employee', function ($q) {
             $q->whereHas('roles', fn($q) => $q->where('name', Roles::Employee->value));
         })
             ->where('status_1', 'approved')->where('status_2', 'approved')
-            ->count();
+            ->count() : 0;
 
-        $reimbursementCount = Reimbursement::whereHas('employee', function ($q) {
+        $reimbursementCount = $featureActive['reimbursement'] ? Reimbursement::whereHas('employee', function ($q) {
             $q->whereHas('roles', fn($q) => $q->where('name', Roles::Employee->value));
         })
             ->where('status_1', 'approved')->where('status_2', 'approved')
-            ->count();
+            ->count() : 0;
 
-        $officialTravelCount = OfficialTravel::whereHas('employee', function ($q) {
+        $officialTravelCount = $featureActive['perjalanan_dinas'] ? OfficialTravel::whereHas('employee', function ($q) {
             $q->whereHas('roles', fn($q) => $q->where('name', Roles::Employee->value));
         })
             ->where('status_1', 'approved')->where('status_2', 'approved')
-            ->count();
+            ->count() : 0;
 
         // =========================
         // CHART DATA BULANAN
@@ -135,65 +135,67 @@ class DashboardController extends Controller
             $start = Carbon::create(null, $month, 1)->startOfMonth();
             $end = Carbon::create(null, $month, 1)->endOfMonth();
 
-            $leavesChartData[] = Leave::whereHas('employee', function ($q) {
+            $leavesChartData[] = $featureActive['cuti'] ? Leave::whereHas('employee', function ($q) {
                 $q->whereHas('roles', fn($q) => $q->where('name', Roles::Employee->value));
             })
                 ->where('status_1', 'approved')
                 ->whereBetween('created_at', [$start, $end])
-                ->count();
+                ->count() : 0;
 
-            $overtimesChartData[] = Overtime::whereHas('employee', function ($q) {
+            $overtimesChartData[] = $featureActive['overtime'] ? Overtime::whereHas('employee', function ($q) {
                 $q->whereHas('roles', fn($q) => $q->where('name', Roles::Employee->value));
             })
                 ->where('status_1', 'approved')->where('status_2', 'approved')
                 ->whereBetween('created_at', [$start, $end])
-                ->count();
+                ->count() : 0;
 
-            $reimbursementsChartData[] = Reimbursement::whereHas('employee', function ($q) {
+            $reimbursementsChartData[] = $featureActive['reimbursement'] ? Reimbursement::whereHas('employee', function ($q) {
                 $q->whereHas('roles', fn($q) => $q->where('name', Roles::Employee->value));
             })
                 ->where('status_1', 'approved')->where('status_2', 'approved')
                 ->whereBetween('created_at', [$start, $end])
-                ->count();
+                ->count() : 0;
 
-            $reimbursementsRupiahChartData[] = Reimbursement::whereHas('employee', function ($q) {
+            $reimbursementsRupiahChartData[] = $featureActive['reimbursement'] ? Reimbursement::whereHas('employee', function ($q) {
                 $q->whereHas('roles', fn($q) => $q->where('name', Roles::Employee->value));
             })
                 ->where('status_1', 'approved')->where('status_2', 'approved')
                 ->whereBetween('created_at', [$start, $end])
-                ->sum('total');
+                ->sum('total') : 0;
 
-            $officialTravelsChartData[] = OfficialTravel::whereHas('employee', function ($q) {
+            $officialTravelsChartData[] = $featureActive['perjalanan_dinas'] ? OfficialTravel::whereHas('employee', function ($q) {
                 $q->whereHas('roles', fn($q) => $q->where('name', Roles::Employee->value));
             })
                 ->where('status_1', 'approved')->where('status_2', 'approved')
                 ->whereBetween('created_at', [$start, $end])
-                ->count();
+                ->count() : 0;
         }
 
         // =========================
         // CUTI PER TANGGAL
         // =========================
-        $karyawanCuti = Leave::with(['employee:id,name,email,url_profile'])
-            ->where('status_1', 'approved')
-            ->where(function ($q) use ($thisYear) {
-                $q->whereYear('date_start', $thisYear)
-                    ->orWhereYear('date_end', $thisYear);
-            })
-            ->get(['id', 'employee_id', 'date_start', 'date_end']);
-
         $cutiPerTanggal = [];
-        foreach ($karyawanCuti as $cuti) {
-            $period = \Carbon\CarbonPeriod::create($cuti->date_start, $cuti->date_end);
+        if ($featureActive['cuti']) {
+            $karyawanCuti = Leave::with(['employee:id,name,email,url_profile'])
+                ->where('status_1', 'approved')
+                ->where(function ($q) use ($thisYear) {
+                    $q->whereYear('date_start', $thisYear)
+                        ->orWhereYear('date_end', $thisYear);
+                })
+                ->get(['id', 'employee_id', 'date_start', 'date_end']);
 
-            foreach ($period as $date) {
-                if (!$date->isWeekend() && !in_array($date->toDateString(), $holidays)) {
-                    $tanggal = $date->format('Y-m-d');
-                    $cutiPerTanggal[$tanggal][] = [
-                        'employee' => $cuti->employee->name,
-                        'email' => $cuti->employee->email,
-                        'url_profile' => $cuti->employee->url_profile,
-                    ];
+            foreach ($karyawanCuti as $cuti) {
+                $period = \Carbon\CarbonPeriod::create($cuti->date_start, $cuti->date_end);
+
+                foreach ($period as $date) {
+                    if (!$date->isWeekend() && !in_array($date->toDateString(), $holidays)) {
+                        $tanggal = $date->format('Y-m-d');
+                        $cutiPerTanggal[$tanggal][] = [
+                            'employee' => $cuti->employee->name,
+                            'email' => $cuti->employee->email,
+                            'url_profile' => $cuti->employee->url_profile,
+                        ];
+                    }
                 }
             }
         }
@@ -201,35 +203,38 @@ class DashboardController extends Controller
         // =========================
         // TOTAL CUTI & SISA CUTI USER FINANCE
         // =========================
-        $totalHariCuti = Leave::where('employee_id', $userId)
-            ->where('status_1', 'approved')
-            ->where(function ($q) use ($thisYear) {
-                $q->whereYear('date_start', $thisYear)
-                    ->orWhereYear('date_end', $thisYear);
-            })
-            ->get()
-            ->sum(function ($cuti) use ($thisYear, $holidays) {
-                $start = \Carbon\Carbon::parse($cuti->date_start);
-                $end = \Carbon\Carbon::parse($cuti->date_end);
+        $sisaCuti = 0;
+        if ($featureActive['cuti']) {
+            $totalHariCuti = Leave::where('employee_id', $userId)
+                ->where('status_1', 'approved')
+                ->where(function ($q) use ($thisYear) {
+                    $q->whereYear('date_start', $thisYear)
+                        ->orWhereYear('date_end', $thisYear);
+                })
+                ->get()
+                ->sum(function ($cuti) use ($thisYear, $holidays) {
+                    $start = \Carbon\Carbon::parse($cuti->date_start);
+                    $end = \Carbon\Carbon::parse($cuti->date_end);
 
-                if ($start->year < $thisYear)
-                    $start = \Carbon\Carbon::create($thisYear, 1, 1);
-                if ($end->year > $thisYear)
-                    $end = \Carbon\Carbon::create($thisYear, 12, 31);
+                    if ($start->year < $thisYear)
+                        $start = \Carbon\Carbon::create($thisYear, 1, 1);
+                    if ($end->year > $thisYear)
+                        $end = \Carbon\Carbon::create($thisYear, 12, 31);
 
-                if ($start->lte($end)) {
-                    $period = \Carbon\CarbonPeriod::create($start, $end);
-                    return collect($period)->filter(
-                        fn($d) =>
-                        !$d->isWeekend() &&
-                        !in_array($d->toDateString(), $holidays)
-                    )->count();
-                }
-                return 0;
-            });
+                    if ($start->lte($end)) {
+                        $period = \Carbon\CarbonPeriod::create($start, $end);
+                        return collect($period)->filter(
+                            fn($d) =>
+                            !$d->isWeekend() &&
+                            !in_array($d->toDateString(), $holidays)
+                        )->count();
+                    }
+                    return 0;
+                });
 
-        $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
-        $sisaCuti = $annual - $totalHariCuti;
+            $annual = (int) \App\Helpers\CostSettingsHelper::get('ANNUAL_LEAVE', env('CUTI_TAHUNAN', 20));
+            $sisaCuti = $annual - $totalHariCuti;
+        }
         $recentRequests = $this->getRecentRequests();
 
         // =========================
@@ -260,7 +265,8 @@ class DashboardController extends Controller
             'rejectedYoursReimbursements',
             'rejectedYoursTravels',
             'sisaCuti',
-            'recentRequests'
+            'recentRequests',
+            'featureActive'
         ));
     }
 

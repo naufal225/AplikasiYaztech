@@ -4,6 +4,14 @@
 @section('subtitle', 'Welcome Back!')
 
 @section('content')
+@php
+    $flags = $featureActive ?? [
+        'cuti' => \App\Models\FeatureSetting::isActive('cuti'),
+        'reimbursement' => \App\Models\FeatureSetting::isActive('reimbursement'),
+        'overtime' => \App\Models\FeatureSetting::isActive('overtime'),
+        'perjalanan_dinas' => \App\Models\FeatureSetting::isActive('perjalanan_dinas'),
+    ];
+@endphp
 <!-- Stats Cards - Light Neutral Background (15%) -->
 <div class="mb-6">
     <p class="text-gray-600">Showing data for {{ now()->format('F Y') }}</p>
@@ -75,6 +83,7 @@
 </div>
 <!-- Action Buttons -->
 <div class="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4">
+    @if($flags['cuti'])
     <button onclick="window.location.href='{{ route('manager.leaves.create') }}'" @if($sisaCuti <=0) disabled @endif
         class="bg-primary-600 hover:bg-primary-700 text-white rounded-lg p-4 hover:shadow-md transition-all @if($sisaCuti <= 0) cursor-not-allowed @else cursor-pointer @endif">
         <div class="flex flex-col items-center text-center">
@@ -85,7 +94,9 @@
             <p class="text-sm text-primary-100">Submit new leave request</p>
         </div>
     </button>
+    @endif
 
+    @if($flags['reimbursement'])
     <a href="{{ route('manager.reimbursements.create') }}"
         class="p-4 text-white transition-all rounded-lg bg-secondary-600 hover:bg-secondary-700 hover:shadow-md">
         <div class="flex flex-col items-center text-center">
@@ -96,7 +107,9 @@
             <p class="text-sm text-secondary-100">Upload expense receipts</p>
         </div>
     </a>
+    @endif
 
+    @if($flags['overtime'])
     <a href="{{ route('manager.overtimes.create') }}"
         class="p-4 text-white transition-all rounded-lg bg-success-600 hover:bg-success-700 hover:shadow-md">
         <div class="flex flex-col items-center text-center">
@@ -107,7 +120,9 @@
             <p class="text-sm text-success-100">Log overtime hours</p>
         </div>
     </a>
+    @endif
 
+    @if($flags['perjalanan_dinas'])
     <a href="{{ route('manager.official-travels.create') }}"
         class="p-4 text-white transition-all rounded-lg bg-warning-600 hover:bg-warning-700 hover:shadow-md">
         <div class="flex flex-col items-center text-center">
@@ -118,6 +133,7 @@
             <p class="text-sm text-warning-100">Plan business trip</p>
         </div>
     </a>
+    @endif
 </div>
 
 <!-- Divider -->
@@ -125,6 +141,7 @@
 
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <!-- Calendar Section -->
+    @if($flags['cuti'])
     <div class="mb-8 bg-white border border-gray-200 rounded-xl shadow-soft">
         <div class="px-6 py-4 border-b border-gray-200">
             <h3 class="text-lg font-semibold text-center text-gray-800">Employee Leave Calendar</h3>
@@ -161,6 +178,7 @@
             </p>
         </div>
     </div>
+    @endif
 
     <!-- Recent Requests Section -->
     <div class="mb-8 bg-white border border-gray-200 rounded-lg">
@@ -169,7 +187,15 @@
             <p class="text-sm text-gray-500">Your latest submissions</p>
         </div>
         <div class="p-6">
-            @forelse($recentRequests as $request)
+                @php
+                    $recentFiltered = collect($recentRequests)->filter(function ($r) use ($flags) {
+                        return ($r['type'] === App\Enums\TypeRequest::Leaves->value && $flags['cuti'])
+                            || ($r['type'] === App\Enums\TypeRequest::Reimbursements->value && $flags['reimbursement'])
+                            || ($r['type'] === App\Enums\TypeRequest::Overtimes->value && $flags['overtime'])
+                            || ($r['type'] === App\Enums\TypeRequest::Travels->value && $flags['perjalanan_dinas']);
+                    })->values();
+                @endphp
+                @forelse($recentFiltered as $request)
             <div class="flex items-center justify-between py-4 border-b border-gray-100 cursor-pointer last:border-0"
                 onclick="window.location.href='{{ $request['url'] }}'">
                 <!-- Kiri: ikon + judul -->

@@ -48,6 +48,7 @@
 
         @endphp
 
+        @if(\App\Models\FeatureSetting::isActive('cuti'))
         <a href="{{ route('manager.leaves.index') }}" id="leave-nav"
             data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.leaves.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
@@ -61,7 +62,9 @@
                 {{ $unseenLeaveCount }}
             </span>
         </a>
+        @endif
 
+        @if(\App\Models\FeatureSetting::isActive('reimbursement'))
         <a href="{{ route('manager.reimbursements.index') }}" id="reimbursement-nav"
             data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.reimbursements.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
@@ -75,7 +78,9 @@
                 {{ $unseenReimbursementCount }}
             </span>
         </a>
+        @endif
 
+        @if(\App\Models\FeatureSetting::isActive('overtime'))
         <a href="{{ route('manager.overtimes.index') }}" id="overtime-nav"
             data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.overtimes.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
@@ -89,7 +94,9 @@
                 {{ $unseenOvertimeCount }}
             </span>
         </a>
+        @endif
 
+        @if(\App\Models\FeatureSetting::isActive('perjalanan_dinas'))
         <a href="{{ route('manager.official-travels.index') }}" id="official-travel-nav"
             data-roles='@json(Auth::user()->roles->pluck("name"))' data-division-id="{{ Auth::user()->division_id }}"
             class="flex items-center px-4 py-3 rounded-lg transition-all duration-200 {{ request()->routeIs('manager.official-travels.*') ? 'bg-primary-700 text-white shadow-soft' : 'text-primary-100 hover:bg-primary-700 hover:text-white' }}">
@@ -103,6 +110,7 @@
                 {{ $unseenOfficialTravelCount }}
             </span>
         </a>
+        @endif
 
     </nav>
 
