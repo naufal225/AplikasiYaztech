@@ -106,7 +106,7 @@
                         <i class="mr-2 fas fa-paperclip text-primary-600"></i>
                         Invoice (Optional) {{-- Changed from Attachment --}}
                     </label>
-                    <input type="file" id="invoice_path" name="invoice_path" class="form-input-file"> {{-- Changed from attachment --}}
+                    <input type="file" id="invoice_path" name="invoice_path" accept="image/*,application/pdf" capture="environment" class="form-input-file"> {{-- Changed from attachment --}}
                     <p class="mt-1 text-xs text-neutral-500">Accepted formats: JPG, PNG, PDF (Max 2MB). Leave blank to keep current.</p>
                     @if($reimbursement->invoice_path)
                         <div class="flex items-center mt-2 text-sm text-neutral-600">

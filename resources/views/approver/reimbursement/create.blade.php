@@ -127,7 +127,7 @@
                     <i class="mr-2 fas fa-paperclip text-primary-600"></i>
                     Invoice
                 </label>
-                <input type="file" id="invoice_path" name="invoice_path" class="form-input-file"> {{-- Changed from
+                <input type="file" id="invoice_path" name="invoice_path" class="form-input-file" accept="image/*,application/pdf" capture="environment"> {{-- Changed from
                 attachment --}}
                 <p class="mt-1 text-xs text-neutral-500">Accepted formats: JPG, PNG, PDF (Max 2MB). Please attach
                     receipts or invoices.</p>
